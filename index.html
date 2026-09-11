@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>박성준 · Growth Report 2026</title>
+<meta name="description" content="그로스 마케터 박성준 — MD × 퍼포먼스 · 9개 광고 매체 운영 · 자동화">
+<meta name="color-scheme" content="light dark">
+<!-- 링크를 아는 사람만 보도록 검색엔진 수집 제외 -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1a2b'/%3E%3Cpath d='M7 22 L13 15 L18 18 L25 9' fill='none' stroke='%238b9bff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+<script>
+  /* 테마: 저장된 선택이 있으면 먼저 찍어 깜빡임을 막는다 */
+  try { var t = localStorage.getItem('psj-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
+</head>
+<body>
+
+<header class="mast" id="top">
+  <div class="shell">
+    <a class="id" href="#top" style="text-decoration:none;color:inherit">박성준 <small>Growth Report 2026</small></a>
+    <nav aria-label="섹션 바로가기">
+      <a href="#top">소개</a>
+      <a href="#summary">요약</a>
+      <a href="#dash" class="nav-hot">대시보드</a>
+      <a href="#perf">성과</a>
+      <a href="#growth">그로스</a>
+      <a href="#work">주요 업무</a>
+      <a href="#pillars">역량</a>
+      <a href="#career">경력</a>
+      <a href="#contact">연락처</a>
+    </nav>
+    <div class="tools">
+      <button class="iconbtn" id="themeBtn" type="button" aria-label="화면 테마 바꾸기">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor"/></svg>
+        <span id="themeLabel">자동</span>
+      </button>
+      <button class="iconbtn" id="printBtn" type="button">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6V2h8v4"/><rect x="2" y="6" width="12" height="6" rx="1.5"/><path d="M4.5 10h7v4h-7z"/></svg>
+        PDF
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- 라이브 티커 — 광고 콘솔처럼 핵심 지표가 흐른다 (마우스를 올리면 멈춤) -->
+<div class="ticker" role="region" aria-label="핵심 지표 요약">
+  <span class="tk-live"><i aria-hidden="true"></i>LIVE <span id="tkAsOf"></span></span>
+  <div class="tk-viewport"><div class="tk-track" id="tkTrack"></div></div>
+</div>
+
+<main>
+  <!-- ============================== HERO — 대제목과 움직이는 차트가 먼저 ============================== -->
+  <section class="hero" aria-labelledby="h-name">
+    <div class="shell">
+      <div class="hero-l">
+        <div class="idrow">
+          <figure class="portrait"><img id="h-photo" alt="박성준 프로필 사진" width="378" height="504"></figure>
+          <div>
+            <p class="eyebrow"><span class="dot" aria-hidden="true"></span><b id="h-role"></b><span id="h-career"></span></p>
+            <h1 id="h-name"></h1>
+          </div>
+        </div>
+        <p class="kicker" id="h-kicker"></p>
+        <p class="thesis" id="h-thesis"></p>
+        <div class="contact" id="heroContact"></div>
+      </div>
+      <div class="mboard-wrap"><div class="mb-h"><h2 id="mbTitle">현재 성과</h2><span>이그니스 · 입사 후 14개월 · 26.9 기준</span></div><div class="mboard" id="mboard" aria-labelledby="mbTitle"></div></div>
+    </div>
+  </section>
+
+  <!-- ============================== SUMMARY ============================== -->
+  <section class="summary" id="summary" aria-labelledby="sum-h">
+    <div class="shell">
+      <div class="sum-l">
+        <h2 class="hk-h" id="sum-h">결정적 수치 <span>이그니스 · 입사 후 14개월</span></h2>
+        <p class="lede" id="h-lede"></p>
+        <dl class="nowbox" id="h-now"></dl>
+      </div>
+      <div class="sum-r">
+        <ul class="hk" id="kpis"></ul>
+        <div class="more"><h2 class="hk-h">그 밖의 개선</h2><ul id="moreWins"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== DASHBOARD SHOWCASE ============================== -->
+  <section class="sec showcase" id="dash" aria-labelledby="dash-h">
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag">Live dashboard · 직접 만든 운영 도구</span>
+        <h2 id="dash-h"></h2>
+        <span class="aside">화면의 숫자는 모두 임의 값입니다</span>
+      </div>
+      <div class="dash-wrap">
+        <div class="dash-frame" id="dashFrame"></div>
+        <aside class="dash-side" id="dashSide"></aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== PERFORMANCE ============================== -->
+  <section class="sec" id="perf" aria-labelledby="perf-h">
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag">Performance · 이그니스 25.1 – 26.9</span>
+        <h2 id="perf-h">14개월, 네 단계로 바꾼 숫자</h2>
+        <span class="aside" id="perf-basis"></span>
+        <p><b>광고비, 무작정 늘리지 않았습니다.</b> 새는 곳부터 막고, 효율이 확인된 뒤에야 월 광고비를 <b>1.0억 → 1.9억</b>으로 늘렸습니다. 아래 버튼으로 같은 기간을 다른 지표로 볼 수 있습니다.</p>
+      </div>
+      <div class="perf">
+        <div class="panel">
+          <div class="ctlrow">
+            <div class="seg" id="viewSeg" role="group" aria-label="지표 선택"></div>
+            <div class="ctlbtns"><button class="tbtn" id="labelBtn" type="button" aria-pressed="false">세부 수치 보기</button><button class="tbtn" id="tableBtn" type="button" aria-expanded="false" aria-controls="perfTable">표로 보기</button></div>
+          </div>
+          <div class="chart-title"><h3 id="chartTitle"></h3><span id="chartUnit"></span></div>
+          <div class="chartbox" id="perfChart"></div>
+          <div class="legend" id="perfLegend"></div>
+          <p class="caption" id="perfCaption"></p>
+          <div class="tablewrap" id="perfTable" hidden></div>
+        </div>
+        <aside class="panel cmp" aria-labelledby="cmp-h">
+          <h3 id="cmp-h">기간 비교</h3>
+          <table id="cmpTable"></table>
+          <p class="note" id="cmpNote"></p>
+        </aside>
+      </div>
+      <ol class="phases" id="phaseList"></ol>
+    </div>
+  </section>
+
+  <!-- ============================== GROWTH DESIGN (광고 밖) ============================== -->
+  <section class="growth" id="growth" aria-labelledby="growth-h">
+    <div class="shell">
+      <div class="growth-h">
+        <span class="tag">Growth design · 광고 밖</span>
+        <h2 id="growth-h"></h2>
+        <p id="growth-lede"></p>
+      </div>
+      <div class="gcards" id="gcards"></div>
+      <div class="gextra" id="gextra" hidden></div>
+    </div>
+  </section>
+
+  <!-- ============================== WORK ============================== -->
+  <section class="sec" id="work" aria-labelledby="work-h">
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag">Projects</span>
+        <h2 id="work-h">주요 업무 및 진행 내역</h2>
+        <span class="aside">영상은 화면에 보이면 자동 재생됩니다</span>
+        <p><b>광고만 만지지 않았습니다.</b> 상품·노출·데이터까지 손댄 결과를, 실제 데이터로 움직이는 영상으로 요약했습니다.</p>
+      </div>
+      <div class="projects" id="projects"></div>
+    </div>
+  </section>
+
+  <!-- ============================== PILLARS ============================== -->
+  <section class="sec" id="pillars" aria-labelledby="pillars-h">
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag">Capabilities</span>
+        <h2 id="pillars-h">MD · 퍼포먼스 · 자동화 · 리더십, 한 사람에게</h2>
+        <p><b>보통은 네 사람을 뽑아야 하는 역할입니다.</b> 각 역량 아래의 숫자와 연결된 사례로 확인하세요.</p>
+      </div>
+      <div class="pillars" id="pillarGrid"></div>
+      <div class="toolrow" id="toolRow"></div>
+      <div class="toolmore" id="toolMore" hidden></div>
+    </div>
+  </section>
+
+  <!-- ============================== CAREER ============================== -->
+  <section class="sec" id="career" aria-labelledby="career-h">
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag">Career · 8년 9개월</span>
+        <h2 id="career-h">사무보조 · AMD로 시작해 그로스까지, 8년 9개월</h2>
+        <span class="aside">최신순</span>
+      </div>
+      <div class="gantt" id="gantt"></div>
+      <blockquote class="cnote" id="careerNote" hidden></blockquote>
+      <div class="jobs" id="jobs"></div>
+    </div>
+  </section>
+
+  <!-- ============================== ARCHIVE ============================== -->
+  <section class="sec" id="archive" aria-labelledby="archive-h" hidden>
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag">Archive · 2020 – 2024</span>
+        <h2 id="archive-h">데이터, 예전부터 만져 왔습니다</h2>
+        <span class="aside">클릭하면 크게 볼 수 있습니다</span>
+        <p id="archive-lede"></p>
+      </div>
+      <div class="archive" id="archiveGrid"></div>
+      <p class="arc-note" id="archiveNote"></p>
+    </div>
+  </section>
+
+  <!-- ============================== BELIEFS ============================== -->
+  <section class="sec" id="beliefs" aria-labelledby="beliefs-h">
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag">How I work</span>
+        <h2 id="beliefs-h">원칙은 네 가지, 근거는 숫자입니다</h2>
+      </div>
+      <div class="beliefs" id="beliefList"></div>
+    </div>
+  </section>
+
+  <!-- ============================== FACTS / CONTACT ============================== -->
+  <section class="sec" id="contact" aria-labelledby="contact-h">
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag">Contact · Facts</span>
+        <h2 id="contact-h">함께 일할 곳을 찾고 있습니다 <span class="wave" aria-hidden="true">👋</span></h2>
+        <p id="contact-lede"></p>
+      </div>
+      <div class="contact big" id="contact2"></div>
+      <div class="scorebox" aria-labelledby="scores-h">
+        <div class="scorehead"><h3 id="scores-h"></h3><span class="neutral">중립 평가</span></div>
+        <p id="scores-note"></p>
+        <div class="scoregrid" id="scoreGrid"></div>
+      </div>
+      <div class="factgrid" id="factGrid"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="shell"><p id="footLine">© 박성준 · 2026</p></div>
+</footer>
+
+<!-- 대시보드 크게 보기 (직접 둘러보기) -->
+<div class="modal" id="demoModal" hidden role="dialog" aria-modal="true" aria-labelledby="demo-title">
+  <div class="back" data-close></div>
+  <div class="box">
+    <header>
+      <b id="demo-title">채널세일즈 퍼포먼스 대시보드</b><span>직접 둘러보기 · 숫자는 모두 임의 값</span>
+      <a class="iconbtn" id="demoNewTab" href="dashboard-demo.html?video&amp;explore" target="_blank" rel="noopener">새 창에서 열기</a>
+      <button class="iconbtn" type="button" data-close>닫기 <kbd style="font:inherit;opacity:.6">Esc</kbd></button>
+    </header>
+    <iframe id="demoFrame" title="대시보드 데모" loading="lazy"></iframe>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="자료 크게 보기">
+  <figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<script src="assets/series.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/motion.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
