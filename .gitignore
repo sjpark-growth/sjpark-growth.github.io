@@ -1,0 +1,8 @@
+# 작업용 자료 — 절대 올리지 않는다
+_work/
+*.bak
+*.bak.js
+*.xlsx
+*.csv
+Thumbs.db
+desktop.ini
