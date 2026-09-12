@@ -841,13 +841,13 @@
       rows.forEach((r, k) => {
         const y = m.t + k * rowH;
         const a = ym(r.from), b = r.to ? ym(r.to) + 1 / 12 : now + 1 / 12;
-        txt(svg, 0, y + 17, r.co, 'g-lab', 'start', r.kind === 'exp' ? 'fill:var(--ink-3);font-weight:500' : null);
+        txt(svg, 0, y + 17, r.gantt || r.co, 'g-lab', 'start', r.kind === 'exp' ? 'fill:var(--ink-3);font-weight:500' : null);
         const years = b - a; const yy = Math.floor(years + 1e-6), mm = Math.round((years - yy) * 12);
         const col = r.now ? 'var(--accent)' : r.kind === 'exp' ? 'var(--rule-2)' : 'var(--ink-2)';
         const bw = Math.max(4, X(b) - X(a));
         const row = s('g', { class: 'grow-row' + (r.now ? ' is-now' : ''), 'data-co': r.co }, svg);
         s('rect', { x: 0, y: y + 2, width: W, height: rowH - 4, rx: 6, class: 'g-hl', style: 'fill:var(--accent-soft);opacity:0' }, row);
-        txt(row, 0, y + 17, r.co, 'g-lab', 'start', r.kind === 'exp' ? 'fill:var(--ink-3);font-weight:500' : null);
+        txt(row, 0, y + 17, r.gantt || r.co, 'g-lab', 'start', r.kind === 'exp' ? 'fill:var(--ink-3);font-weight:500' : null);
         s('rect', { x: X(a), y: y + 7, width: bw, height: 14, rx: 3, class: 'g-bar', style: `fill:${col};opacity:${r.now ? 1 : .85}` }, row);
         if (r.now) {
           // 현 직장: 막대 위로 빛줄기가 주기적으로 스친다
