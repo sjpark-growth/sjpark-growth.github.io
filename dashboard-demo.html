@@ -523,7 +523,8 @@
   /* 조작부(왼쪽) + 요약 수치(오른쪽) 를 한 줄에 */
   .ctlbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 24px; align-items: stretch;
             padding-bottom: 14px; border-bottom: 1px solid var(--rule); margin-bottom: 14px; }
-  @media (max-width: 1240px) { .ctlbar { grid-template-columns: 1fr; } }
+  /* 요약 수치는 오른쪽에 두되, 폭이 모자라면 2열로 접고(아래 규칙) 그래도 좁으면 아래 줄로 내린다 */
+  @media (max-width: 1360px) { .ctlbar { grid-template-columns: 1fr; } }
 
   /* 기간 열의 폭을 미리 잡아둬서, 날짜 입력이 열려도 오른쪽 매체 목록이 밀리지 않는다 */
   .controls { display: grid; grid-template-columns: auto minmax(344px, auto) minmax(0, 1fr);
@@ -620,6 +621,11 @@
   .dstats { display: grid; grid-template-columns: repeat(5, minmax(126px, auto)); gap: 1px;
             background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden;
             align-self: stretch; }
+  /* 1361~1720px — 요약 5칸을 2열로 접어 오른쪽에 둔다: [광고비 · 전환매출] [평균 ROAS] [최고 · 최저]
+     한 줄 5칸이면 매체 버튼 칸이 눌려 버튼이 세로로 쌓이기 때문이다 */
+  @media (max-width: 1720px) { .dstats { grid-template-columns: repeat(2, minmax(140px, auto)); } .dstats .dstat:nth-child(3) { grid-column: 1 / -1; } }
+  /* 1360px 이하 — 아래 줄로 내려오면 5칸이 전체 폭을 나눠 쓴다 */
+  @media (max-width: 1360px) { .dstats { grid-template-columns: repeat(5, minmax(0, 1fr)); } .dstats .dstat:nth-child(3) { grid-column: auto; } }
   @media (max-width: 640px) { .dstats { grid-template-columns: repeat(2, 1fr); } }
   .dstat { background: var(--surface); padding: 7px 13px 8px; display: flex; flex-direction: column;
            justify-content: center; gap: 1px; }
@@ -707,8 +713,10 @@
   }
 
   /* ---------- 품목별 성과 ---------- */
-  .prodbar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px 28px;
-             padding-bottom: 12px; border-bottom: 1px solid var(--rule); margin-bottom: 14px; }
+  /* 조작부(왼쪽) + 요약 수치(오른쪽) — 일별 효율 조회와 같은 배치 */
+  .prodbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 24px; align-items: stretch;
+             padding-bottom: 14px; border-bottom: 1px solid var(--rule); margin-bottom: 14px; }
+  .prodctls { display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: 14px 28px; min-width: 0; }
   .prodctl { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 0 0 auto; }
   .prodctl .seg { width: max-content; }
   .prodctl > span.ctl-label { font-size: 13px; font-weight: 700; letter-spacing: 0.02em; color: var(--ink); }
@@ -726,12 +734,18 @@
             white-space: nowrap; }
   .allbtn:hover { border-color: var(--ink-3); color: var(--ink); background: var(--surface-sunk); }
   .allbtn:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
-  .prodsum { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-left: auto; align-items: baseline; }
-  .prodsum div { display: flex; flex-direction: column; gap: 2px; }
-  .prodsum .l { font-size: 11px; color: var(--ink-3); letter-spacing: 0.02em; }
-  .prodsum .v { font-family: "IBM Plex Mono", "Cascadia Mono", Consolas, "IBM Plex Sans KR", "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, monospace; font-size: 20px; font-weight: 700; }
-  .prodsum .v small { font-size: 12px; font-weight: 500; color: var(--ink-3); margin-left: 2px; }
-  .prodsum .m { font-size: 11px; color: var(--ink-3); }
+  /* 요약 수치 — 일별 효율 조회의 요약 칸(.dstats)과 같은 양식 */
+  .prodsum { display: grid; grid-template-columns: repeat(5, minmax(126px, auto)); gap: 1px;
+             background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; align-self: stretch; }
+  .prodsum > div { background: var(--surface); padding: 7px 13px 8px; display: flex; flex-direction: column;
+                   justify-content: center; gap: 1px; }
+  .prodsum .l { font-size: 13px; letter-spacing: -0.005em; color: var(--ink-2); font-weight: 500; white-space: nowrap; }
+  .prodsum .v { font-family: "IBM Plex Mono", "Cascadia Mono", Consolas, "IBM Plex Sans KR", "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, monospace; font-size: 25px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; line-height: 1.12; }
+  .prodsum .v small { font-size: 15px; font-weight: 500; color: var(--ink-2); }
+  .prodsum .m { font-size: 12.5px; color: var(--ink-3); font-family: "IBM Plex Mono", "Cascadia Mono", Consolas, "IBM Plex Sans KR", "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, monospace; white-space: nowrap; }
+  @media (max-width: 1720px) { .prodsum { grid-template-columns: repeat(2, minmax(140px, auto)); } .prodsum > div:nth-child(3) { grid-column: 1 / -1; } }
+  @media (max-width: 1360px) { .prodbar { grid-template-columns: 1fr; } .prodsum { grid-template-columns: repeat(5, minmax(0, 1fr)); } .prodsum > div:nth-child(3) { grid-column: auto; } }
+  @media (max-width: 640px) { .prodsum { grid-template-columns: repeat(2, 1fr); } }
   /* 품목 수만큼 아래로 늘어나게 둔다 — 스크롤 상자에 가두면 행이 눌려 읽기 어렵다 */
   .prodscroll { overflow-x: auto; }
   /* 품목 표는 열이 23개라 기본 .datatable 의 가로 스크롤에 갇힌다.
@@ -753,6 +767,22 @@
   #pData th:first-child, #pData td:first-child { width: 108px; text-align: left; font-weight: 600; }
   #pData td { text-align: right; font-variant-numeric: tabular-nums; }
   .prodscroll svg { display: block; width: 100%; height: auto; min-width: 720px; }
+  /* 원형(구성비) — 넓은 화면에서 도넛이 끝없이 커지지 않게 폭을 묶는다 */
+  #pChart svg.piesvg { max-width: 1320px; }
+  #pChart path, #pChart g.prow, #brandChart path, #brandChart g.prow, #mixChart path, #mixChart g.prow { transition: opacity 220ms ease; }
+  @media (prefers-reduced-motion: reduce) { #pChart path, #pChart g.prow, #brandChart path, #brandChart g.prow, #mixChart path, #mixChart g.prow { transition: none; } }
+  /* 오른쪽 열은 폭이 좁아 원형 버튼 · 기준 월이 붙으면 한 줄에 안 들어갈 수 있다 — 넘치면 줄을 바꾼다 */
+  .col-side .chart-h { flex-wrap: wrap; row-gap: 6px; }
+  .col-side .pieper { font-size: 13px; }
+  .col-side .pieper select { font-size: 13px; }
+  .col-side .hint[hidden] { display: none; }
+  .pieper { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--ink-2); flex: none; }
+  .pieper[hidden] { display: none; }
+  .pieper select { font: inherit; font-size: 12px; font-weight: 500; padding: 3px 6px; border: 1px solid var(--rule-strong);
+                   border-radius: 2px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .pieper select:focus-visible { outline: 2px solid var(--s1); outline-offset: 1px; }
+  .ptabwrap tr.pmember td { color: var(--ink-2); font-weight: 400; }
+  .ptabwrap tr.pmember td:first-child { padding-left: 14px; font-weight: 400; }
   @media (max-width: 900px) { .prodsum { margin-left: 0; width: 100%; } .prodctl .chips { max-width: none; } }
 
   @media (max-width: 620px) {
@@ -763,6 +793,105 @@
     .sechead.lead h2 { font-size: 24px; }
     .kpi .value { font-size: 24px; }
   }
+
+  /* ================= 모션 · 인터랙션 레이어 (v101) =================
+     원칙 — 기본 상태는 늘 보인다. 움직임은 그 위에 잠깐 얹을 뿐이고,
+     동작 줄이기(prefers-reduced-motion)면 맨 위 전역 규칙과 JS 가드로 모두 끈다. */
+  :root { --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1); --ease-spring: cubic-bezier(0.3, 1.25, 0.4, 1); }
+
+  /* 스크롤 진행 막대 */
+  .scrollprog { position: fixed; left: 0; top: 0; width: 100%; height: 3px; z-index: 90; pointer-events: none;
+                transform-origin: 0 50%; transform: scaleX(0);
+                background: linear-gradient(90deg, var(--navy), var(--s1) 55%, var(--s3)); }
+
+  /* 헤더 — 내려가면 그림자, 접힘 전환은 부드럽게 */
+  header.masthead { transition: box-shadow 240ms ease, padding 240ms var(--ease-out); }
+  header.masthead.scrolled { box-shadow: 0 10px 22px -16px rgba(13,27,42,0.45); }
+  .masthead h1 { transition: font-size 240ms var(--ease-out); }
+  /* 바로가기 — 지금 보고 있는 섹션 */
+  .jump a { position: relative; }
+  .jump a.on { background: var(--navy); color: #ffffff; border-color: var(--navy); box-shadow: 0 4px 12px -6px rgba(20,51,92,0.7); }
+  /* 데이터 기준일 옆 '진행 중' 신호 */
+  .stamp .asof { display: inline-flex; align-items: center; gap: 7px; }
+  .stamp .asof::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good);
+                         box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 55%, transparent); animation: livepulse 1.8s ease-out infinite; }
+  @keyframes livepulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 55%, transparent); }
+                         70% { box-shadow: 0 0 0 7px rgba(12,163,12,0); } 100% { box-shadow: 0 0 0 0 rgba(12,163,12,0); } }
+
+  /* 카드 — 올리면 살짝 떠오르는 그림자 (위치는 그대로 두어 툴팁 좌표가 흔들리지 않게) */
+  .card, .kpis, .tablewrap { transition: box-shadow 280ms ease, border-color 280ms ease; }
+  .card:hover, .tablewrap:hover { box-shadow: 0 14px 34px -22px rgba(13,27,42,0.42); border-color: #cdd6e2; }
+
+  /* KPI — 올리면 위에 강조선, 증감은 색 배지 */
+  .kpi { position: relative; transition: background-color 220ms ease; }
+  .kpi::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+                 background: linear-gradient(90deg, var(--s1), var(--s3)); transform: scaleX(0); transform-origin: 0 50%;
+                 transition: transform 420ms var(--ease-out); }
+  .kpi:hover { background: #fbfcfe; }
+  .kpi:hover::before { transform: scaleX(1); }
+  .kpi .delta b.up, .kpi .delta b.down { padding: 1px 8px; border-radius: 999px; }
+  .kpi .delta b.up   { background: color-mix(in srgb, var(--good) 13%, transparent); }
+  .kpi .delta b.down { background: color-mix(in srgb, var(--critical) 11%, transparent); }
+  .kpi .value, .dstat .v, .prodsum .v { font-variant-numeric: tabular-nums; }
+
+  /* 세그먼트 · 모드 버튼 — 선택 표시가 미끄러져 이동한다 (JS 가 .thumb 을 넣는다) */
+  .seg, .modesw { border-radius: 6px; }
+  .seg.has-thumb, .modesw.has-thumb { position: relative; isolation: isolate; background: var(--surface); }
+  .seg.has-thumb > button, .modesw.has-thumb > button { background: transparent; position: relative; }
+  .seg.has-thumb > button:hover:not([aria-pressed="true"]):not(:disabled),
+  .modesw.has-thumb > button:hover:not([aria-pressed="true"]):not(:disabled) { background: color-mix(in srgb, var(--surface-sunk) 75%, transparent); }
+  .seg.has-thumb > button[aria-pressed="true"], .modesw.has-thumb > button[aria-pressed="true"],
+  .seg.has-thumb > button[aria-pressed="true"]:hover, .modesw.has-thumb > button[aria-pressed="true"]:hover { background: transparent; color: #ffffff; }
+  .thumb { position: absolute; z-index: -1; top: 0; left: 0; height: 100%; width: 0; pointer-events: none;
+           background: var(--ink); border-radius: 5px; box-shadow: 0 4px 12px -5px rgba(13,27,42,0.6);
+           transition: transform 360ms var(--ease-spring), width 360ms var(--ease-spring), opacity 180ms ease; }
+  .thumb.snap { transition: none; }
+
+  /* 칩 · 토글 버튼 — 둥근 모서리, 선택 시 그림자, 누르면 물결 */
+  .chips button { border-radius: 6px; position: relative; overflow: hidden; }
+  .chips button[aria-pressed="true"] { box-shadow: 0 4px 12px -6px rgba(13,27,42,0.65); }
+  .monthpick button[data-live]::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 6px; vertical-align: middle;
+                                        border-radius: 50%; background: var(--good); animation: livepulse 1.8s ease-out infinite; }
+  .legend-toggle button { border-radius: 999px; }
+  .toggle { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 999px;
+            padding: 6px 15px; font-weight: 600; letter-spacing: 0.02em; color: var(--navy);
+            border-color: var(--ring); background: var(--surface); position: relative; overflow: hidden;
+            transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 110ms ease; }
+  .toggle::before { content: ""; width: 11px; height: 9px; flex: none; border: 1.5px solid currentColor; border-radius: 2px;
+                    background: linear-gradient(currentColor, currentColor) 0 45% / 100% 1.5px no-repeat,
+                                linear-gradient(currentColor, currentColor) 45% 0 / 1.5px 100% no-repeat; }
+  .toggle:hover { background: var(--navy); color: #ffffff; border-color: var(--navy); box-shadow: 0 6px 16px -8px rgba(20,51,92,0.8); }
+  .allbtn, .datefields .apply, .legend-toggle button { position: relative; overflow: hidden; }
+  /* 선택 표시가 제자리에 있으므로 버튼만 떠오르면 어긋나 보인다 */
+  .seg.has-thumb > button:hover, .modesw.has-thumb > button:hover { transform: none; }
+  .ripple { position: absolute; border-radius: 50%; pointer-events: none; transform: scale(0);
+            background: currentColor; opacity: 0.22; }
+
+  /* 표 — 줄에 올리면 옅게 밝힌다 */
+  .tablewrap tbody tr { transition: background-color 160ms ease; }
+  .tablewrap tbody tr:not(.total):hover { background: #f5f8fc; }
+  .datatable tbody tr:hover td { filter: brightness(0.97); }
+
+  /* 막대 · 게이지 — 그릴 때 왼쪽에서 차오른다 (다시 그릴 때마다) */
+  @keyframes growx { from { transform: scaleX(0); } }
+  @keyframes fadein { from { opacity: 0; } }
+  .paceviz .used, .roasbar .fill { transform-origin: 0 50%; animation: growx 900ms var(--ease-out) backwards; }
+  .paceviz .usedlabel, .paceviz .marker, .paceviz .marklabel { animation: fadein 500ms ease 380ms backwards; }
+
+  /* 툴팁 — 등장은 JS(Web Animations)가 맡는다 */
+  #tip { will-change: transform, opacity; }
+
+  /* 도넛 조각 — 올리면 바깥으로 살짝 튀어나온다 */
+  #pChart path, #brandChart path, #mixChart path { transition: opacity 220ms ease, transform 300ms var(--ease-spring); }
+
+  /* 잠금 화면 */
+  .gatebox { animation: gatein 620ms var(--ease-out) backwards; }
+  @keyframes gatein { from { opacity: 0; transform: translateY(18px) scale(0.985); } }
+  .gatebox.shake { animation: shake 420ms cubic-bezier(.36,.07,.19,.97); }
+  @keyframes shake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); }
+                     30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
+  #gate.leaving { animation: gateout 320ms ease forwards; }
+  @keyframes gateout { to { opacity: 0; transform: scale(1.02); } }
 </style>
 
 <div class="demo-strip"><div class="demo-banner" role="note"><span class="tag-demo">DEMO</span><span>실제 운영 대시보드의 사본입니다. 수치는 기밀 보호를 위해 가려져 있습니다.</span></div></div>
@@ -853,8 +982,10 @@
             <span class="modesw" id="brandMode" role="group" aria-label="① 차트 형태">
               <button type="button" data-m="heat" aria-pressed="true">비중 히트맵</button>
               <button type="button" data-m="bar" aria-pressed="false">금액 누적</button>
+              <button type="button" data-m="pie" aria-pressed="false">원형</button>
             </span>
-            <span class="hint">2026년 + 전년 동월</span></div>
+            <label class="pieper" id="brandPieWrap" hidden>기준 월 <select id="brandPie" aria-label="① 원형 기준 월"></select></label>
+            <span class="hint" id="brandHint">2026년 + 전년 동월</span></div>
           <div id="brandChart"></div>
           <div class="legend legend-toggle" id="brandLegend" role="group" aria-label="채널 표시 전환"></div>
           <p class="caption" id="brandCaption"></p>
@@ -866,8 +997,10 @@
             <span class="modesw" id="mixMode" role="group" aria-label="② 차트 형태">
               <button type="button" data-m="bar" aria-pressed="true">누적 막대</button>
               <button type="button" data-m="heat" aria-pressed="false">히트맵</button>
+              <button type="button" data-m="pie" aria-pressed="false">원형</button>
             </span>
-            <span class="hint">2026년 + 전년 동월</span></div>
+            <label class="pieper" id="mixPieWrap" hidden>기준 월 <select id="mixPie" aria-label="② 원형 기준 월"></select></label>
+            <span class="hint" id="mixHint">2026년 + 전년 동월</span></div>
           <div id="mixChart"></div>
           <div class="legend legend-toggle" id="mixLegend" role="group" aria-label="매체 표시 전환"></div>
           <p class="caption" id="mixCaption"></p>
@@ -1011,6 +1144,7 @@
       </div>
       <div class="card">
         <div class="prodbar">
+          <div class="prodctls">
           <div class="prodctl">
             <span class="ctl-label">브랜드</span>
             <div class="chips" id="pBrand" role="group" aria-label="브랜드 선택"></div>
@@ -1041,9 +1175,9 @@
             <span class="ctl-label">표시</span>
             <div class="topwrap">
               <div class="seg" id="pTop" role="group" aria-label="표시 개수">
-                <button type="button" data-n="15" aria-pressed="true">상위 15</button>
+                <button type="button" data-n="0" aria-pressed="true">전체</button>
                 <button type="button" data-n="30" aria-pressed="false">상위 30</button>
-                <button type="button" data-n="0" aria-pressed="false">전체</button>
+                <button type="button" data-n="15" aria-pressed="false">상위 15</button>
                 <button type="button" data-n="custom" aria-pressed="false">직접 입력</button>
               </div>
               <span class="topnum" id="pTopNum" hidden>
@@ -1053,6 +1187,7 @@
               </span>
             </div>
           </div>
+          </div>
           <div class="prodsum" id="pStats"></div>
         </div>
 
@@ -1060,8 +1195,10 @@
           <span class="modesw" id="pMode" role="group" aria-label="차트 형태">
             <button type="button" data-m="heat" aria-pressed="true">히트맵</button>
             <button type="button" data-m="bar" aria-pressed="false">막대</button>
+            <button type="button" data-m="pie" aria-pressed="false">원형</button>
           </span>
-          <span class="hint">25년 1월 – 26년 9월</span></div>
+          <label class="pieper" id="pPieWrap" hidden>기간 <select id="pPie" aria-label="원형 차트 기간"></select></label>
+          <span class="hint" id="pHint">25년 1월 – 26년 9월</span></div>
         <div class="prodscroll"><div id="pChart"></div></div>
         <p class="caption" id="pCaption"></p>
         <button class="toggle" type="button" data-target="pData" data-tools="pTools" data-title="품목별 성과 — 월별">표로 보기</button>
@@ -1384,6 +1521,110 @@
   function tipRow(color, k, v) {
     return '<div class="t-row"><span class="k">' + (color ? '<i class="swatch" style="background:' + color + '"></i>' : '') +
       k + '</span><span class="v">' + v + '</span></div>';
+  }
+
+  /* ================= 도넛 두 개 + 비교 표 — ① · ② 원형 모드 공용 =================
+     왼쪽 = 전년 동월, 오른쪽 = 고른 달. 같은 항목은 두 도넛 · 표에서 같은 색이고,
+     조각이나 표 줄에 마우스를 올리면 그 항목만 남는다.
+     o = { W, left, right, cols, rows, aria }
+       left/right = { title, titleFill, total, center:[작은 글, 큰 글], centerFill, slices:[{key, v, fill, hex, label, tip}] }
+       cols = [{ h, x, anchor }]  (첫 칸 = 이름)
+       rows = [{ key, fill, cells:[{t, fill, bold}], total, tip }] */
+  function ymL(m) { return m.slice(2, 4) + "년 " + parseInt(m.slice(5), 10) + "월"; }
+  /* 도넛 조각을 가운데에서 바깥쪽(조각의 가운데 각도)으로 살짝 밀어낸다 */
+  function popOut(node, on) {
+    if (!node || node.tagName !== "path" || !node.hasAttribute("data-mid")) return;
+    var a = parseFloat(node.getAttribute("data-mid")), d = on ? 7 : 0;
+    node.style.transform = d ? "translate(" + (Math.cos(a) * d).toFixed(2) + "px," + (Math.sin(a) * d).toFixed(2) + "px)" : "";
+  }
+  function inkOnHex(hex) {
+    if (!/^#[0-9a-f]{6}$/i.test(hex || "")) return "var(--ink)";
+    var r = parseInt(hex.substr(1, 2), 16), g = parseInt(hex.substr(3, 2), 16), b = parseInt(hex.substr(5, 2), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? "var(--ink)" : "#ffffff";
+  }
+  function donutPair(o) {
+    var W = o.W || 740, R = o.R || 126, RI = o.RI || 78;
+    var CY = 64 + R, C1 = W * 0.25, C2 = W * 0.75;
+    var TY = CY + R + 56, ROWH = 42;
+    var H = TY + 18 + o.rows.length * ROWH + 8;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img", class: "piesvg", "aria-label": o.aria || "" });
+    var marks = [];
+    function hl(key) { marks.forEach(function (m) { m.el.setAttribute("opacity", (key === null || m.key === key) ? 1 : 0.28); popOut(m.el, key !== null && m.key === key); }); }
+    function bind(node, key, tip) {
+      node.style.cursor = "crosshair";
+      node.addEventListener("mousemove", function (ev) { if (tip) showTip(tip, ev); hl(key); });
+      node.addEventListener("mouseleave", function () { hideTip(); hl(null); });
+      marks.push({ key: key, el: node });
+    }
+    function T(x, y, s, anchor, size, fill, bold) {
+      var t = el("text", { x: x, y: y, "text-anchor": anchor || "middle", class: "elabel", fill: fill || "var(--ink)" }, s);
+      t.style.fontSize = size + "px"; if (bold) t.style.fontWeight = "700";
+      return t;
+    }
+    function seg(cx, a0, a1) {
+      var p = function (rad, a) { return (cx + rad * Math.cos(a)).toFixed(2) + " " + (CY + rad * Math.sin(a)).toFixed(2); };
+      if (a1 - a0 >= Math.PI * 2 - 1e-6) a1 = a0 + Math.PI * 2 - 1e-4;
+      var big = (a1 - a0) > Math.PI ? 1 : 0;
+      return "M" + p(R, a0) + " A" + R + " " + R + " 0 " + big + " 1 " + p(R, a1) +
+             " L" + p(RI, a1) + " A" + RI + " " + RI + " 0 " + big + " 0 " + p(RI, a0) + " Z";
+    }
+    [o.left, o.right].forEach(function (d, k) {
+      var cx = k ? C2 : C1;
+      svg.appendChild(T(cx, 36, d.title, "middle", 22, d.titleFill, true));
+      if (!(d.total > 0)) {
+        svg.appendChild(el("circle", { cx: cx, cy: CY, r: (R + RI) / 2, fill: "none", stroke: "var(--surface-sunk)", "stroke-width": R - RI }));
+        svg.appendChild(T(cx, CY + 6, "데이터 없음", "middle", 17, "var(--ink-3)"));
+        return;
+      }
+      var a = -Math.PI / 2;
+      d.slices.forEach(function (s) {
+        var share = s.v / d.total;
+        if (!(share > 0)) return;
+        var a1 = a + share * Math.PI * 2;
+        var path = el("path", { d: seg(cx, a, a1), fill: s.fill, stroke: "var(--surface)", "stroke-width": 2, "stroke-linejoin": "round",
+          "data-cx": cx, "data-cy": CY, "data-mid": ((a + a1) / 2).toFixed(4) });
+        bind(path, s.key, s.tip);
+        svg.appendChild(path);
+        if (s.label !== false && share >= 0.05) {
+          var mid = (a + a1) / 2, rr = (R + RI) / 2, v = share * 100;
+          var lt = T(cx + rr * Math.cos(mid), CY + rr * Math.sin(mid) + 6, v >= 10 ? Math.round(v) + "%" : fx(v, 1) + "%", "middle", 19, inkOnHex(s.hex), true);
+          lt.style.pointerEvents = "none";
+          svg.appendChild(lt);
+          marks.push({ key: s.key, el: lt });
+        }
+        a = a1;
+      });
+      svg.appendChild(T(cx, CY - 13, d.center[0], "middle", 17, "var(--ink-3)"));
+      svg.appendChild(T(cx, CY + 26, d.center[1], "middle", 34, d.centerFill || "var(--ink)", true));
+    });
+    svg.appendChild(T(W / 2, CY + 10, "→", "middle", 30, "var(--ink-3)"));
+
+    /* 비교 표 */
+    o.cols.forEach(function (c) { svg.appendChild(T(c.x, TY, c.h, c.anchor || "end", 17, "var(--ink-3)", true)); });
+    svg.appendChild(el("line", { x1: 6, x2: W - 6, y1: TY + 10, y2: TY + 10, stroke: "var(--rule-strong)", "stroke-width": 1 }));
+    o.rows.forEach(function (r, i) {
+      var y = TY + 42 + i * ROWH;
+      var g = el("g", { class: "prow" });
+      if (r.total) {
+        svg.appendChild(el("line", { x1: 6, x2: W - 6, y1: y - 28, y2: y - 28, stroke: "var(--rule-strong)", "stroke-width": 1 }));
+      } else {
+        g.appendChild(el("rect", { x: 6, y: y - 28, width: W - 12, height: ROWH - 2, fill: "transparent" }));
+        g.appendChild(el("rect", { x: 10, y: y - 17, width: 17, height: 17, rx: 3, fill: r.fill }));
+      }
+      r.cells.forEach(function (c, ci) {
+        var col = o.cols[ci];
+        g.appendChild(T(col.x, y, c.t, col.anchor || "end", 20, c.fill, c.bold || r.total));
+      });
+      if (!r.total) bind(g, r.key, r.tip);
+      svg.appendChild(g);
+    });
+    return svg;
+  }
+  function pieMonthOptions(sel, def) {
+    /* 전년 동월이 있는 달만 — 비교가 이 모드의 목적이다. 최근 달부터. */
+    var L = MONTHS.length - 1, h = "";
+    for (var i = L; i >= 12; i--) h += '<option value="' + i + '"' + (i === def ? " selected" : "") + '>' + ymL(MONTHS[i]) + (i === L ? " (진행 중)" : "") + '</option>';
+    sel.innerHTML = h;
   }
 
   /* ================= 기간(월) 선택 → KPI · 성과표 · 예산 ================= */
@@ -1840,6 +2081,69 @@
       return MONTHS.map(function (_, i) { return allBaseCost(s.src, i) * (BRAND_SHARE[s.src][i] || 0); });
     });
 
+    /* ---- 원형 — 전년 동월 vs 기준 월. 링에서 채널 색이 칠해진 만큼이 브랜드 의존도, 회색은 일반 키워드 ---- */
+    var brandPieMi = MONTHS.length - 1;
+    var GEN_FILL = "#e3e8ef";
+    function bAt(src, mi) {
+      if (src === "nv") return (MONTHLY.nsa.cost[mi] || 0) + (MONTHLY.npl.cost[mi] || 0);
+      return (MONTHLY[src] && MONTHLY[src].cost[mi]) || 0;
+    }
+    function brandSide(on, mi) {
+      var D = { base: 0, brand: 0, sl: [] };
+      on.forEach(function (si) {
+        var s = BRAND_SERIES[si], b = bAt(s.src, mi), sh = BRAND_SHARE[s.src][mi];
+        var amt = b * (sh || 0);
+        D.base += b; D.brand += amt;
+        D.sl.push({ key: s.key, v: amt, sh: sh, fill: "var(" + s.color + ")", hex: cssvar(s.color) });
+      });
+      return D;
+    }
+    function brandPie(on) {
+      var mi = brandPieMi, yi = mi - 12, L = MONTHS.length - 1;
+      var A = brandSide(on, yi), B = brandSide(on, mi);
+      function side(D, m, isYoy) {
+        var slices = D.sl.map(function (x) {
+          return { key: x.key, v: x.v, fill: x.fill, hex: x.hex,
+            tip: '<div class="t-title">' + ymL(MONTHS[m]) + ' — ' + x.key + '</div>' +
+              tipRow(x.fill, "브랜드 키워드 집행비", won(x.v) + "원") +
+              tipRow(null, "채널 안 브랜드 비중", x.sh == null ? "—" : fx(x.sh * 100, 1) + "%") +
+              tipRow(null, "전체 광고비 대비", D.base > 0 ? fx(x.v / D.base * 100, 1) + "%" : "—") };
+        });
+        var gen = Math.max(0, D.base - D.brand);
+        slices.push({ key: "__gen", v: gen, fill: GEN_FILL, hex: GEN_FILL, label: false,
+          tip: '<div class="t-title">' + ymL(MONTHS[m]) + ' — 일반 키워드</div>' +
+            tipRow(GEN_FILL, "브랜드 외 집행비", won(gen) + "원") +
+            tipRow(null, "비중", D.base > 0 ? fx(gen / D.base * 100, 1) + "%" : "—") });
+        var dep = D.base > 0 ? D.brand / D.base : 0;
+        return { title: ymL(MONTHS[m]) + (isYoy ? " · 전년 동월" : (m === L ? " (진행 중)" : "")),
+                 titleFill: isYoy ? YOY_COLOR : "var(--ink)", total: D.base,
+                 center: ["브랜드 의존도", fx(dep * 100, 1) + "%"],
+                 centerFill: dep > 0.25 ? "var(--crit-ink)" : "var(--ink)", slices: slices };
+      }
+      function dcell(a, b) {
+        if (a == null || b == null) return { t: "—", fill: "var(--ink-3)" };
+        var d = (b - a) * 100;
+        return { t: (Math.abs(d) < 0.05 ? "0.0" : (d > 0 ? "+" : "−") + fx(Math.abs(d), 1)) + "%p",
+                 fill: Math.abs(d) < 0.5 ? "var(--ink-3)" : (d < 0 ? "var(--good-ink)" : "var(--crit-ink)"), bold: Math.abs(d) >= 0.5 };
+      }
+      var rows = B.sl.map(function (x, k) {
+        var a = A.sl[k];
+        return { key: x.key, fill: x.fill,
+          tip: '<div class="t-title">' + x.key + ' — 채널 안 브랜드 비중</div>' +
+            tipRow(null, ymL(MONTHS[yi]), a.sh == null ? "—" : fx(a.sh * 100, 1) + "%") +
+            tipRow(null, ymL(MONTHS[mi]), x.sh == null ? "—" : fx(x.sh * 100, 1) + "%"),
+          cells: [{ t: x.key }, { t: a.sh == null ? "—" : fx(a.sh * 100, 1) + "%" }, { t: x.sh == null ? "—" : fx(x.sh * 100, 1) + "%" },
+                  dcell(a.sh, x.sh), { t: compact(x.v) }] };
+      });
+      var dA = A.base > 0 ? A.brand / A.base : null, dB = B.base > 0 ? B.brand / B.base : null;
+      rows.push({ key: "__sum", total: true,
+        cells: [{ t: "합 계" }, { t: dA == null ? "—" : fx(dA * 100, 1) + "%" }, { t: dB == null ? "—" : fx(dB * 100, 1) + "%" },
+                dcell(dA, dB), { t: compact(B.brand) }] });
+      return donutPair({ W: 740, left: side(A, yi, true), right: side(B, mi, false), rows: rows,
+        aria: "브랜드 키워드 의존도 도넛 — " + ymL(MONTHS[yi]) + "과 " + ymL(MONTHS[mi]) + " 비교. 채널 색이 칠해진 부분이 브랜드 키워드 집행비입니다.",
+        cols: [{ h: "채널", x: 34, anchor: "start" }, { h: "전년 동월", x: 330 }, { h: "기준 월", x: 452 }, { h: "변화", x: 584 }, { h: "브랜드 집행비", x: 732 }] });
+    }
+
     var brandBuckets = {};
     function draw() {
       brandBuckets = {};
@@ -2065,6 +2369,7 @@
         });
       }
 
+      if (brandMode === "pie") svg = brandPie(on);
       $("brandChart").innerHTML = "";
       $("brandChart").appendChild(svg);
 
@@ -2092,6 +2397,12 @@
           "<b>합계 행은 낮으면 옅은 파랑, 높으면 빨강</b>으로 따로 칠해 상태를 바로 읽게 했습니다 — " +
           "<b>" + fx(shares[0] * 100, 1) + "%(" + MONTHS[IDX[0]].slice(2, 4) + "년 " + parseInt(MONTHS[IDX[0]].slice(5), 10) + "월) → " + fx(shares[CUR_POS] * 100, 1) + "%</b>로 내려왔습니다. " +
           "<b>비중은 " + ASOF_LABEL + " 기준</b>이며, 범례로 채널과 합계 행을 끄고 켤 수 있습니다.") + yoyTxt;
+      if (brandMode === "pie") {
+        $("brandCaption").innerHTML = "원형은 <b>그 달 광고비(선택한 채널 합) 중 브랜드 키워드 몫</b>을 채널 색으로 칠한 도넛입니다 — " +
+          "<b>색이 칠해진 만큼이 브랜드 의존도</b>이고 회색은 일반 키워드입니다. 왼쪽 <b>전년 동월</b>과 오른쪽 <b>기준 월</b>의 칠해진 폭을 비교하세요. " +
+          "표의 비중은 <b>그 채널 집행비 안에서의 브랜드 비중</b>이고, 변화가 <b class='up'>− 면 의존도가 줄어든 것</b>입니다. " +
+          "기준 월은 오른쪽 위에서 바꿀 수 있고, 범례로 채널을 끄고 켜면 나머지 채널로 다시 계산합니다. <b>비중은 " + ASOF_LABEL + " 기준</b>입니다.";
+      }
 
       /* 표는 25년 1월부터 21개월 전부. 채널별 비중은 그 채널 안에서, 합산 비중은 전 구간에서 색을 잡는다. */
       var aTot = MONTHS.map(function (_, i) {
@@ -2129,8 +2440,12 @@
       Array.prototype.forEach.call($("brandMode").querySelectorAll("button"), function (x) {
         x.setAttribute("aria-pressed", String(x === b2));
       });
+      $("brandPieWrap").hidden = brandMode !== "pie";
+      $("brandHint").hidden = brandMode === "pie";
       draw();
     });
+    pieMonthOptions($("brandPie"), brandPieMi);
+    $("brandPie").addEventListener("change", function () { brandPieMi = parseInt(this.value, 10); draw(); });
     $("brandLegend").addEventListener("click", function (ev) {
       var b = ev.target.closest("button"); if (!b) return;
       if (b.dataset.si === "sum") { showSum = !showSum; draw(); return; }
@@ -2148,6 +2463,49 @@
     var active = series.map(function () { return true; });
     var mixMode = "bar";        // bar = 100% 누적 막대 · heat = 비중 히트맵
     // 막대 안 글자는 흰색 + 어두운 테두리(halo). 어떤 채움색 위에서도 읽힌다.
+
+    /* ---- 원형 — 전년 동월 vs 기준 월 매체 구성비 ---- */
+    var mixPieMi = months.length - 1;
+    function mixPie(on) {
+      var mi = mixPieMi, yi = mi - 12, L = months.length - 1;
+      function totAt(m) { return on.reduce(function (s, si) { return s + (series[si].v[m] || 0); }, 0); }
+      var tA = totAt(yi), tB = totAt(mi);
+      function gapAt(si, m) { return (series[si].v[m] || 0) === 0 && MIX.gaps && MIX.gaps[si]; }
+      function side(m, t, isYoy) {
+        return {
+          title: ymL(MONTHS[m]) + (isYoy ? " · 전년 동월" : (m === L ? " (진행 중)" : "")),
+          titleFill: isYoy ? "#2f77c9" : "var(--ink)", total: t,
+          center: ["광고비 합계", compact(t)],
+          slices: on.map(function (si) {
+            var s = series[si], v = s.v[m] || 0;
+            return { key: s.key, v: v, fill: "var(" + s.color + ")", hex: cssvar(s.color),
+              tip: '<div class="t-title">' + ymL(MONTHS[m]) + ' — ' + s.key + '</div>' +
+                tipRow("var(" + s.color + ")", "광고비", won(v) + "원") +
+                tipRow(null, "비중", t > 0 ? fx(v / t * 100, 1) + "%" : "—") };
+          })
+        };
+      }
+      var rows = on.map(function (si) {
+        var s = series[si], a = tA > 0 ? (s.v[yi] || 0) / tA : null, b = tB > 0 ? (s.v[mi] || 0) / tB : null;
+        var d = (a != null && b != null) ? (b - a) * 100 : null;
+        return { key: s.key, fill: "var(" + s.color + ")",
+          tip: '<div class="t-title">' + s.key + ' — 광고비 비중</div>' +
+            tipRow(null, ymL(MONTHS[yi]), gapAt(si, yi) ? "미집계" : (a == null ? "—" : fx(a * 100, 1) + "% · " + compact(s.v[yi] || 0))) +
+            tipRow(null, ymL(MONTHS[mi]), b == null ? "—" : fx(b * 100, 1) + "% · " + compact(s.v[mi] || 0)),
+          cells: [{ t: s.key },
+                  { t: gapAt(si, yi) ? "미집계" : (a == null ? "—" : fx(a * 100, 1) + "%"), fill: gapAt(si, yi) ? "var(--ink-3)" : null },
+                  { t: b == null ? "—" : fx(b * 100, 1) + "%" },
+                  { t: (d == null || gapAt(si, yi)) ? "—" : (Math.abs(d) < 0.05 ? "0.0" : (d > 0 ? "+" : "−") + fx(Math.abs(d), 1)) + "%p",
+                    fill: "var(--ink-2)", bold: d != null && Math.abs(d) >= 1 },
+                  { t: compact(s.v[mi] || 0) }] };
+      });
+      rows.push({ key: "__sum", total: true,
+        cells: [{ t: "합 계" }, { t: compact(tA) }, { t: compact(tB) },
+                (mi === L ? { t: "진행 중", fill: "var(--ink-3)" } : { t: tA > 0 ? (tB >= tA ? "+" : "−") + fx(Math.abs(tB / tA - 1) * 100, 1) + "%" : "—" }), { t: compact(tB) }] });
+      return donutPair({ W: 740, left: side(yi, tA, true), right: side(mi, tB, false), rows: rows,
+        aria: "매체별 광고비 구성 도넛 — " + ymL(MONTHS[yi]) + "과 " + ymL(MONTHS[mi]) + " 비교.",
+        cols: [{ h: "매체", x: 34, anchor: "start" }, { h: "전년 동월", x: 330 }, { h: "기준 월", x: 452 }, { h: "변화", x: 584 }, { h: "광고비", x: 732 }] });
+    }
 
     var mixBuckets = {};
     function draw() {
@@ -2356,8 +2714,15 @@
 
       }
 
+      if (mixMode === "pie") svg = mixPie(on);
       $("mixChart").innerHTML = "";
       $("mixChart").appendChild(svg);
+      if (typeof MIX_CAP === "string") {
+        $("mixCaption").innerHTML = mixMode !== "pie" ? MIX_CAP :
+          "원형은 <b>그 달 광고비의 매체 구성</b>입니다. 왼쪽 <b>전년 동월</b>과 오른쪽 <b>기준 월</b>이 같은 색 · 같은 순서라 조각 크기를 그대로 비교할 수 있고, " +
+          "5% 미만 조각은 도넛 위 숫자를 생략했습니다(표와 툴팁에 있습니다). 표의 <b>변화</b>는 기준 월 비중 − 전년 동월 비중(%p)이고, <b>합계 줄의 변화는 광고비 총액 증감률</b>입니다(진행 중인 달은 한 달이 다 차지 않아 증감률을 적지 않습니다). " +
+          "기준 월은 오른쪽 위에서 바꿀 수 있고, 범례로 큰 매체를 끄면 소액 매체끼리의 구성을 봅니다.";
+      }
 
       $("mixLegend").innerHTML = series.map(function (s, si) {
         return '<button type="button" data-si="' + si + '" aria-pressed="' + (active[si] ? "true" : "false") + '">' +
@@ -2390,8 +2755,12 @@
       Array.prototype.forEach.call($("mixMode").querySelectorAll("button"), function (x) {
         x.setAttribute("aria-pressed", String(x === b2));
       });
+      $("mixPieWrap").hidden = mixMode !== "pie";
+      $("mixHint").hidden = mixMode === "pie";
       draw();
     });
+    pieMonthOptions($("mixPie"), mixPieMi);
+    $("mixPie").addEventListener("change", function () { mixPieMi = parseInt(this.value, 10); draw(); });
     $("mixLegend").addEventListener("click", function (ev) {
       var b = ev.target.closest("button"); if (!b) return;
       var si = parseInt(b.dataset.si, 10);
@@ -2399,9 +2768,8 @@
       active[si] = !active[si];
       draw();
     });
+    var MIX_CAP = "매체별 광고비 소진 비중을 월 단위로 쌓아, <b>포트폴리오 구성이 어느 방향으로 움직이는지</b>를 봅니다. 맨 오른쪽 칸은 전년 동월 비교용입니다. <b>큰 채널을 꺼두면 소액 채널끼리의 비중</b>을 볼 수 있고, 범례에 마우스를 올리면 그 매체만 진하게 남습니다. 차트는 2026년만 그리며 <b>2025년은 「표로 보기」</b>에 21개월 전체가 들어 있습니다.";
     draw();
-
-    $("mixCaption").innerHTML = "매체별 광고비 소진 비중을 월 단위로 쌓아, <b>포트폴리오 구성이 어느 방향으로 움직이는지</b>를 봅니다. 맨 오른쪽 칸은 전년 동월 비교용입니다. <b>큰 채널을 꺼두면 소액 채널끼리의 비중</b>을 볼 수 있고, 범례에 마우스를 올리면 그 매체만 진하게 남습니다. 차트는 2026년만 그리며 <b>2025년은 「표로 보기」</b>에 21개월 전체가 들어 있습니다.";
   })();
 
   /* ================= chart: monthly ROAS trend (7채널 · 클릭 토글) ================= */
@@ -2427,7 +2795,7 @@
       function yOf(v) { return MT + ih - (v / top) * ih; }
 
       var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img",
-        "aria-label": "2026년 1월부터 9월까지 7개 채널의 내부 기준 ROAS 추이. 범례를 클릭하면 해당 채널이 흐려집니다." });
+        "aria-label": "2025년 1월부터 2026년 9월까지 채널별 내부 기준 ROAS 추이. 범례를 클릭하면 해당 채널이 흐려집니다." });
 
       for (var g = 0; g <= top + 0.0001; g += step) {
         var y = yOf(g);
@@ -2980,7 +3348,7 @@
         '<span class="m">' + ptName(worst) + '</span></div>'
     ].join("");
 
-    // 채널마다 일별 보유 시작일이 다르다 (쿠팡·네이버는 8/1부터)
+    // 채널마다 일별 보유 시작일이 다르다 (비마트·컬리·에이블리는 26/6/1부터)
     var firstIdx = -1;
     for (i = 0; i < N_DAYS; i++) { if (all[i]) { firstIdx = i; break; } }
     var nb = $("rangeNotice");
@@ -2988,9 +3356,8 @@
     if (unit !== "month" && firstIdx > 0 &&
         ((wantFrom && wantFrom < DATES[firstIdx]) || (!state.custom && pts.length && pts[0].d < DATES[firstIdx]))) {
       nb.innerHTML = '<b>' + CHAN_DEF[state.chan].name + '</b> 의 일별 데이터는 <b>' + ymd(DATES[firstIdx]) +
-        '</b> 부터입니다. <b>쿠팡·네이버는 7월까지가 이미 월 1일자로 통합·압축</b>되어 원본에 일별이 남아 있지 않습니다' +
-        ' (비마트·이지웰·컬리·에이블리는 6/1부터 조회됩니다). 합계는 주력 채널이 모두 있는 날만 계산하므로 ' +
-        '8/1 이전에는 표시되지 않습니다. 그 이전은 월별로 보세요.' +
+        '</b> 부터입니다. 그 이전 구간은 원본 리포트에 일별이 없어 비어 있으니, <b>월별로 보세요</b>' +
+        ' (쿠팡·네이버·이지웰은 25/1/1부터, 비마트·컬리·에이블리는 26/6/1부터 일별 조회됩니다).' +
         '<button type="button" id="toMonth">월별로 보기</button>';
       nb.hidden = false;
       var tm = $("toMonth");
@@ -3522,7 +3889,7 @@
     var BR_ORDER = ["한끼통살", "그로서리서울"];
     BRANDS.sort(function (a, b) { return BR_ORDER.indexOf(a) - BR_ORDER.indexOf(b); });
 
-    var st = { brand: "전체", media: {}, metric: "cost", mode: "heat", top: 15, form: "abs", unit: "short", sort: null };
+    var st = { brand: "전체", media: {}, metric: "cost", mode: "heat", top: 0, form: "abs", unit: "short", sort: null };   /* 기본은 전체 품목 */
     MEDIA.forEach(function (m) { st.media[m] = true; });
 
     function chips(id, list, isOn, onPick) {
@@ -3546,7 +3913,11 @@
     }
 
     /* 선택 조건에 맞는 행을 카테고리별로 합친다. 타 브랜드는 '기타' 한 줄로 몰아넣는다. */
-    function collect() {
+    /* opts.pie — 원형 차트용. 상위 N 자르기·정렬·합계 행 없이 전 품목을 돌려주고,
+       상품이 붙지 않는 지면은 '기타' 에 섞지 않고 따로 한 줄(UNLINKED)로 둔다. */
+    var UNLINKED = "상품 미연결 지면";
+    function collect(opts) {
+      opts = opts || {};
       var byCat = {};
       function slot(name) {
         return byCat[name] || (byCat[name] = { cost: [], rev: [], eff: [] });
@@ -3590,7 +3961,7 @@
           if (resid.cost[mi] > 0) any = true;
         }
         if (any) {
-          var g = slot("기타");
+          var g = slot(opts.pie ? UNLINKED : "기타");
           for (var mj = 0; mj < MONTHS.length; mj++) {
             g.cost[mj] = (g.cost[mj] || 0) + resid.cost[mj];
             g.rev[mj] = (g.rev[mj] || 0) + resid.rev[mj];
@@ -3608,6 +3979,7 @@
         for (var i2 = 0; i2 < MONTHS.length; i2++) v.roas[i2] = v.eff[i2] > 0 ? v.rev[i2] / v.eff[i2] : null;
         list.push({ cat: k, tot: tot, v: v });
       }
+      if (opts.pie) return list;
       if (st.sort) {
         /* 고른 달의 '현재 지표' 값으로 정렬. 값이 없는 칸은 늘 뒤로 보낸다. */
         var sc = st.sort.i, dir = st.sort.dir;
@@ -3702,7 +4074,278 @@
       return METRIC_NAME[st.metric];
     }
 
+    /* ================= 원형(구성비) =================
+       광고비 도넛과 전환매출 도넛을 나란히 두고, 같은 품목은 두 도넛에서 같은 색·같은 순서로 둔다.
+       그래야 "광고비는 23% 쓰는데 매출은 30% 가져오는 품목" 이 한눈에 보인다.
+       조각은 상위 7개 + 기타(회색) + 상품 미연결 지면(빗금) — 팔레트 구분색이 7개라 거기서 끊는다.
+       ROAS 는 비율이라 조각으로 나눌 수 없어 옆 표에만 적는다. */
+    var PIE_TOP = 7;
+    var lastPie = null;
+    function pieIdx() {
+      var p = st.pie || "all";
+      if (p === "all") return MONTHS.map(function (_, i) { return i; });
+      if (p.charAt(0) === "y") {
+        var yy = p.slice(1), out = [];
+        MONTHS.forEach(function (m, i) { if (m.slice(0, 4) === yy) out.push(i); });
+        return out;
+      }
+      return [parseInt(p.slice(1), 10)];
+    }
+    function ymLabel(m) { return m.slice(2, 4) + "년 " + parseInt(m.slice(5), 10) + "월"; }
+    function pieLabel() {
+      var p = st.pie || "all", L = MONTHS.length - 1;
+      if (p === "all") return ymLabel(MONTHS[0]) + " – " + ymLabel(MONTHS[L]);
+      if (p.charAt(0) === "y") {
+        var ix = pieIdx();
+        return p.slice(3) + "년 " + parseInt(MONTHS[ix[0]].slice(5), 10) + "–" + parseInt(MONTHS[ix[ix.length - 1]].slice(5), 10) + "월" +
+          (ix[ix.length - 1] === L ? " (당월 진행 중)" : "");
+      }
+      var i = parseInt(p.slice(1), 10);
+      return ymLabel(MONTHS[i]) + (i === L ? " (진행 중)" : "");
+    }
+    function fillOf(s) { return s.kind === "top" ? cssvar("--s" + (s.rank + 1)) : s.kind === "other" ? cssvar("--muted-line") : "url(#pieHatch)"; }
+    /* 조각 위 글자색 — 밝은 조각(노랑·분홍·회색)에는 흰 글자가 안 읽힌다 */
+    function inkOn(hex) {
+      if (!/^#[0-9a-f]{6}$/i.test(hex)) return "var(--ink)";
+      var r = parseInt(hex.substr(1, 2), 16), g = parseInt(hex.substr(3, 2), 16), b = parseInt(hex.substr(5, 2), 16);
+      return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? "var(--ink)" : "#ffffff";
+    }
+    function pctTxt(s) { var v = s * 100; return v >= 10 ? Math.round(v) + "%" : fx(v, 1) + "%"; }
+
+    function pieData() {
+      var idx = pieIdx();
+      var all = collect({ pie: true });
+      /* 색은 품목을 따라간다 — 상위 7개와 그 색은 '전체 기간' 광고비 순위로 고정하고,
+         기간을 바꿔도 같은 품목은 같은 색을 유지한다 (조각 순서만 그 기간 광고비 순으로 바뀐다) */
+      var RANK = {};
+      all.filter(function (r) { return r.cat !== UNLINKED && r.cat !== "기타"; })
+         .sort(function (a, b) { return b.tot - a.tot; })
+         .slice(0, PIE_TOP).forEach(function (r, k) { RANK[r.cat] = k; });
+      var rows = all.map(function (r) {
+        var c = 0, rv = 0, e = 0;
+        idx.forEach(function (i) { c += r.v.cost[i] || 0; rv += r.v.rev[i] || 0; e += r.v.eff[i] || 0; });
+        return { cat: r.cat, cost: c, rev: rv, eff: e };
+      }).filter(function (r) { return r.cost > 0 || r.rev > 0; });
+      var unl = null, oth = null, prod = [], top = [];
+      rows.forEach(function (r) {
+        if (r.cat === UNLINKED) unl = r;
+        else if (r.cat === "기타") oth = r;
+        else if (RANK[r.cat] !== undefined) top.push(r);
+        else prod.push(r);
+      });
+      top.sort(function (a, b) { return b.cost - a.cost; });
+      prod.sort(function (a, b) { return b.cost - a.cost; });
+      var rest = prod.slice();
+      if (oth) rest.push(oth);
+      var slices = top.map(function (r) {
+        return { cat: r.cat, cost: r.cost, rev: r.rev, eff: r.eff, kind: "top", rank: RANK[r.cat] };
+      });
+      if (rest.length) {
+        var o = { cat: "기타", cost: 0, rev: 0, eff: 0, kind: "other", members: rest };
+        rest.forEach(function (r) { o.cost += r.cost; o.rev += r.rev; o.eff += r.eff; });
+        slices.push(o);
+      }
+      if (unl) { unl.kind = "unl"; slices.push(unl); }
+      var T = { cost: 0, rev: 0, eff: 0 };
+      slices.forEach(function (s) { T.cost += s.cost; T.rev += s.rev; T.eff += s.eff; });
+      slices.forEach(function (s) {
+        s.cs = T.cost > 0 ? s.cost / T.cost : 0;
+        s.rs = T.rev > 0 ? s.rev / T.rev : 0;
+        s.roas = s.eff > 0 ? s.rev / s.eff : null;
+        s.fill = fillOf(s);
+      });
+      var nProd = top.length + prod.length + (oth ? 1 : 0);
+      var mx = top.concat(prod).sort(function (a, b) { return b.cost - a.cost; })[0] || null;
+      var maxCat = mx ? { cat: mx.cat, cs: T.cost > 0 ? mx.cost / T.cost : 0 } : null;
+      return { slices: slices, T: T, nProd: nProd, idx: idx, maxCat: maxCat };
+    }
+
+    function drawPie() {
+      var D = pieData(), S = D.slices, T = D.T;
+      lastPie = D;
+      $("pTitle").textContent = "구성비 — 광고비 vs 내부 전환매출";
+      $("pHint").textContent = pieLabel();
+      if (!S.length || T.cost <= 0) {
+        $("pChart").innerHTML = '<p class="caption" style="padding:16px">선택한 조건 · 기간에 데이터가 없습니다.</p>';
+        $("pStats").innerHTML = ""; $("pData").innerHTML = ""; $("pCaption").innerHTML = ""; return;
+      }
+
+      /* 요약 — 원형에서는 고른 기간 기준으로 다시 잰다 */
+      var topS = S.filter(function (s) { return s.kind === "top"; });
+      var topShare = topS.reduce(function (a, s) { return a + s.cs; }, 0);
+      $("pStats").innerHTML = [
+        '<div><span class="l">기간 광고비</span><span class="v">' + compact(T.cost) + '<small>원</small></span><span class="m">' + pieLabel().replace(/ \(.*\)$/, "") + '</span></div>',
+        '<div><span class="l">내부 전환매출</span><span class="v">' + compact(T.rev) + '<small>원</small></span><span class="m">VAT 제외 · 수수료 차감</span></div>',
+        '<div><span class="l">평균 ROAS</span><span class="v">' + (T.eff > 0 ? pr(T.rev / T.eff) : "—") + '</span><span class="m">광고비 가중</span></div>',
+        '<div><span class="l">최대 카테고리</span><span class="v">' + (D.maxCat ? fx(D.maxCat.cs * 100, 1) : "—") + '<small>%</small></span><span class="m">' + (D.maxCat ? D.maxCat.cat : "") + '</span></div>',
+        '<div><span class="l">상위 ' + topS.length + '개 비중</span><span class="v">' + fx(topShare * 100, 1) + '<small>%</small></span><span class="m">전체 ' + D.nProd + '개 품목 중</span></div>'
+      ].join("");
+
+      var W = 1120, CY = 212, R = 132, RI = 80, C1 = 168, C2 = 478;
+      var LX = 650, ROWH = 31, HY = 50;
+      var nRows = S.length + 1;                      /* + 합계 행 */
+      var H = Math.max(372, HY + 26 + nRows * ROWH + 10);
+      var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img", class: "piesvg",
+        "aria-label": "품목별 광고비 비중과 전환매출 비중 도넛 차트. 상위 " + topS.length + "개 품목과 기타로 나눴습니다." });
+      var defs = el("defs", {});
+      var pat = el("pattern", { id: "pieHatch", width: 7, height: 7, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" });
+      pat.appendChild(el("rect", { width: 7, height: 7, fill: "#eef2f7" }));
+      pat.appendChild(el("line", { x1: 0, y1: 0, x2: 0, y2: 7, stroke: "#9aa6b5", "stroke-width": 2.4 }));
+      defs.appendChild(pat);
+      svg.appendChild(defs);
+
+      var marks = [];                                /* {cat, el} — 같은 품목을 두 도넛 · 표에서 같이 밝힌다 */
+      function hl(cat) {
+        marks.forEach(function (m) { m.el.setAttribute("opacity", (cat === null || m.cat === cat) ? 1 : 0.28); popOut(m.el, cat !== null && m.cat === cat); });
+      }
+      function tipOf(s) {
+        var head = s.kind === "other" ? "기타 — 상위 " + topS.length + "개 밖 " + s.members.length + "개 품목"
+                 : s.kind === "unl" ? "상품 미연결 지면" : s.cat;
+        var h = '<div class="t-title">' + head + '</div>' +
+          tipRow(s.kind === "top" ? s.fill : (s.kind === "other" ? s.fill : "#9aa6b5"), "광고비", manwon(s.cost) + " · " + fx(s.cs * 100, 1) + "%") +
+          tipRow(null, "내부 전환매출", manwon(s.rev) + " · " + fx(s.rs * 100, 1) + "%") +
+          tipRow(null, "내부 ROAS", s.roas == null ? "—" : pr(s.roas));
+        if (s.kind === "other") {
+          var mem = s.members.slice().sort(function (a, b) { return b.cost - a.cost; });
+          h += '<div class="t-foot">' + mem.slice(0, 6).map(function (m) { return m.cat + " " + fx(m.cost / T.cost * 100, 1) + "%"; }).join(" · ") +
+            (mem.length > 6 ? " 외 " + (mem.length - 6) + "개" : "") + '</div>';
+        } else if (s.kind === "unl") {
+          h += '<div class="t-foot">네이버 GFA · 파워링크 · 메타처럼 상품이 붙지 않는 광고 — 품목으로 나눌 수 없어 따로 뒀습니다.</div>';
+        }
+        return h;
+      }
+      function bind(node, s) {
+        node.style.cursor = "crosshair";
+        node.addEventListener("mousemove", function (ev) { showTip(tipOf(s), ev); hl(s.cat); });
+        node.addEventListener("mouseleave", function () { hideTip(); hl(null); });
+        marks.push({ cat: s.cat, el: node });
+      }
+      function seg(cx, a0, a1) {
+        var p = function (rad, a) { return (cx + rad * Math.cos(a)).toFixed(2) + " " + (CY + rad * Math.sin(a)).toFixed(2); };
+        if (a1 - a0 >= Math.PI * 2 - 1e-6) a1 = a0 + Math.PI * 2 - 1e-4;   /* 한 조각이 100% 면 호가 닫히지 않는다 */
+        var big = (a1 - a0) > Math.PI ? 1 : 0;
+        return "M" + p(R, a0) + " A" + R + " " + R + " 0 " + big + " 1 " + p(R, a1) +
+               " L" + p(RI, a1) + " A" + RI + " " + RI + " 0 " + big + " 0 " + p(RI, a0) + " Z";
+      }
+      function donut(cx, key, title, total) {
+        var tt = el("text", { x: cx, y: 34, "text-anchor": "middle", class: "elabel", fill: "var(--ink)" }, title);
+        tt.style.fontSize = "17px"; tt.style.fontWeight = "700";
+        svg.appendChild(tt);
+        if (!(total > 0)) {
+          svg.appendChild(el("circle", { cx: cx, cy: CY, r: (R + RI) / 2, fill: "none", stroke: "var(--surface-sunk)", "stroke-width": R - RI }));
+          var nt = el("text", { x: cx, y: CY + 5, "text-anchor": "middle", class: "elabel", fill: "var(--ink-3)" }, "해당 기간 매출 없음");
+          nt.style.fontSize = "14px"; svg.appendChild(nt); return;
+        }
+        var a = -Math.PI / 2;
+        S.forEach(function (s) {
+          var share = s[key];
+          if (!(share > 0)) return;
+          var a1 = a + share * Math.PI * 2;
+          var path = el("path", { d: seg(cx, a, a1), fill: s.fill, stroke: "var(--surface)", "stroke-width": 2, "stroke-linejoin": "round",
+            "data-cx": cx, "data-cy": CY, "data-mid": ((a + a1) / 2).toFixed(4) });
+          bind(path, s);
+          svg.appendChild(path);
+          if (share >= 0.05) {
+            var mid = (a + a1) / 2, rr = (R + RI) / 2;
+            var fillHex = s.kind === "top" ? s.fill : "#c2cad6";
+            var lt = el("text", { x: cx + rr * Math.cos(mid), y: CY + rr * Math.sin(mid) + 5, "text-anchor": "middle",
+              class: "seglabel", fill: s.kind === "unl" ? "var(--ink)" : inkOn(fillHex) }, pctTxt(share));
+            lt.style.fontSize = "14px"; lt.style.fontWeight = "700";
+            if (s.kind === "unl") { lt.setAttribute("stroke", "#ffffff"); lt.setAttribute("stroke-width", 3); lt.setAttribute("paint-order", "stroke"); }
+            svg.appendChild(lt);
+            marks.push({ cat: s.cat, el: lt });
+          }
+          a = a1;
+        });
+        var c1 = el("text", { x: cx, y: CY - 8, "text-anchor": "middle", class: "elabel", fill: "var(--ink-3)" }, key === "cs" ? "광고비 합계" : "전환매출 합계");
+        c1.style.fontSize = "13px";
+        var c2 = el("text", { x: cx, y: CY + 20, "text-anchor": "middle", class: "evalue", fill: "var(--ink)" }, tight(total));
+        c2.style.fontSize = "25px"; c2.style.fontWeight = "700";
+        svg.appendChild(c1); svg.appendChild(c2);
+      }
+      donut(C1, "cs", "광고비 비중", T.cost);
+      donut(C2, "rs", "전환매출 비중", T.rev);
+
+      /* ---- 오른쪽 표: 두 비중을 나란히 놓고 차이(%p)로 효율 신호를 준다 ---- */
+      var COLX = { name: LX + 20, cs: 858, rs: 944, df: 1024, ro: 1110 };
+      function txt(x, y, s, anchor, opt) {
+        var t = el("text", { x: x, y: y, "text-anchor": anchor || "end", class: (opt && opt.cls) || "tick", fill: (opt && opt.fill) || "var(--ink)" }, s);
+        t.style.fontSize = ((opt && opt.size) || 14) + "px";
+        if (opt && opt.bold) t.style.fontWeight = "700";
+        return t;
+      }
+      [["카테고리", COLX.name, "start"], ["광고비", COLX.cs], ["전환매출", COLX.rs], ["차이", COLX.df], ["ROAS", COLX.ro]].forEach(function (h) {
+        svg.appendChild(txt(h[1], HY, h[0], h[2], { cls: "elabel", fill: "var(--ink-3)", size: 12.5, bold: true }));
+      });
+      svg.appendChild(el("line", { x1: LX, x2: W - 6, y1: HY + 9, y2: HY + 9, stroke: "var(--rule-strong)", "stroke-width": 1 }));
+      S.concat([{ cat: "합 계", isTotal: true, cs: 1, rs: 1, roas: T.eff > 0 ? T.rev / T.eff : null }]).forEach(function (s, k) {
+        var y = HY + 32 + k * ROWH;
+        var g = el("g", { class: "prow" });
+        if (s.isTotal) {
+          svg.appendChild(el("line", { x1: LX, x2: W - 6, y1: y - 21, y2: y - 21, stroke: "var(--rule-strong)", "stroke-width": 1 }));
+        } else {
+          g.appendChild(el("rect", { x: LX, y: y - 20, width: W - 6 - LX, height: ROWH - 2, fill: "transparent" }));
+          g.appendChild(el("rect", { x: LX, y: y - 12, width: 13, height: 13, rx: 2, fill: s.fill,
+            stroke: s.kind === "unl" ? "#9aa6b5" : "none", "stroke-width": 1 }));
+        }
+        var nm = s.kind === "other" ? "기타 (" + s.members.length + "개)" : s.cat;
+        g.appendChild(txt(COLX.name, y, nm, "start", { cls: "elabel", size: s.isTotal ? 14.5 : 14, bold: !!s.isTotal }));
+        g.appendChild(txt(COLX.cs, y, s.isTotal ? tight(T.cost) : fx(s.cs * 100, 1) + "%", "end", { size: 14, bold: !!s.isTotal }));
+        g.appendChild(txt(COLX.rs, y, s.isTotal ? tight(T.rev) : fx(s.rs * 100, 1) + "%", "end", { size: 14, bold: !!s.isTotal }));
+        if (!s.isTotal) {
+          var d = (s.rs - s.cs) * 100;
+          var dcol = Math.abs(d) < 0.5 ? "var(--ink-3)" : (d > 0 ? "var(--good-ink)" : "var(--crit-ink)");
+          g.appendChild(txt(COLX.df, y, (Math.abs(d) < 0.05 ? "0.0" : (d > 0 ? "+" : "−") + fx(Math.abs(d), 1)) + "%p", "end", { size: 14, fill: dcol, bold: Math.abs(d) >= 0.5 }));
+        }
+        g.appendChild(txt(COLX.ro, y, s.roas == null ? "—" : pr(s.roas), "end", { size: 14, bold: !!s.isTotal }));
+        if (!s.isTotal) bind(g, s);
+        svg.appendChild(g);
+      });
+
+      $("pChart").innerHTML = "";
+      $("pChart").appendChild(svg);
+
+      $("pCaption").innerHTML =
+        "<b>" + (st.brand === "전체" ? "전 브랜드" : st.brand) + " · " + pieLabel() + "</b> 기준입니다. " +
+        "<b>왼쪽은 광고비, 오른쪽은 내부 전환매출의 품목 비중</b>이고, 같은 품목은 두 도넛에서 <b>같은 색 · 같은 순서</b>(광고비 큰 순, 12시부터 시계 방향)로 놓았습니다. " +
+        "표의 <b>차이</b>는 매출 비중 − 광고비 비중으로, <b style=\"color:var(--good-ink)\">+ 면 쓴 광고비보다 매출을 더 가져오는 품목</b>, <b style=\"color:var(--crit-ink)\">− 면 광고비 대비 매출이 덜 나오는 품목</b>입니다. " +
+        "조각은 <b>전체 기간 광고비 상위 " + PIE_TOP + "개 + 기타(회색)</b>로 나눴습니다 — 기간을 바꿔도 <b>같은 품목은 같은 색</b>이라 달끼리 비교할 수 있고, 그 기간에만 커진 품목은 기타 툴팁에 먼저 나옵니다. 5% 미만 조각은 도넛 위 숫자를 생략했습니다(표와 마우스 툴팁에 있습니다). " +
+        (st.brand === "전체"
+          ? "<b>빗금</b>은 네이버 GFA · 파워링크 · 메타처럼 <b>상품이 붙지 않는 지면</b>이라 품목 기타와 섞지 않고 따로 뒀습니다. "
+          : "브랜드를 고르면 상품이 붙지 않는 지면은 어느 브랜드인지 알 수 없어 빠집니다. ") +
+        "원형에서는 <b>지표 · 구분 · 표시 개수 버튼 대신 오른쪽 위 「기간」</b>으로 전체 기간 · 연도 · 월을 고릅니다. 브랜드 · 매체 선택은 그대로 적용됩니다.";
+
+      $("pData").innerHTML = pieTableHtml(D);
+      $("pTools").innerHTML = toolsHtml();
+    }
+    function pieTableHtml(D) {
+      var amt = function (v) { return st.unit === "won" ? won(v) : compact(v); };
+      var row = function (s, cls, nm) {
+        var d = (s.rs - s.cs) * 100;
+        return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + nm + '</td><td>' + amt(s.cost) + '</td><td>' + fx(s.cs * 100, 1) + '%</td>' +
+          '<td>' + amt(s.rev) + '</td><td>' + fx(s.rs * 100, 1) + '%</td>' +
+          '<td style="color:' + (Math.abs(d) < 0.5 ? 'var(--ink-3)' : d > 0 ? 'var(--good-ink)' : 'var(--crit-ink)') + '">' + (d > 0 ? "+" : d < 0 ? "−" : "") + fx(Math.abs(d), 1) + '%p</td>' +
+          '<td>' + (s.roas == null ? "—" : pr(s.roas)) + '</td></tr>';
+      };
+      var T = D.T, body = "";
+      D.slices.forEach(function (s) {
+        if (s.kind === "other") {
+          body += row(s, "", "기타 (" + s.members.length + "개)");
+          s.members.slice().sort(function (a, b) { return b.cost - a.cost; }).forEach(function (m) {
+            var mm = { cost: m.cost, rev: m.rev, cs: T.cost > 0 ? m.cost / T.cost : 0, rs: T.rev > 0 ? m.rev / T.rev : 0, roas: m.eff > 0 ? m.rev / m.eff : null };
+            body += row(mm, "pmember", "· " + m.cat);
+          });
+        } else body += row(s, "", s.cat);
+      });
+      body += row({ cost: T.cost, rev: T.rev, cs: 1, rs: 1, roas: T.eff > 0 ? T.rev / T.eff : null }, "", "합 계");
+      return '<div class="ptabwrap' + (st.unit === "won" ? " wonmode" : "") + '"><table><thead><tr>' +
+        '<th scope="col">카테고리</th><th scope="col">광고비</th><th scope="col">광고비 비중</th><th scope="col">내부 전환매출</th>' +
+        '<th scope="col">매출 비중</th><th scope="col">차이</th><th scope="col">내부 ROAS</th></tr></thead><tbody>' + body + '</tbody></table></div>';
+    }
+
     function draw() {
+      if (st.mode === "pie") { drawPie(); return; }
+      $("pHint").textContent = ymLabel(MONTHS[0]) + " – " + ymLabel(MONTHS[MONTHS.length - 1]);
       var list = collect();
       if (!list.length) {
         $("pChart").innerHTML = '<p class="caption" style="padding:16px">선택한 조건에 데이터가 없습니다.</p>';
@@ -3963,9 +4606,9 @@
     /* 모달 안의 단위 버튼 — 모달은 열릴 때마다 내용을 새로 넣으므로 위임으로 받는다 */
     $("modalTools").addEventListener("click", function (ev) {
       var b = ev.target.closest("#pUnit button");
-      if (!b || !lastList) return;
+      if (!b || !(st.mode === "pie" ? lastPie : lastList)) return;
       st.unit = b.dataset.u;
-      $("pData").innerHTML = tableHtml(lastList);
+      $("pData").innerHTML = st.mode === "pie" ? pieTableHtml(lastPie) : tableHtml(lastList);
       $("pTools").innerHTML = toolsHtml();
       $("modalBody").innerHTML = $("pData").innerHTML;
       $("modalTools").innerHTML = $("pTools").innerHTML;
@@ -3996,16 +4639,38 @@
       draw();
     });
 
-    segClick("pMetric", function (b) {
-      st.metric = b.dataset.m;
-      /* ROAS 는 비율이라 비중이 성립하지 않는다 — 구분 버튼을 잠근다 */
-      var lock = st.metric === "roas";
-      Array.prototype.forEach.call($("pForm").querySelectorAll("button"), function (x) {
-        x.disabled = lock; x.style.opacity = lock ? "0.4" : "";
-        x.style.cursor = lock ? "not-allowed" : "";
+    /* 버튼 잠금 — ROAS 는 비율이라 비중이 성립하지 않고,
+       원형은 광고비 · 전환매출 도넛을 늘 같이 보여 주므로 지표 · 구분 · 표시 개수가 필요 없다 */
+    function lockSeg(id, on, why) {
+      Array.prototype.forEach.call($(id).querySelectorAll("button"), function (x) {
+        x.disabled = on; x.style.opacity = on ? "0.4" : "";
+        x.style.cursor = on ? "not-allowed" : "";
+        x.title = on ? why : "";
       });
-    });
-    segClick("pMode", function (b) { st.mode = b.dataset.m; });
+    }
+    function syncLocks() {
+      var pie = st.mode === "pie";
+      var why = "원형에서는 광고비 · 전환매출 도넛을 함께 보여 줍니다";
+      lockSeg("pMetric", pie, why);
+      lockSeg("pForm", pie || st.metric === "roas", pie ? why : "ROAS 는 비율이라 비중으로 볼 수 없습니다");
+      lockSeg("pTop", pie, "원형은 상위 " + PIE_TOP + "개 + 기타로 고정입니다");
+      $("pTopN").disabled = pie;
+      $("pPieWrap").hidden = !pie;
+      $("pHint").hidden = pie;                 /* 원형에서는 「기간」 선택이 같은 내용을 보여 준다 */
+    }
+    segClick("pMetric", function (b) { st.metric = b.dataset.m; syncLocks(); });
+    segClick("pMode", function (b) { st.mode = b.dataset.m; syncLocks(); });
+    /* 원형 기간 — 전체 · 연도 · 월(최근 달부터) */
+    (function () {
+      var years = [];
+      MONTHS.forEach(function (m) { var y = m.slice(0, 4); if (years.indexOf(y) < 0) years.push(y); });
+      var L = MONTHS.length - 1;
+      var opts = [["all", "전체 기간"]];
+      years.slice().reverse().forEach(function (y) { opts.push(["y" + y, y.slice(2) + "년 합계"]); });
+      for (var i = L; i >= 0; i--) opts.push(["m" + i, ymLabel(MONTHS[i]) + (i === L ? " (진행 중)" : "")]);
+      $("pPie").innerHTML = opts.map(function (o) { return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join("");
+      $("pPie").addEventListener("change", function () { st.pie = this.value; draw(); });
+    })();
     segClick("pTop", function (b) {
       if (b.dataset.n === "custom") {
         /* 직접 입력 — 입력칸을 열고 지금 값을 그대로 이어받는다 */
@@ -4110,6 +4775,324 @@
   })();
 })();
 </script>
+<script>
+/* ================= 모션 · 인터랙션 레이어 (v101) =================
+   데이터 계산 코드는 건드리지 않는다. 차트를 새로 그리거나 수치를 다시 쓰는 순간을
+   MutationObserver 로 지켜보다가 그 위에 Web Animations 만 얹는다.
+   · 기본 상태는 늘 보인다 — 애니메이션은 fill:"backwards" 라 끝나면 원래 스타일로 돌아간다.
+   · 동작 줄이기 설정이면 아무것도 움직이지 않는다.
+   · 데모 사본(.demo-banner)은 숫자가 가려져 있어 카운트업을 하지 않는다. */
+(function () {
+  "use strict";
+  var d = document, root = d.documentElement;
+  var CALM = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var CAN = !CALM && !!(window.Element && Element.prototype.animate);
+  var DEMO = !!d.querySelector(".demo-banner");
+  var EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)", SPRING = "cubic-bezier(0.3, 1.3, 0.45, 1)";
+  function $(id) { return d.getElementById(id); }
+  function each(list, fn) { Array.prototype.forEach.call(list || [], fn); }
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  /* ---------- 1. 세그먼트 · 모드 버튼 — 미끄러지는 선택 표시 ---------- */
+  var thumbs = [];
+  function mountThumb(box) {
+    if (box.__thumb) return;
+    var t = d.createElement("span");
+    t.className = "thumb snap"; t.setAttribute("aria-hidden", "true");
+    box.insertBefore(t, box.firstChild);
+    box.classList.add("has-thumb");
+    box.__thumb = t;
+    function place() {
+      var on = box.querySelector('button[aria-pressed="true"]');
+      if (!on || !on.offsetWidth) { t.style.opacity = "0"; return; }
+      t.style.opacity = "1";
+      t.style.width = on.offsetWidth + "px";
+      t.style.transform = "translateX(" + on.offsetLeft + "px)";
+    }
+    function snapPlace() { t.classList.add("snap"); place(); requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.remove("snap"); }); }); }
+    box.__place = snapPlace;
+    thumbs.push(box);
+    snapPlace();
+    new MutationObserver(place).observe(box, { subtree: true, attributes: true, attributeFilter: ["aria-pressed"] });   /* 자기 style 은 지켜보지 않는다 — 스스로를 다시 부르는 고리가 된다 */
+    if (window.ResizeObserver) new ResizeObserver(snapPlace).observe(box);
+  }
+  each(d.querySelectorAll(".seg, .modesw"), mountThumb);
+  if (d.fonts && d.fonts.ready) d.fonts.ready.then(function () { thumbs.forEach(function (b) { b.__place(); }); });
+  /* 모달 안 단위 버튼처럼 나중에 생기는 스위치도 받는다 */
+  new MutationObserver(function (list) {
+    for (var i = 0; i < list.length; i++) each(list[i].addedNodes, function (n) {
+      if (n.nodeType !== 1 || n.namespaceURI !== "http://www.w3.org/1999/xhtml") return;
+      if (n.matches(".seg, .modesw")) mountThumb(n);
+      each(n.querySelectorAll(".seg, .modesw"), mountThumb);
+    });
+  }).observe(d.body, { childList: true, subtree: true });
+
+  /* ---------- 2. 누르면 물결 ---------- */
+  d.addEventListener("pointerdown", function (ev) {
+    if (!CAN || !ev.target.closest) return;
+    var b = ev.target.closest(".chips button, .toggle, .allbtn, .datefields .apply, .legend-toggle button");
+    if (!b || b.disabled) return;
+    var r = b.getBoundingClientRect(), s = Math.max(r.width, r.height) * 2.2;
+    var w = d.createElement("span");
+    w.className = "ripple"; w.setAttribute("aria-hidden", "true");
+    w.style.width = w.style.height = s + "px";
+    w.style.left = (ev.clientX - r.left - s / 2) + "px";
+    w.style.top = (ev.clientY - r.top - s / 2) + "px";
+    b.appendChild(w);
+    var a = w.animate([{ transform: "scale(0)", opacity: 0.3 }, { transform: "scale(1)", opacity: 0 }], { duration: 560, easing: "ease-out" });
+    a.onfinish = a.oncancel = function () { if (w.parentNode) w.parentNode.removeChild(w); };
+  }, { passive: true });
+
+  /* ---------- 3. 툴팁 — 나타날 때만 살짝 떠오른다 ---------- */
+  var tip = $("tip");
+  if (tip && CAN) {
+    var wasHidden = tip.hidden;
+    new MutationObserver(function () {
+      if (wasHidden && !tip.hidden) tip.animate([{ opacity: 0, transform: "translateY(6px) scale(0.97)" }, { opacity: 1, transform: "none" }], { duration: 170, easing: EASE });
+      wasHidden = tip.hidden;
+    }).observe(tip, { attributes: true, attributeFilter: ["hidden"] });
+  }
+
+  /* ---------- 4. 스크롤 진행 막대 · 헤더 그림자 · 지금 보는 섹션 ---------- */
+  var bar = d.createElement("div");
+  bar.className = "scrollprog"; bar.setAttribute("aria-hidden", "true");
+  d.body.appendChild(bar);
+  var head = d.querySelector(".masthead");
+  var links = Array.prototype.slice.call(d.querySelectorAll(".jump a"));
+  var boxes = links.map(function (a) {
+    var t = d.getElementById(a.getAttribute("href").slice(1));
+    return t ? (t.closest(".card") || t.closest("section") || t) : null;
+  });
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      var y = window.pageYOffset || root.scrollTop || 0, max = Math.max(1, root.scrollHeight - innerHeight);
+      bar.style.transform = "scaleX(" + clamp01(y / max).toFixed(4) + ")";
+      if (head) head.classList.toggle("scrolled", y > 6);
+      /* 읽는 선(헤더 바로 아래)을 지나고 있는 블록을 밝힌다. 2열 배치라 둘이 함께 켜질 수 있고,
+         바깥 블록(운영 구조 모니터)과 안쪽 블록(①·②)이 같이 걸리면 안쪽만 남긴다. */
+      var line = (head ? head.getBoundingClientRect().bottom : 0) + 70;
+      var on = boxes.map(function (b) { if (!b) return false; var r = b.getBoundingClientRect(); return r.top <= line && r.bottom >= line; });
+      on.forEach(function (v, i) {
+        if (!v) return;
+        boxes.forEach(function (b2, j) { if (j !== i && on[j] && b2 !== boxes[i] && boxes[i].contains(b2)) on[i] = false; });
+      });
+      if (y + innerHeight >= root.scrollHeight - 4) { on = on.map(function () { return false; }); on[on.length - 1] = true; }
+      links.forEach(function (a, i) { a.classList.toggle("on", !!on[i]); });
+    });
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  /* ---------- 5. 수치 카운트업 — 직전 값에서 새 값으로 굴린다 ---------- */
+  var memo = {};
+  function parseNum(s) {
+    var m = /^(\s*)([+\-−]?)(\d[\d,]*(?:\.\d+)?)([\s\S]*)$/.exec(s);
+    if (!m) return null;
+    var raw = m[3];
+    return { pre: m[1], sign: m[2], val: parseFloat(raw.replace(/,/g, "")), dec: raw.indexOf(".") >= 0 ? raw.split(".")[1].length : 0,
+             comma: raw.indexOf(",") >= 0, post: m[4] };
+  }
+  function fmtNum(p, v) {
+    var t = v.toFixed(p.dec);
+    if (!p.comma) return t;
+    var parts = t.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+  }
+  function countUp(box, sel) {
+    if (!box || !CAN || DEMO) return;
+    each(box.querySelectorAll(sel), function (el) {
+      var tn = null;
+      for (var n = el.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && /\d/.test(n.nodeValue)) { tn = n; break; }
+      if (!tn) return;
+      var p = parseNum(tn.nodeValue);
+      if (!p || !isFinite(p.val)) return;
+      var lab = el.parentNode && el.parentNode.querySelector(".label, .l");
+      var key = box.id + "|" + (lab ? lab.textContent : "") + "|" + p.post.trim();
+      var from = memo[key] != null ? memo[key] : 0;
+      memo[key] = p.val;
+      if (from === p.val) return;
+      var final = tn.nodeValue, t0 = performance.now(), dur = from === 0 ? 900 : 620;
+      el.animate([{ opacity: 0.55 }, { opacity: 1 }], { duration: 380, easing: "ease-out" });
+      (function step(now) {
+        if (!tn.parentNode) return;
+        var k = clamp01((now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+        tn.nodeValue = k >= 1 ? final : p.pre + p.sign + fmtNum(p, from + (p.val - from) * e) + p.post;
+        if (k < 1) requestAnimationFrame(step);
+      })(t0);
+    });
+  }
+  [["kpis", ".value"], ["dstats", ".v"], ["pStats", ".v"]].forEach(function (c) {
+    var box = $(c[0]);
+    if (!box) return;
+    new MutationObserver(function () { if (introDone) countUp(box, c[1]); }).observe(box, { childList: true });
+  });
+
+  /* ---------- 6. 차트 그리기 — 막대는 차오르고, 칸은 물결처럼, 선은 그려지고, 도넛은 펼쳐진다 ---------- */
+  var lastAct = -1e9;
+  ["click", "change", "input", "keydown"].forEach(function (t) {
+    d.addEventListener(t, function () { lastAct = performance.now(); }, true);
+  });
+  function num(n, a) { var v = parseFloat(n.getAttribute(a)); return isFinite(v) ? v : 0; }
+  function animateSvg(svg, delay) {
+    if (!CAN || !svg || !svg.isConnected || svg.__animT && performance.now() - svg.__animT < 400) return;
+    svg.__animT = performance.now();
+    delay = delay || 0;
+    var vb = svg.viewBox && svg.viewBox.baseVal;
+    var W = vb && vb.width ? vb.width : 1000, H = vb && vb.height ? vb.height : 400;
+    var rects = [], slices = [], lines = [], areas = [], dots = [], texts = [];
+    each(svg.querySelectorAll("rect, path, circle, text, polyline"), function (n) {
+      if (n.closest("defs, pattern, clipPath, mask")) return;
+      /* 숨겨 둔 요소(마우스를 올려야 보이는 점 · 십자선 등)는 건드리지 않고, 흐리게 둔 요소는 그 투명도까지만 올린다 */
+      var cs = getComputedStyle(n);
+      if (cs.display === "none" || cs.visibility === "hidden") return;
+      var op = parseFloat(cs.opacity);
+      if (!(op > 0.02)) return;
+      n.__op = op;
+      var tag = n.tagName.toLowerCase();
+      if (tag === "text") { texts.push(n); return; }
+      if (tag === "circle") { dots.push(n); return; }
+      if (tag === "polyline") { lines.push(n); return; }
+      var fill = n.getAttribute("fill");
+      if (tag === "rect") {
+        if (!fill || fill === "transparent" || fill === "none") return;
+        if (!(num(n, "width") > 0.5 && num(n, "height") > 0.5)) return;
+        rects.push(n); return;
+      }
+      if (n.hasAttribute("data-mid")) slices.push(n);
+      else if (fill === "none" || (!fill && n.getAttribute("stroke"))) lines.push(n);
+      else areas.push(n);
+    });
+    var total = rects.length + texts.length + dots.length + slices.length;
+    if (total > 2400) {                                   /* 너무 많으면 통째로만 */
+      svg.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 560, delay: delay, easing: EASE, fill: "backwards" });
+      return;
+    }
+    /* 같은 높이의 칸이 대부분이면 히트맵 — 막대처럼 차오르지 않고 물결처럼 번진다 */
+    var hs = {}, maxN = 0;
+    rects.forEach(function (n) { var h = Math.round(num(n, "height")); hs[h] = (hs[h] || 0) + 1; if (hs[h] > maxN) maxN = hs[h]; });
+    var cells = rects.length > 12 && maxN / rects.length > 0.6;
+    rects.forEach(function (n) {
+      var x = clamp01(num(n, "x") / W), y = clamp01(num(n, "y") / H);
+      var ob = n.style.transformBox, oo = n.style.transformOrigin, a;
+      n.style.transformBox = "fill-box";
+      if (cells) {
+        n.style.transformOrigin = "50% 50%";
+        a = n.animate([{ opacity: 0, transform: "scale(0.55)" }, { opacity: n.__op, transform: "none" }],
+                      { duration: 520, delay: delay + x * 420 + y * 240, easing: SPRING, fill: "backwards" });
+      } else {
+        n.style.transformOrigin = "50% 100%";
+        a = n.animate([{ opacity: 0.25 * n.__op, transform: "scaleY(0.001)" }, { opacity: n.__op, transform: "none" }],
+                      { duration: 700, delay: delay + x * 420, easing: EASE, fill: "backwards" });
+      }
+      a.onfinish = a.oncancel = function () { n.style.transformBox = ob; n.style.transformOrigin = oo; };
+    });
+    /* 도넛 — 가운데를 축으로 돌며 펼쳐진다 */
+    var byCenter = {};
+    slices.forEach(function (n) {
+      var c = n.getAttribute("data-cx") + "," + n.getAttribute("data-cy");
+      var k = byCenter[c] = (byCenter[c] || 0) + 1;
+      n.style.transformBox = "view-box";
+      n.style.transformOrigin = n.getAttribute("data-cx") + "px " + n.getAttribute("data-cy") + "px";
+      n.animate([{ opacity: 0, transform: "rotate(-28deg) scale(0.72)" }, { opacity: n.__op, transform: "none" }],
+                { duration: 760, delay: delay + (k - 1) * 55, easing: SPRING, fill: "backwards" });
+    });
+    /* 선 — 왼쪽에서 오른쪽으로 그려진다 (점선은 그대로 두고 흐려졌다 나타나게만) */
+    lines.forEach(function (n, i) {
+      if (n.getAttribute("stroke-dasharray")) {
+        n.animate([{ opacity: 0 }, { opacity: n.__op }], { duration: 600, delay: delay + 300, fill: "backwards" }); return;
+      }
+      var len = 0; try { len = n.getTotalLength(); } catch (e) {}
+      if (!(len > 0)) return;
+      n.style.strokeDasharray = len + " " + len;
+      var a = n.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+                        { duration: 1150, delay: delay + i * 70, easing: "cubic-bezier(0.45, 0, 0.2, 1)", fill: "backwards" });
+      a.onfinish = a.oncancel = function () { n.style.strokeDasharray = ""; };
+    });
+    areas.forEach(function (n) { n.animate([{ opacity: 0 }, { opacity: n.__op }], { duration: 800, delay: delay + 150, fill: "backwards" }); });
+    /* 점 — 선이 지나갈 때 톡 튀어나온다 */
+    var many = dots.length > 300;
+    dots.forEach(function (n) {
+      var x = clamp01(num(n, "cx") / W);
+      if (many) { n.animate([{ opacity: 0 }, { opacity: n.__op }], { duration: 400, delay: delay + 300 + x * 700, fill: "backwards" }); return; }
+      var ob = n.style.transformBox, oo = n.style.transformOrigin;
+      n.style.transformBox = "fill-box"; n.style.transformOrigin = "50% 50%";
+      var a = n.animate([{ opacity: 0, transform: "scale(0)" }, { opacity: n.__op, transform: "none" }],
+                        { duration: 460, delay: delay + 260 + x * 800, easing: SPRING, fill: "backwards" });
+      a.onfinish = a.oncancel = function () { n.style.transformBox = ob; n.style.transformOrigin = oo; };
+    });
+    /* 글자 — 마크가 자리 잡은 뒤 뒤따라 나타난다 */
+    texts.forEach(function (n) {
+      var x = clamp01(num(n, "x") / W);
+      n.animate([{ opacity: 0 }, { opacity: n.__op }], { duration: 420, delay: delay + 240 + x * 420, easing: "ease-out", fill: "backwards" });
+    });
+  }
+  function inView(el) { var r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; }
+  /* 차트 상자를 지켜본다 — 누른 직후의 다시 그리기만 애니메이션한다 (창 크기 변경 등은 조용히) */
+  ["brandChart", "mixChart", "roasChart", "dailyCombo", "pChart"].forEach(function (id) {
+    var box = $(id);
+    if (!box) return;
+    new MutationObserver(function (list) {
+      if (!introDone) return;
+      var svg = null;
+      list.forEach(function (r) { each(r.addedNodes, function (n) { if (n.nodeName.toLowerCase() === "svg") svg = n; }); });
+      if (!svg) return;
+      var first = !box.__drawn; box.__drawn = true;
+      if (!inView(svg)) return;                      /* 화면 밖이면 섹션이 들어올 때 함께 움직인다 */
+      if (!first && performance.now() - lastAct > 1500) return;
+      animateSvg(svg, 0);
+    }).observe(box, { childList: true });
+  });
+
+  /* ---------- 7. 첫 화면 — 섹션이 차례로 떠오르고, 아래 섹션은 스크롤해 들어올 때 ---------- */
+  var introDone = false;
+  function rise(el, delay) {
+    el.animate([{ opacity: 0, transform: "translateY(18px)" }, { opacity: 1, transform: "none" }],
+               { duration: 640, delay: delay, easing: EASE, fill: "backwards" });
+  }
+  function chartsIn(scope, delay) {
+    each(scope.querySelectorAll("svg"), function (svg) {
+      if (svg.closest("#tip, button") || svg.getBoundingClientRect().width < 80) return;
+      animateSvg(svg, delay);
+    });
+  }
+  function intro() {
+    if (introDone) return;
+    introDone = true;
+    each(d.querySelectorAll("[id^='go-'], #kpis, #dailyCombo, #pChart, #brandChart, #mixChart, #roasChart"), function (b) { b.__drawn = true; });
+    if (!CAN) return;
+    var secs = Array.prototype.slice.call(d.querySelectorAll(".wrap section")).filter(function (s) { return !s.parentNode.closest("section"); });
+    var later = [];
+    secs.forEach(function (s, i) {
+      if (s.getBoundingClientRect().top < innerHeight) { rise(s, 60 + i * 90); chartsIn(s, 220 + i * 90); }
+      else later.push(s);
+    });
+    if (head) head.animate([{ opacity: 0, transform: "translateY(-10px)" }, { opacity: 1, transform: "none" }], { duration: 520, easing: EASE, fill: "backwards" });
+    countUp($("kpis"), ".value");
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          io.unobserve(e.target);
+          rise(e.target, 0); chartsIn(e.target, 140);
+        });
+      }, { rootMargin: "0px 0px -6% 0px", threshold: 0.02 });
+      later.forEach(function (s) { io.observe(s); });
+    }
+  }
+  function start() { setTimeout(intro, 40); }
+  if (d.body.classList.contains("locked")) {
+    var mo = new MutationObserver(function () { if (!d.body.classList.contains("locked")) { mo.disconnect(); start(); } });
+    mo.observe(d.body, { attributes: true, attributeFilter: ["class"] });
+  } else if (d.readyState === "complete") start();
+  else window.addEventListener("load", start);
+})();
+</script>
 
 
 
@@ -4126,7 +5109,8 @@
     return m.replace(/\d/g, function () { h = Math.imul(h ^ (h >>> 13), 1274126177); var d = (h >>> 0) % 10; if (first) { first = false; if (d === 0) d = 1 + ((h >>> 5) % 9); } return String(d); });
   }
   var RE = /(\d{4}-\d{1,2}(?:-\d{1,2})?)|(\d{1,2}\/\d{1,2}(?:\/\d{1,2})?)|(\d{2}\.\d{1,2}(?=\s?월))|((?:최근|상위|하위|최대)\s?\d+)|(\d[\d,]*(?:\.\d+)?)/g;
-  var KEEP_AFTER = /^\s?(?:년|월|일|주|개월|개|채널|요일|분기|건|행|열|곳|종)/;
+  var KEEP_AFTER = /^\s?(?:년|월|일|주|개월|개|채널|요일|분기|건|행|열|곳|종|시)/;
+  var RULE_AFTER = /^%\s?(?:미|초|이)/;          // "5% 미만 조각" 처럼 설명 속 기준값
   var UNIT_AFTER = /^\s?(?:원|만|억|%|배|x|X)/;
   function maskText(s) {
     if (!s || !/\d/.test(s)) return s;
@@ -4136,6 +5120,7 @@
       var before = off > 0 ? s.charAt(off - 1) : "";
       if (/^[A-WYZa-wyz]/.test(after) || /[A-Za-z]/.test(before)) return m;   // 1P · 3P · 라벨 코드
       if (!/[,.]/.test(m) && KEEP_AFTER.test(after)) return m;   // 9월 · 617일 · 21개월 · 5채널
+      if (!/[,.]/.test(m) && m.length <= 2 && RULE_AFTER.test(after)) return m;   // 5% 미만 · 25% 초과 (기준값)
       if (/^202[4-7]$/.test(m) && !UNIT_AFTER.test(after)) return m;   // 연도 (데이터 범위 안의 해만)
       return VIDEO ? scramble(m) : MASK;
     });
