@@ -41,7 +41,7 @@
 | 전체 매출 +36.6% | kpis · growth.main · projects.nonad · jobs · scores |
 | 쿠팡 PMC 최대 −95% | moreWins · growth.coupon · projects.nonad · jobs · motion.js(nonad) |
 | 모니터링 시간 30%+ 단축 · 자동화 8건 | ticker · moreWins · pillars · projects.automation · beliefs · motion.js(automation) |
-| 경력 8년 9개월 | profile.career · index.html(경력 제목) |
+| 경력 8년 10개월 | profile.career · index.html(경력 제목) |
 
 - `motion.js` 의 모션 영상 속 숫자와 `app.js` 의 VIEWS 캡션도 같은 기준이다. 숫자를 바꾸면 함께 검색해서 맞춘다.
 
