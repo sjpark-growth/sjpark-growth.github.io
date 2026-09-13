@@ -1303,3 +1303,5 @@ body { overflow-x: clip; }
 #perfLegend [data-sid] { transition: opacity .2s ease; }
 #perfChart .endlab { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { #perfChart [data-sid], #perfLegend [data-sid] { transition: none; } }
+/* 아주 좁은 휴대폰(≤420px) — 긴 도구 이름 칩(메타 협력광고(CPAS) …)이 한 줄을 고집해 화면 밖으로 22px 나가던 것 → 칩 안에서 줄바꿈 */
+@media (max-width: 420px) { .tools span { white-space: normal; } }
