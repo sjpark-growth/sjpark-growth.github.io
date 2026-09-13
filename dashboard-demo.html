@@ -5371,7 +5371,7 @@
         });
         /* 범례 — 배경 두 단계 */
         var lgX = W - RPAD - 176, lgY = MT - 36;
-        [["#c9dcf4", "그 달 상위 10%"], ["#e7eff9", "상위 20%"]].forEach(function (q, k) {
+        [["#c9dcf4", "상위 10%"], ["#e7eff9", "상위 20%"]].forEach(function (q, k) {
           var gx = lgX + k * 100;
           svg.appendChild(el("rect", { x: gx, y: lgY - 9, width: 12, height: 12, rx: 3, fill: q[0], stroke: "#b8cbe6", "stroke-width": 0.8 }));
           var lt = el("text", { x: gx + 17, y: lgY + 1.5, class: "tick", fill: "var(--ink-2)" }, q[1]);
