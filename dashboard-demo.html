@@ -1076,6 +1076,9 @@
   .modesw.has-thumb > button:hover:not([aria-pressed="true"]):not(:disabled) { background: color-mix(in srgb, var(--surface-sunk) 75%, transparent); }
   .seg.has-thumb > button[aria-pressed="true"], .modesw.has-thumb > button[aria-pressed="true"],
   .seg.has-thumb > button[aria-pressed="true"]:hover, .modesw.has-thumb > button[aria-pressed="true"]:hover { background: transparent; color: #ffffff; }
+  /* (v105) 안전장치 — 선택 표시 조각이 없는 순간에도 눌린 버튼이 읽히게 */
+  .seg.has-thumb:not(:has(> .thumb)) > button[aria-pressed="true"],
+  .modesw.has-thumb:not(:has(> .thumb)) > button[aria-pressed="true"] { background: var(--ink); }
   .thumb { position: absolute; z-index: -1; top: 0; left: 0; height: 100%; width: 0; pointer-events: none;
            background: var(--ink); border-radius: 5px; box-shadow: 0 4px 12px -5px rgba(13,27,42,0.6);
            transition: transform 360ms var(--ease-spring), width 360ms var(--ease-spring), opacity 180ms ease; }
@@ -1304,6 +1307,12 @@
   var PIE_B = '#brandMode button[data-m="pie"]', PIE_M = '#mixMode button[data-m="pie"]', PIE_P = '#pMode button[data-m="pie"]';
   var HEAT_P = '#pMode button[data-m="heat"]', LINE_R = '#roasMode button[data-m="line"]';
   var UPDATES = [
+    { d: "2026-09-13", v: "V103", t: "기간 버튼 표시 오류 수정 등", items: [
+      ["<b>상단 고정바</b> — 일부 창 크기 · 배율에서 스크롤할 때 상단바가 줄었다 늘었다 하며 화면이 흔들리던 문제를 바로잡았습니다.", ".masthead"],
+      ["<b>일별 · 주별 · 월별 효율 조회</b> 「기간」 — 버튼을 누른 뒤 선택된 항목 글자가 보이지 않던 오류를 바로잡았습니다.", "#rangeSeg"],
+      ["<b>품목별 성과 히트맵</b> 합계 줄 — 전월 대비 초록 · 빨강 대신, 21개월 중 클수록 진한 파랑(흰 글자)으로 표시합니다.", "#pChart", [HEAT_P]],
+      ["<b>품목별 성과</b> — 억 단위 금액을 소수 둘째 자리까지(예: 1.12억) 표시합니다.", "#pChart", [HEAT_P]]
+    ] },
     { d: "2026-09-13", v: "V102", t: "원형 차트 비교 기간 추가 등", items: [
       ["<b>① 브랜드 키워드 의존도 · ② 광고비 소진 비중</b> 원형 — <b>「비교 월」</b> 추가. 전년 동월(기본) 말고도 25년 1월부터 원하는 달이나 <b>25년 · 26년 합계</b>와 비교합니다.", "#go-brand", [PIE_B, PIE_M]],
       ["<b>월별 내부 기준 ROAS</b> — 기본 화면을 합계 + 주력 3채널로 바꾸고, <b>25 상반기 평균 대비 26 상반기 개선 폭</b>을 표시합니다(소액 채널은 범례를 누르면 켜집니다).", "#roasChart", [LINE_R]],
@@ -5017,7 +5026,7 @@
     /* 금액은 만원 단위에 천 단위 콤마를 붙여 적는다 (1,234만).
        숫자만 남기면 자릿수 감이 안 와서 오히려 읽기 어렵다. */
     function tight(n) {
-      if (n >= 100000000) return fx(n / 100000000, 1) + "억";   /* 1억 이상은 억으로 — 만으로 적으면 5자리가 되어 칸을 넘는다 */
+      if (n >= 100000000) return fx(n / 100000000, 2) + "억";   /* 1억 이상은 억으로 — 만으로 적으면 5자리가 되어 칸을 넘는다. (v105) 소수 둘째 자리까지 */
       if (n >= 10000) return Math.round(n / 10000).toLocaleString("ko-KR") + "만";
       if (n > 0) return fx(n / 10000, 1) + "만";
       return "0";
@@ -5398,8 +5407,8 @@
       var xAt = function (i) { return LBL + cellW * i + (i >= SPLIT ? YEAR_GAP : 0); };
       var rowsH = list.length * (cellH + GAPY) + 7;
       var H = MT + rowsH + 14 + (HEAT ? 24 : 0);          /* 히트맵은 아래에 범례 한 줄 */
-      /* 합계 줄 전월 대비 — 금액 · ROAS 일 때만(비중은 늘 100%). 당월은 진행 중이라 비교하지 않는다 */
-      var MOM_ON = HEAT && !(st.form === "share" && st.metric !== "roas");
+      /* (v105) 합계 줄은 전월 대비 초록 · 빨강 대신 원래 히트맵으로 — 21개월(당월 제외) 안에서 클수록 진한 파랑 · 흰 글씨 */
+      var SUM_STOPS = ["#eef4fb", "#d3e3f5", "#a9c8ea", "#7aa8dc", "#4d86cb", "#2a63ad", "#14335c"];
 
       var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img",
         "aria-label": "카테고리별 " + metricLabel() + ". 행이 카테고리, 열이 월입니다." });
@@ -5429,7 +5438,7 @@
         });
         /* 범례 — 차트 아래 한 줄 (위쪽은 연도 · 월 · 「당월」 표시가 차지한다) */
         var lgY = MT + rowsH + 14, lgItems = [["#b5cff2", "상위 10%", "#6f9fdc", 92], ["#dce8f8", "상위 20%", "#b3cbea", 110]];
-        if (MOM_ON) lgItems.push(["#cdebd7", "합계 · 전월보다 증가", "#8cc9a2", 150], ["#f5d2d2", "합계 · 전월보다 감소", "#e0a0a0", 150]);
+        lgItems.push(["#4d86cb", "합계 줄 · 21개월 중 클수록 진한 파랑", "#2a63ad", 220]);
         var gx = LBL;
         lgItems.forEach(function (q) {
           svg.appendChild(el("rect", { x: gx, y: lgY - 9, width: 12, height: 12, rx: 3, fill: q[0], stroke: q[2], "stroke-width": 1 }));
@@ -5558,14 +5567,13 @@
           var rc;
           var isEtc = /^기타/.test(row.cat);
           var tier = (HEAT && !row.isTotal && !isEtc && !empty) ? (v >= TIER[i].t10 ? 2 : v >= TIER[i].t20 ? 1 : 0) : 0;
-          /* 합계 줄 전월 대비 (v104) — 늘면 초록 · 줄면 빨강, ±10% 이상이면 한 단계 진하게. 당월 · 첫 달은 중립 */
-          var mom = (MOM_ON && row.isTotal && !empty && i > 0 && i !== CURM && vals[i - 1] > 0) ? v / vals[i - 1] - 1 : null;
-          var momFill = mom === null ? null : mom >= 0.1 ? "#cdebd7" : mom >= 0 ? "#e5f4ea" : mom <= -0.1 ? "#f5d2d2" : "#fbe7e7";
+          /* 합계 줄 (v105) — 행 자신의 범위(rng)로 칠하는 원래 히트맵. 진하면(t > 0.6) 흰 글씨 */
+          var sumFill = (HEAT && row.isTotal && !empty) ? SUM_STOPS[Math.min(6, Math.round(t * 6))] : null;
           if (st.mode === "heat") {
             /* 칸 배경은 상위 10% · 20% 만 칠하고 나머지는 비워 둔다 — 숫자는 글자색으로 크기를 보인다 (v104) */
             rc = el("rect", { x: xAt(i) + CELL_INSET / 2, y: y + 1, width: Math.max(2, cellW - CELL_INSET), height: cellH - 2, rx: 4, ry: 4,
               /* v104: 한 단계 더 진하게 — 상위 10% 는 옅은 테두리까지 둘러 한눈에 */
-              fill: momFill || (tier === 2 ? "#b5cff2" : tier === 1 ? "#dce8f8" : "transparent"),
+              fill: sumFill || (tier === 2 ? "#b5cff2" : tier === 1 ? "#dce8f8" : "transparent"),
               stroke: tier === 2 ? "#6f9fdc" : "none", "stroke-width": tier === 2 ? 1 : 0 });
           } else {
             /* 막대 바닥은 라벨 자리를 남겨 두고 그린다 */
@@ -5589,9 +5597,9 @@
             /* 글자색 4단계 — 같은 달 안에서 작을수록 연한 회색, 클수록 진한 남색 · 굵게.
                합계 줄은 검정 굵게, 기타(나머지 묶음)는 눈에 덜 띄게 회색. 집행이 없으면 가운뎃점만 */
             var step = t < 0.25 ? 0 : t < 0.5 ? 1 : t < 0.75 ? 2 : 3;
-            var tcol = empty ? "#c5cdd8" : row.isTotal ? (mom === null ? "var(--ink)" : mom >= 0 ? "#0b6b2e" : "#b02f2f") : isEtc ? "#7b8798"
+            var tcol = empty ? "#c5cdd8" : row.isTotal ? (t > 0.6 ? "#ffffff" : "var(--ink)") : isEtc ? "#7b8798"
                      : (tier === 2 ? "#0f2f66" : ["#9aa6b5", "#66758b", "#2f63a8", "#0f2f66"][step]);
-            var tw = empty ? 400 : row.isTotal ? (mom !== null && Math.abs(mom) >= 0.1 ? 800 : 700) : isEtc ? 500 : (tier === 2 || step === 3 ? 800 : step === 2 ? 700 : 500);
+            var tw = empty ? 400 : row.isTotal ? 700 : isEtc ? 500 : (tier === 2 || step === 3 ? 800 : step === 2 ? 700 : 500);
             var tx = el("text", { x: xAt(i) + cellW / 2, y: y + cellH / 2 + 4, class: "seglabel",
               "text-anchor": "middle", fill: tcol }, empty ? "·" : fmt(v, row.isTotal));
             tx.style.fontSize = row.isTotal ? "11.5px" : "11px";
@@ -5627,7 +5635,7 @@
         "<b>" + (st.brand === "전체" ? "전 브랜드" : st.brand) + (cpScope() ? " · " + cpScope() : "") + "</b> · 칸 안 숫자는 <b>" + metricLabel() + "</b>입니다. " +
         (st.form === "share" && st.metric !== "roas"
           ? "<b>비중은 그 달 전체 대비</b>라 세로로 더하면 100%가 됩니다. "
-          : (st.metric === "roas" ? "" : "금액은 <b>만원 단위</b>이고 1억을 넘으면 <b>1.1억</b> 처럼 억으로 적었습니다. 원 단위까지는 마우스를 올리거나 「표로 보기」에서 보실 수 있습니다. ")) +
+          : (st.metric === "roas" ? "" : "금액은 <b>만원 단위</b>이고 1억을 넘으면 <b>1.12억</b> 처럼 억으로(소수 둘째 자리까지) 적었습니다. 원 단위까지는 마우스를 올리거나 「표로 보기」에서 보실 수 있습니다. ")) +
         (st.mode === "heat"
           ? "<b>색은 같은 달(세로) 안에서 카테고리끼리 비교</b>합니다 — <b>글자가 진할수록 그 달에 큰 값</b>이고, 그 달 <b>상위 10%는 진한 파랑 · 상위 20%는 옅은 파랑 바탕</b>입니다. 한 열을 위아래로 훑으면 그 달에 어느 품목이 컸는지 바로 보입니다. "
           : "<b>막대 높이는 그 카테고리의 21개월 안에서</b> 잡아, 품목별 시간 흐름을 봅니다. ") +
@@ -5865,24 +5873,50 @@
       manualFold = true;
       var folded = !head.classList.contains("folded");
       head.classList.remove("slim"); isSlim = false;
+      head.style.marginBottom = "";
       paintFold(folded);
       try { localStorage.setItem(FOLD_KEY, folded ? "1" : "0"); } catch (e) {}
     });
 
-    /* 모바일에서는 스크롤만으로도 접힌다 — 직접 접기를 쓰기 전까지만. */
-    var isSlim = false;
+    /* 스크롤하면 한 줄로 접힌다(v104: 넓은 화면도) — 직접 접기를 쓰기 전까지만.
+       (v105) 흔들림 방지 — 상단바가 줄면 그만큼 본문이 위로 당겨지고, 브라우저가 스크롤 위치를 보정하면서
+       기준선(40px)을 다시 넘나들어 줄었다 늘었다를 반복하는 환경이 있었다(창 높이 · 배율에 따라).
+         ① 기준선을 둘로 — 56px 아래로 내려가야 접고, 8px 위로 올라와야 편다.
+         ② 본문 위치 고정 — 줄어든 높이만큼 상단바 아래 여백(margin-bottom)으로 채워, 접히는 동안에도 본문이 움직이지 않는다.
+         ③ 바뀌는 순간 0.5초만 브라우저의 스크롤 위치 보정(overflow-anchor)을 끈다. */
+    var isSlim = false, restH = 0, anchorT = null;
+    var SLIM_IN = 56, SLIM_OUT = 8;
+    function measureRest() { if (!isSlim && !head.classList.contains("folded")) restH = head.offsetHeight; }
+    function compensate() {
+      var h = head.offsetHeight;
+      var mb = (!manualFold && restH && !head.classList.contains("folded") && (isSlim || h < restH)) ? Math.max(0, restH - h) : 0;
+      var want = mb ? mb + "px" : "";
+      if (head.style.marginBottom !== want) head.style.marginBottom = want;
+      syncH();
+    }
+    function holdAnchor() {
+      document.documentElement.style.overflowAnchor = "none";
+      clearTimeout(anchorT);
+      anchorT = setTimeout(function () { document.documentElement.style.overflowAnchor = ""; }, 500);
+    }
     function syncSlim() {
       if (manualFold) return;
       var y = window.pageYOffset || document.documentElement.scrollTop || 0;
-      var want = y > 40;              /* v104: 넓은 화면도 스크롤하면 한 줄로 — 블록이 한 화면에 들어오도록 */
+      var want = isSlim ? y > SLIM_OUT : y > SLIM_IN;
       if (want === isSlim) return;
+      if (want) measureRest();
+      holdAnchor();
       isSlim = want;
       head.classList.toggle("slim", want);
-      syncH();
+      compensate();
     }
+    measureRest();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!isSlim) measureRest(); compensate(); });
     syncSlim();
     window.addEventListener("scroll", syncSlim, { passive: true });
-    window.addEventListener("resize", syncSlim);
+    window.addEventListener("resize", function () { if (!isSlim) measureRest(); syncSlim(); compensate(); });
+    /* 접히고 펴지는 애니메이션(패딩 전환) 동안에도 매 프레임 여백을 맞춘다 */
+    if (window.ResizeObserver) new ResizeObserver(compensate).observe(head);
 
     var flashT = null;
     document.querySelectorAll(".jump a").forEach(function (a) {
@@ -5941,7 +5975,13 @@
     box.__place = snapPlace;
     thumbs.push(box);
     snapPlace();
-    new MutationObserver(place).observe(box, { subtree: true, attributes: true, attributeFilter: ["aria-pressed"] });   /* 자기 style 은 지켜보지 않는다 — 스스로를 다시 부르는 고리가 된다 */
+    /* 자기 style 은 지켜보지 않는다 — 스스로를 다시 부르는 고리가 된다.
+       (v105) 버튼 묶음을 innerHTML 로 통째로 다시 그리면(일별 효율 「기간」 등) 조각까지 지워져
+       눌린 버튼이 흰 바탕에 흰 글씨가 됐다 → 조각이 빠졌으면 다시 끼우고 제자리로 옮긴다 */
+    new MutationObserver(function () {
+      if (t.parentNode !== box) { box.insertBefore(t, box.firstChild); void t.offsetWidth; }
+      place();
+    }).observe(box, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-pressed"] });
     if (window.ResizeObserver) new ResizeObserver(snapPlace).observe(box);
   }
   each(d.querySelectorAll(".seg, .modesw"), mountThumb);
@@ -6472,7 +6512,8 @@
     if (!p || p.nodeType !== 1) return false;
     var tag = p.nodeName;
     if (tag === "SCRIPT" || tag === "STYLE" || tag === "TEXTAREA") return true;
-    return !!(p.classList && (p.classList.contains("yr")));      // 월 선택 버튼의 연도 표시(예: 25)
+    if (p.classList && p.classList.contains("yr")) return true;   // 월 선택 버튼의 연도 표시(예: 25)
+    return !!(p.classList && p.classList.contains("dt") && p.closest && p.closest(".updpanel"));   // 업데이트 내역 날짜 [26.9.13]
   }
   var done = typeof WeakSet === "function" ? new WeakSet() : null;   // 영상 모드: 이미 바꾼 글자를 다시 바꾸지 않는다
   function doText(n) {
@@ -6521,9 +6562,9 @@
     ".vwm{position:fixed;right:14px;bottom:14px;z-index:400;font:600 13px/1 system-ui,'Malgun Gothic',sans-serif;color:#fff;background:rgba(13,27,42,.86);padding:8px 12px;border-radius:6px;letter-spacing:-.01em;pointer-events:none}" +
     ".vcur{position:fixed;left:0;top:0;z-index:401;width:22px;height:22px;pointer-events:none;transition:opacity .2s;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}" +
     ".vclick{position:fixed;z-index:400;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:2px solid #2a78d6;pointer-events:none;opacity:0}" +
-    "html.vexplore .vcur{opacity:0}" +
-    /* 영상에서는 새 조작부(쿠팡 세부 · 상단 버튼 · 원형 단위)를 숨겨 장면을 단순하게 */
-    "#pCpCtl,.headbtns,#pPieUnit,#updPanel{display:none!important}";
+    "html.vexplore .vcur{opacity:0}";
+    /* (2026-09-13) 예전에는 영상에서 쿠팡 세부 · 상단 버튼 · 원형 단위 · 업데이트 내역을 숨겼으나,
+       이력서의 라이브 데모(?video&explore)가 실제 대시보드와 똑같이 보이도록 모두 보인다. 엑셀 받기만 BANNER_CSS 에서 숨긴다. */
   d.head.appendChild(css);
   var bn = d.querySelector(".demo-banner span:last-child");
   if (bn) bn.textContent = "영상용 사본입니다. 화면의 숫자는 모두 임의 값이며 실제 수치가 아닙니다.";
