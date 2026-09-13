@@ -791,9 +791,9 @@
   @keyframes keyglow { 0% { stroke-opacity: 0; } 45% { stroke-opacity: 1; stroke-width: 4; } 100% { stroke-opacity: 1; } }
   @keyframes keyfade { 0% { opacity: 0; } 50% { opacity: 1; } 70% { opacity: 0.6; } 100% { opacity: 1; } }
   @keyframes keydraw { from { stroke-dasharray: 60; stroke-dashoffset: 60; } to { stroke-dasharray: 60; stroke-dashoffset: 0; } }
-  #brandChart .keyrow { animation: keyglow 1.2s var(--ease-out) 0.35s both; }
-  #mixChart .keyband { animation: keyfade 1.4s ease-out 0.3s both; }
-  #brandChart .keyline, #mixChart .keyline { animation: keydraw 0.6s var(--ease-out) 0.6s both; }
+  #brandChart .keyrow, #roasChart .keyrow { animation: keyglow 1.2s var(--ease-out) 0.35s both; }
+  #mixChart .keyband, #roasChart .keyband, #dailyCombo .keyband, #pChart .keyband { animation: keyfade 1.4s ease-out 0.3s both; }
+  #brandChart .keyline, #mixChart .keyline, #roasChart .keyline, #dailyCombo .keyline, #pChart .keyline { animation: keydraw 0.6s var(--ease-out) 0.6s both; }
 
   /* ---------- 매체별 성과 — 쿠팡 · 네이버 세부 행 접기 (v104) ---------- */
   .grpfold { align-self: center; display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px 0 5px; margin-left: 2px;
@@ -1009,9 +1009,12 @@
                    border-radius: 2px; background: var(--surface); color: var(--ink); cursor: pointer; }
   .pieper select:focus-visible { outline: 2px solid var(--s1); outline-offset: 1px; }
   /* ① · ② 원형 — 기준 월 · 비교 월을 한 줄로 (v104: 두 줄 → 가로 한 줄) */
-  .piepers { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
-  .piepers .pp { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }   /* 이름 + 상자는 한 묶음 — 아주 좁을 때만 묶음째 줄바꿈 */
+  .piepers { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; max-width: 100%; }
+  .piepers .pp { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; min-width: 0; }   /* 이름 + 상자는 한 묶음 — 좁으면 묶음째 줄바꿈 */
   .piepers label { cursor: pointer; }
+  /* 상자는 가장 긴 선택지만큼 넓어지므로 상한을 둔다 — 카드 밖으로 뚫고 나가던 문제 (v104) */
+  .piepers select { max-width: 10.5em; padding: 3px 4px; text-overflow: ellipsis; }
+  .col-side .piepers select { font-size: 12.5px; }
   .ptabwrap tr.pmember td { color: var(--ink-2); font-weight: 400; }
   .ptabwrap tr.pmember td:first-child { padding-left: 14px; font-weight: 400; }
   @media (max-width: 900px) { .prodsum { margin-left: 0; width: 100%; } .prodctl .chips { max-width: none; } }
@@ -1310,6 +1313,8 @@
       ["<b>매체별 성과</b> — 쿠팡 · 네이버 세부 행을 접었다 펼 수 있습니다.", "#mediaBody"],
       ["<b>일별 효율 조회 · 품목별 성과</b> 요약 칸 — 2줄로 접히면 평균 ROAS를 맨 아래 한 줄에 표시합니다.", "#dstats"],
       ["쿠팡 3P(윙) 내부 전환매출 차감 기준과 매체별 '기타'(상품 미연결 지면) 계산을 바로잡았습니다.", "#go-prod"],
+      ["<b>채널별 ROAS 추이 · 일별 효율 조회 · 품목별 성과</b> — 가장 최근 달(일 · 주)을 강조하고, 품목별 합계 줄은 전월보다 늘면 초록 · 줄면 빨강으로 표시합니다.", "#pChart", [HEAT_P]],
+      ["「읽을 때 참고」를 품목별 성과 아래 맨 끝으로 옮겼습니다.", ".foot"],
       ["서체 교체(Pretendard) · 애니메이션과 버튼 반응 보강 · 모바일 화면 정리 · 상단 「업데이트 내역」 추가."]
     ] },
     { d: "2026-09-12", v: "V101", t: "차트 애니메이션 · 화면 반응 추가 등", items: [
@@ -1625,40 +1630,6 @@
     </div>
   </section>
 
-  <!-- ===================== 각주 (DEMO) ===================== -->
-  <section>
-    <div class="sechead"><h2>읽을 때 참고</h2></div>
-    <div class="card">
-      <div class="fnote">
-        <span class="k">단일 기준</span>
-        <span class="b">매체마다 다른 리포트 기준을 <b>VAT 제외 · 매체 수수료 차감의 내부 기준</b>으로 통일해, 채널 간 ROAS를 같은 잣대로 비교합니다. 광고비에 VAT가 포함된 매체는 분모를 환산합니다.</span>
-      </div>
-      <div class="fnote">
-        <span class="k">합계 원칙</span>
-        <span class="b"><b>주력 5채널(쿠팡 1P·3P, 네이버 쇼핑검색·GFA·파워링크)이 모두 있는 날만</b> 일별 합계를 냅니다. 일부 채널만 더해 총액처럼 보이는 왜곡을 막기 위해서입니다. 월별은 데이터가 빈 채널-월을 합계에서 제외하고 그 사실을 표시합니다.</span>
-      </div>
-      <div class="fnote">
-        <span class="k">미집행 ≠ 결측</span>
-        <span class="b">광고를 <b>실제로 집행하지 않은 기간</b>과 <b>데이터가 없는 기간</b>을 구분해 기록합니다. 미집행 구간은 차트에서 빈칸으로 보이는 것이 정상입니다.</span>
-      </div>
-      <div class="fnote">
-        <span class="k">원본 대조 검증</span>
-        <span class="b">일별 데이터는 원본 광고 리포트와 백업 파일에서 복원했고, <b>모든 구간을 월 합계와 대조</b>했습니다. 리포트가 사후 정정된 구간은 일별 분포를 유지한 채 월 합계에 맞춰 비례 보정합니다.</span>
-      </div>
-      <div class="fnote">
-        <span class="k">누락 탐지</span>
-        <span class="b">스프레드시트 피벗의 필터가 신규 캠페인을 자동으로 포함하지 않아 생긴 <b>집계 누락을 원본 전체 집계로 찾아내</b> 반영했습니다. 원천 파일의 가공 계수 오류도 영향받지 않는 경로에서 다시 계산합니다.</span>
-      </div>
-      <div class="fnote">
-        <span class="k">전년 동월</span>
-        <span class="b">진행 중인 달과 전년 동월은 집계 일수가 달라 <b>절대 금액이 아니라 구성비만</b> 비교합니다. 월 초반은 채널별 집행 시작 시점 차이로 구성비가 흔들릴 수 있습니다.</span>
-      </div>
-      <div class="fnote">
-        <span class="k">DEMO</span>
-        <span class="b">이 페이지는 실제 운영 대시보드의 사본입니다. <b>모든 금액은 임의 계수로 변환</b>되어 있고 화면의 수치는 가려져 있습니다. 차트 형태·색·상호작용은 원본과 같습니다.</span>
-      </div>
-    </div>
-  </section>
 
 
     <section>
@@ -1750,6 +1721,41 @@
         <div id="pTools" hidden></div>
       </div>
     </section>
+
+  <!-- ===================== 각주 (DEMO) ===================== -->
+  <section>
+    <div class="sechead"><h2>읽을 때 참고</h2></div>
+    <div class="card">
+      <div class="fnote">
+        <span class="k">단일 기준</span>
+        <span class="b">매체마다 다른 리포트 기준을 <b>VAT 제외 · 매체 수수료 차감의 내부 기준</b>으로 통일해, 채널 간 ROAS를 같은 잣대로 비교합니다. 광고비에 VAT가 포함된 매체는 분모를 환산합니다.</span>
+      </div>
+      <div class="fnote">
+        <span class="k">합계 원칙</span>
+        <span class="b"><b>주력 5채널(쿠팡 1P·3P, 네이버 쇼핑검색·GFA·파워링크)이 모두 있는 날만</b> 일별 합계를 냅니다. 일부 채널만 더해 총액처럼 보이는 왜곡을 막기 위해서입니다. 월별은 데이터가 빈 채널-월을 합계에서 제외하고 그 사실을 표시합니다.</span>
+      </div>
+      <div class="fnote">
+        <span class="k">미집행 ≠ 결측</span>
+        <span class="b">광고를 <b>실제로 집행하지 않은 기간</b>과 <b>데이터가 없는 기간</b>을 구분해 기록합니다. 미집행 구간은 차트에서 빈칸으로 보이는 것이 정상입니다.</span>
+      </div>
+      <div class="fnote">
+        <span class="k">원본 대조 검증</span>
+        <span class="b">일별 데이터는 원본 광고 리포트와 백업 파일에서 복원했고, <b>모든 구간을 월 합계와 대조</b>했습니다. 리포트가 사후 정정된 구간은 일별 분포를 유지한 채 월 합계에 맞춰 비례 보정합니다.</span>
+      </div>
+      <div class="fnote">
+        <span class="k">누락 탐지</span>
+        <span class="b">스프레드시트 피벗의 필터가 신규 캠페인을 자동으로 포함하지 않아 생긴 <b>집계 누락을 원본 전체 집계로 찾아내</b> 반영했습니다. 원천 파일의 가공 계수 오류도 영향받지 않는 경로에서 다시 계산합니다.</span>
+      </div>
+      <div class="fnote">
+        <span class="k">전년 동월</span>
+        <span class="b">진행 중인 달과 전년 동월은 집계 일수가 달라 <b>절대 금액이 아니라 구성비만</b> 비교합니다. 월 초반은 채널별 집행 시작 시점 차이로 구성비가 흔들릴 수 있습니다.</span>
+      </div>
+      <div class="fnote">
+        <span class="k">DEMO</span>
+        <span class="b">이 페이지는 실제 운영 대시보드의 사본입니다. <b>모든 금액은 임의 계수로 변환</b>되어 있고 화면의 수치는 가려져 있습니다. 차트 형태·색·상호작용은 원본과 같습니다.</span>
+      </div>
+    </div>
+  </section>
 
   <footer class="foot">
     <span>출처 — 매체별 광고 리포트 원본을 읽기 전용으로 파싱 (원본 미변경)</span>
@@ -2295,15 +2301,16 @@
     var h = '<optgroup label="연도 합계">';
     perYears().forEach(function (y) {
       var v = "y" + y, ix = perIdx(v), live = perLive(ix);
+      /* 이름은 짧게 — 상자 폭이 가장 긴 이름을 따라가므로 (26년 합계 (~9월) · 26년 9월 (진행)) */
       h += '<option value="' + v + '"' + (v === sel ? " selected" : "") + (v === dis ? " disabled" : "") + '>' + y.slice(2) + '년 합계' +
-        (ix.length < 12 || live ? ' (' + parseInt(MONTHS[ix[0]].slice(5), 10) + '~' + parseInt(MONTHS[ix[ix.length - 1]].slice(5), 10) + '월' + (live ? ', 진행 중' : '') + ')' : '') +
+        (ix.length < 12 || live ? ' (~' + parseInt(MONTHS[ix[ix.length - 1]].slice(5), 10) + '월)' : '') +
         '</option>';
     });
     h += '</optgroup><optgroup label="월">';
     for (var i = PIE_L; i >= 0; i--) {
       var mv = "m" + i;
       h += '<option value="' + mv + '"' + (mv === sel ? " selected" : "") + (mv === dis ? " disabled" : "") + '>' +
-        ymL(MONTHS[i]) + (i === PIE_L ? " (진행 중)" : "") + '</option>';
+        ymL(MONTHS[i]) + (i === PIE_L ? " (진행)" : "") + '</option>';
     }
     return h + '</optgroup>';
   }
@@ -2311,7 +2318,7 @@
   function pieCmpOptions(sel, cmp, p) {
     var yx = perYoy(p), isY = p.charAt(0) === "y";
     sel.innerHTML = '<option value="yoy"' + (yx ? "" : " disabled") + (cmp === "yoy" ? " selected" : "") + '>' +
-      (isY ? "전년 동기" : "전년 동월") + (yx ? " (" + spanL(yx) + ")" : " — 없음") + '</option>' +
+      (isY ? "전년 동기" : "전년 동월") + (yx ? " (" + spanL(yx).replace("년 ", ".").replace("월", "") + ")" : " — 없음") + '</option>' +
       pieOptHtml(cmp === "yoy" ? null : cmp, p);
   }
   /* 도넛 제목 · 표 머리 — 비교 쪽 이름 */
@@ -2577,8 +2584,7 @@
       var savedFold = null;
       try { savedFold = localStorage.getItem("hmr.mediaFold"); } catch (e) {}
       try { FOLD = JSON.parse(savedFold || "{}") || {}; } catch (e) { FOLD = {}; }
-      /* 직접 고른 적이 없고 창 높이가 낮은 넓은 화면이면 세부 행은 접힌 채로 시작 — 1블록이 한 화면에 들어오게 (v104) */
-      if (savedFold === null && window.innerWidth > 1400 && window.innerHeight < 900) FOLD = { "쿠팡": true, "네이버": true };
+      /* 기본은 펼침(사용자 요청) — 접기는 사람이 직접 눌렀을 때만, 그 선택은 이 브라우저에 기억 */
       window.__hmrFold = FOLD;
     }
     var FOLD_ICON = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -3618,9 +3624,20 @@
         svg.appendChild(el("line", { x1: ML, x2: ML + iw, y1: y, y2: y, class: g === 0 ? "baseline" : "axline" }));
         svg.appendChild(el("text", { x: ML - 9, y: y + 4.5, class: "tick", "text-anchor": "end" }, pr(g)));
       }
+      /* 가장 최근 달 강조 (v104) — 옅은 파란 띠(선 · 점 뒤) · 위에 「당월」 · 월 라벨 파란 굵게 + 밑줄 */
+      var LMl = months.length - 1, stepX = months.length > 1 ? xs[1] - xs[0] : 40;
       months.forEach(function (m, i) {
-        svg.appendChild(el("text", { x: xs[i], y: MT + ih + 18, class: "tick", "text-anchor": "middle" }, m));
+        var mt = el("text", { x: xs[i], y: MT + ih + 18, class: "tick", "text-anchor": "middle" }, m);
+        if (i === LMl) { mt.setAttribute("fill", "var(--s1)"); mt.setAttribute("font-weight", "800"); }
+        svg.appendChild(mt);
       });
+      var lbandL = el("rect", { x: xs[LMl] - stepX * 0.42, y: MT - 4, width: stepX * 0.84, height: ih + 30, rx: 7, ry: 7,
+        fill: "var(--s1)", "fill-opacity": 0.1, class: "keyband" });
+      lbandL.style.pointerEvents = "none";
+      svg.appendChild(lbandL);
+      svg.appendChild(el("text", { x: xs[LMl], y: MT - 6, class: "tick", "text-anchor": "middle", fill: "var(--s1)", "font-weight": "800", "font-size": "11" }, "당월"));
+      svg.appendChild(el("line", { x1: xs[LMl] - 9, x2: xs[LMl] + 9, y1: MT + ih + 24, y2: MT + ih + 24,
+        stroke: "var(--s1)", "stroke-width": 2.6, "stroke-linecap": "round", class: "keyline" }));
 
       // 축은 활성 채널 기준으로 잡히므로, 범위를 벗어나는 비활성 선은 플롯 안에서 잘리게 한다
       var clipId = "roasPlotClip";
@@ -3875,10 +3892,23 @@
       svg.appendChild(el("line", { x1: sepX, x2: sepX, y1: MT - 40, y2: MT + rowsH - 6,
         stroke: "var(--rule-strong)", "stroke-width": 1, "stroke-dasharray": "3 3" }));
 
+      /* 가장 최근 달 강조 (v104) — ② 당월 막대와 같은 방식: 열 뒤 옅은 파란 띠 · 위에 「당월」 · 머리글 파란 굵게 + 밑줄 */
+      var LM = months.length - 1;
+      var kb = el("rect", { x: xAt(LM) - 1, y: MT - 26, width: cellW + 2, height: rowsH + 22, rx: 6, ry: 6,
+        fill: "var(--s1)", "fill-opacity": 0.1, class: "keyband" });
+      kb.style.pointerEvents = "none";
+      svg.appendChild(kb);
+      svg.appendChild(el("text", { x: xAt(LM) + cellW / 2, y: MT - 30, class: "tick", "text-anchor": "middle",
+        fill: "var(--s1)", "font-weight": "800", "font-size": "11.5" }, "당월"));
       months.forEach(function (m, i) {
-        svg.appendChild(el("text", { x: xAt(i) + cellW / 2, y: MT - 12, class: "tick", "text-anchor": "middle" },
-          parseInt(MONTHS[i].slice(5), 10)));
+        var mh = el("text", { x: xAt(i) + cellW / 2, y: MT - 12, class: "tick", "text-anchor": "middle" },
+          parseInt(MONTHS[i].slice(5), 10));
+        if (i === LM) { mh.setAttribute("fill", "var(--s1)"); mh.setAttribute("font-weight", "800"); }
+        svg.appendChild(mh);
       });
+      svg.appendChild(el("line", { x1: xAt(LM) + cellW / 2 - 8, x2: xAt(LM) + cellW / 2 + 8, y1: MT - 6, y2: MT - 6,
+        stroke: "var(--s1)", "stroke-width": 2.6, "stroke-linecap": "round", class: "keyline" }));
+      var totY = null;
 
       function tipForCell(si, i) {
         var sr = S[si], v = sr.v[i];
@@ -3920,6 +3950,7 @@
         var sr = S[si];
         var isTot = !!sr.total;
         var y = yCur;
+        if (isTot) totY = y;
         var lb = el("text", { x: LBL / 2 - 2, y: y + cellH / 2 + 6, class: "elabel", "text-anchor": "middle",
           fill: isTot ? "var(--ink)" : "var(" + sr.color + ")" }, isTot ? "합 계" : sr.key);
         if (isTot) { lb.setAttribute("font-weight", "700"); lb.setAttribute("font-size", "18"); }
@@ -3957,6 +3988,16 @@
             stroke: "var(--rule-strong)", "stroke-width": 1 }));
         }
       });
+      /* 합계 행 강조 (v104) — ① 브랜드 의존도 히트맵과 같은 방식: 행을 파란 테두리로 감싸고 라벨에 밑줄 */
+      if (totY !== null) {
+        var tr0 = el("rect", { x: xAt(0) - 2, y: totY - 2, width: xAt(LM) + cellW - xAt(0) + 3, height: cellH + 4, rx: 5, ry: 5,
+          fill: "none", stroke: "var(--s1)", "stroke-width": 2.2, class: "keyrow" });
+        tr0.style.pointerEvents = "none";
+        svg.appendChild(tr0);
+        var tl0 = el("line", { x1: LBL / 2 - 24, x2: LBL / 2 + 20, y1: totY + cellH / 2 + 13, y2: totY + cellH / 2 + 13,
+          stroke: "var(--s1)", "stroke-width": 2.8, "stroke-linecap": "round", class: "keyline" });
+        svg.appendChild(tl0);
+      }
 
       $("roasChart").innerHTML = "";
       $("roasChart").appendChild(svg);
@@ -4421,6 +4462,17 @@
           svg.appendChild(el("rect", { x: MLc + bandC * k, y: MT, width: bandC, height: ih, fill: "var(--band)" }));
         });
       }
+      /* 가장 최근 칸 강조 (v104) — ② 당월 막대와 같은 방식: 뒤에 옅은 파란 띠 · 위에 이름 · 아래 라벨 파란 굵게 + 밑줄.
+         이름은 집계 단위를 따른다(일 = 최근일 · 주 = 당주 · 월 = 당월) */
+      var LK = pts.length - 1, LTAG = unit === "day" ? "최근일" : unit === "week" ? "당주" : "당월";
+      var lbw = Math.max(6, bandC * 0.9), lcx = MLc + bandC * LK + bandC / 2;
+      var dkb = el("rect", { x: lcx - lbw / 2, y: MT - 13, width: lbw, height: ih + 13 + 30, rx: Math.min(6, lbw / 2), ry: Math.min(6, lbw / 2),
+        fill: "var(--s1)", "fill-opacity": 0.1, class: "keyband" });
+      dkb.style.pointerEvents = "none";
+      svg.appendChild(dkb);
+      var dtag = el("text", { x: Math.min(lcx, W - MRc + 30), y: MT - 3, class: "tick", "text-anchor": "middle", fill: "var(--s1)", "font-weight": "800" }, LTAG);
+      dtag.style.fontSize = "11px";
+      svg.appendChild(dtag);
 
       // 가로 격자는 왼쪽(광고비) 기준 한 벌만 그린다
       for (var g = 0; g <= topC + 0.001; g += stepC) {
@@ -4574,8 +4626,12 @@
       // x축
       pts.forEach(function (p, k) {
         if (skipLabel(k)) return;
-        svg.appendChild(el("text", { x: MLc + bandC * k + bandC / 2, y: H - MB + 20, class: "tick", "text-anchor": "middle" }, p.label));
+        var xl = el("text", { x: MLc + bandC * k + bandC / 2, y: H - MB + 20, class: "tick", "text-anchor": "middle" }, p.label);
+        if (k === LK) { xl.setAttribute("fill", "var(--s1)"); xl.setAttribute("font-weight", "800"); }
+        svg.appendChild(xl);
       });
+      svg.appendChild(el("line", { x1: lcx - 12, x2: lcx + 12, y1: H - MB + 26, y2: H - MB + 26,
+        stroke: "var(--s1)", "stroke-width": 2.6, "stroke-linecap": "round", class: "keyline" }));
 
       $("dailyCombo").innerHTML = ""; $("dailyCombo").appendChild(svg);
     })();
@@ -5341,7 +5397,9 @@
       var cellW = (W - LBL - RPAD - YEAR_GAP) / MONTHS.length;
       var xAt = function (i) { return LBL + cellW * i + (i >= SPLIT ? YEAR_GAP : 0); };
       var rowsH = list.length * (cellH + GAPY) + 7;
-      var H = MT + rowsH + 14;
+      var H = MT + rowsH + 14 + (HEAT ? 24 : 0);          /* 히트맵은 아래에 범례 한 줄 */
+      /* 합계 줄 전월 대비 — 금액 · ROAS 일 때만(비중은 늘 100%). 당월은 진행 중이라 비교하지 않는다 */
+      var MOM_ON = HEAT && !(st.form === "share" && st.metric !== "roas");
 
       var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img",
         "aria-label": "카테고리별 " + metricLabel() + ". 행이 카테고리, 열이 월입니다." });
@@ -5369,16 +5427,29 @@
             svg.appendChild(el("line", { x1: xAt(i), x2: xAt(i), y1: MT - 4, y2: MT + rowsH - 4, stroke: "#dde3ec", "stroke-width": 1 }));
           }
         });
-        /* 범례 — 배경 두 단계 */
-        var lgX = W - RPAD - 176, lgY = MT - 36;
-        [["#c9dcf4", "상위 10%"], ["#e7eff9", "상위 20%"]].forEach(function (q, k) {
-          var gx = lgX + k * 100;
-          svg.appendChild(el("rect", { x: gx, y: lgY - 9, width: 12, height: 12, rx: 3, fill: q[0], stroke: "#b8cbe6", "stroke-width": 0.8 }));
+        /* 범례 — 차트 아래 한 줄 (위쪽은 연도 · 월 · 「당월」 표시가 차지한다) */
+        var lgY = MT + rowsH + 14, lgItems = [["#b5cff2", "상위 10%", "#6f9fdc", 92], ["#dce8f8", "상위 20%", "#b3cbea", 110]];
+        if (MOM_ON) lgItems.push(["#cdebd7", "합계 · 전월보다 증가", "#8cc9a2", 150], ["#f5d2d2", "합계 · 전월보다 감소", "#e0a0a0", 150]);
+        var gx = LBL;
+        lgItems.forEach(function (q) {
+          svg.appendChild(el("rect", { x: gx, y: lgY - 9, width: 12, height: 12, rx: 3, fill: q[0], stroke: q[2], "stroke-width": 1 }));
           var lt = el("text", { x: gx + 17, y: lgY + 1.5, class: "tick", fill: "var(--ink-2)" }, q[1]);
           lt.style.fontSize = "11.5px";
           svg.appendChild(lt);
+          gx += q[3];
         });
       }
+      /* 가장 최근 달 강조 (v104) — ② 당월 막대와 같은 방식: 열 뒤 옅은 파란 띠 · 위에 「당월」 · 머리글 파란 굵게 + 밑줄 */
+      var CURK = MONTHS.length - 1;
+      var pkb = el("rect", { x: xAt(CURK) + 1, y: MT - 25, width: cellW - 2, height: rowsH + 21, rx: 6, ry: 6,
+        fill: "var(--s1)", "fill-opacity": 0.1, class: "keyband" });
+      pkb.style.pointerEvents = "none";
+      svg.appendChild(pkb);
+      var ptag = el("text", { x: xAt(CURK) + cellW / 2, y: MT - 27, class: "tick", "text-anchor": "middle", fill: "var(--s1)", "font-weight": "800" }, "당월");
+      ptag.style.fontSize = "11.5px";
+      svg.appendChild(ptag);
+      svg.appendChild(el("line", { x1: xAt(CURK) + cellW / 2 - 9, x2: xAt(CURK) + cellW / 2 + 9, y1: MT - 5, y2: MT - 5,
+        stroke: "var(--s1)", "stroke-width": 2.6, "stroke-linecap": "round", class: "keyline" }));
       MONTHS.forEach(function (m, i) {
         var on = st.sort && st.sort.i === i;
         var lab = String(parseInt(m.slice(5), 10)) + (on ? (st.sort.dir === 1 ? " ▼" : " ▲") : "");
@@ -5386,6 +5457,7 @@
         mt.style.fontSize = "12px";
         mt.style.cursor = "pointer";
         if (on) { mt.style.fontWeight = "700"; mt.setAttribute("fill", "var(--ink)"); }
+        else if (i === MONTHS.length - 1) { mt.style.fontWeight = "800"; mt.setAttribute("fill", "var(--s1)"); }
         mt.addEventListener("click", (function (ci) {
           return function () {
             /* 같은 달을 다시 누르면 오름↔내림, 다른 달이면 내림차순부터 */
@@ -5486,10 +5558,15 @@
           var rc;
           var isEtc = /^기타/.test(row.cat);
           var tier = (HEAT && !row.isTotal && !isEtc && !empty) ? (v >= TIER[i].t10 ? 2 : v >= TIER[i].t20 ? 1 : 0) : 0;
+          /* 합계 줄 전월 대비 (v104) — 늘면 초록 · 줄면 빨강, ±10% 이상이면 한 단계 진하게. 당월 · 첫 달은 중립 */
+          var mom = (MOM_ON && row.isTotal && !empty && i > 0 && i !== CURM && vals[i - 1] > 0) ? v / vals[i - 1] - 1 : null;
+          var momFill = mom === null ? null : mom >= 0.1 ? "#cdebd7" : mom >= 0 ? "#e5f4ea" : mom <= -0.1 ? "#f5d2d2" : "#fbe7e7";
           if (st.mode === "heat") {
             /* 칸 배경은 상위 10% · 20% 만 칠하고 나머지는 비워 둔다 — 숫자는 글자색으로 크기를 보인다 (v104) */
             rc = el("rect", { x: xAt(i) + CELL_INSET / 2, y: y + 1, width: Math.max(2, cellW - CELL_INSET), height: cellH - 2, rx: 4, ry: 4,
-              fill: tier === 2 ? "#c9dcf4" : tier === 1 ? "#e7eff9" : "transparent" });
+              /* v104: 한 단계 더 진하게 — 상위 10% 는 옅은 테두리까지 둘러 한눈에 */
+              fill: momFill || (tier === 2 ? "#b5cff2" : tier === 1 ? "#dce8f8" : "transparent"),
+              stroke: tier === 2 ? "#6f9fdc" : "none", "stroke-width": tier === 2 ? 1 : 0 });
           } else {
             /* 막대 바닥은 라벨 자리를 남겨 두고 그린다 */
             var BASE = y + cellH - 1, TOPPAD = 13;
@@ -5512,9 +5589,9 @@
             /* 글자색 4단계 — 같은 달 안에서 작을수록 연한 회색, 클수록 진한 남색 · 굵게.
                합계 줄은 검정 굵게, 기타(나머지 묶음)는 눈에 덜 띄게 회색. 집행이 없으면 가운뎃점만 */
             var step = t < 0.25 ? 0 : t < 0.5 ? 1 : t < 0.75 ? 2 : 3;
-            var tcol = empty ? "#c5cdd8" : row.isTotal ? "var(--ink)" : isEtc ? "#7b8798"
+            var tcol = empty ? "#c5cdd8" : row.isTotal ? (mom === null ? "var(--ink)" : mom >= 0 ? "#0b6b2e" : "#b02f2f") : isEtc ? "#7b8798"
                      : (tier === 2 ? "#0f2f66" : ["#9aa6b5", "#66758b", "#2f63a8", "#0f2f66"][step]);
-            var tw = empty ? 400 : row.isTotal ? 700 : isEtc ? 500 : (tier === 2 || step === 3 ? 800 : step === 2 ? 700 : 500);
+            var tw = empty ? 400 : row.isTotal ? (mom !== null && Math.abs(mom) >= 0.1 ? 800 : 700) : isEtc ? 500 : (tier === 2 || step === 3 ? 800 : step === 2 ? 700 : 500);
             var tx = el("text", { x: xAt(i) + cellW / 2, y: y + cellH / 2 + 4, class: "seglabel",
               "text-anchor": "middle", fill: tcol }, empty ? "·" : fmt(v, row.isTotal));
             tx.style.fontSize = row.isTotal ? "11.5px" : "11px";
