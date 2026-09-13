@@ -530,8 +530,13 @@
     renderCmp(v); renderTable(v);
     drawPerf(!first);
     const lg = $('#perfLegend');
-    lg.onmouseover = e => { const sp = e.target.closest('[data-sid]'); if (!sp) return; $$('#perfChart [data-sid]').forEach(g => g.style.filter = g.dataset.sid === sp.dataset.sid ? '' : 'opacity(.18)'); $$('[data-sid]', lg).forEach(x => x.style.opacity = x === sp ? '1' : '.45'); };
-    lg.onmouseleave = () => { $$('#perfChart [data-sid]').forEach(g => g.style.filter = ''); $$('[data-sid]', lg).forEach(x => x.style.opacity = ''); };
+    lg.onmouseover = e => { const sp = e.target.closest('[data-sid]'); if (sp) focusSeries(sp.dataset.sid); };
+    lg.onmouseleave = () => focusSeries(null);
+  }
+  // 계열 하나만 또렷하게, 나머지(선 · 세부 수치 · 끝 라벨 · 범례)는 연하게 — 범례와 차트 오른쪽 끝 라벨이 함께 쓴다
+  function focusSeries(sid) {
+    $$('#perfChart [data-sid]').forEach(g => g.style.filter = sid == null || g.dataset.sid === sid ? '' : 'opacity(.18)');
+    $$('#perfLegend [data-sid]').forEach(x => x.style.opacity = sid == null ? '' : x.dataset.sid === sid ? '1' : '.45');
   }
 
   function phaseBands(svg, m, step, plotB, narrow) {
@@ -645,15 +650,24 @@
         }
         const li = sr.values.length - 1 - [...sr.values].reverse().findIndex(x => x != null);
         if (!sr.emph) s('circle', { cx: X(li), cy: Y(sr.values[li]), r: 3.5, style: `fill:${sr.color};stroke:var(--surface);stroke-width:2`, class: 'fade' }, sg);
-        ends.push({ y: Y(sr.values[li]), x: X(li), label: `${nf(sr.values[li], v.dec)}${v.suffix}`, name: sr.name, emph: sr.emph });
+        ends.push({ sid: sr.id, y: Y(sr.values[li]), x: X(li), label: `${nf(sr.values[li], v.dec)}${v.suffix}`, name: sr.name, emph: sr.emph });
         sr._dots = sr.values.map((val, i) => val == null ? null : s('circle', { cx: X(i), cy: Y(val), r: 0, style: `fill:${sr.color};stroke:var(--surface);stroke-width:2;pointer-events:none` }, marks));
         dots.push(sr);
       });
       ends.sort((a, b) => a.y - b.y);
       for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 15) ends[k].y = ends[k - 1].y + 15;
+      // 오른쪽 끝 라벨 — 계열별로 묶어(data-sid) 범례 포커스 때 함께 흐려지고,
+      // 여러 계열이면 라벨에 마우스를 올려도 그 계열만 남는다 (라벨 줄 전체를 투명 칸으로 받아 잡기 쉽게)
+      const multi = v.series.length > 1;
       ends.forEach(e => {
-        txt(marks, e.x + 10, e.y + 4, e.label, 'dlab', 'start');
-        if (!narrow && v.series.length > 1) txt(marks, e.x + 10 + e.label.length * 7.4 + 4, e.y + 4, e.name, 'plabel', 'start', e.emph ? 'font-weight:800;fill:var(--ink)' : 'font-weight:500;fill:var(--ink-3)'); // 강조 계열(합계 등)은 검은 굵은 글씨
+        const eg = s('g', { 'data-sid': e.sid, class: multi ? 'endlab' : null }, marks);
+        if (multi) {
+          s('rect', { x: e.x + 6, y: e.y - 8, width: Math.max(0, W - e.x - 6), height: 15, style: 'fill:transparent' }, eg);
+          eg.addEventListener('pointerenter', () => focusSeries(e.sid));
+          eg.addEventListener('pointerleave', () => focusSeries(null));
+        }
+        txt(eg, e.x + 10, e.y + 4, e.label, 'dlab', 'start');
+        if (!narrow && multi) txt(eg, e.x + 10 + e.label.length * 7.4 + 4, e.y + 4, e.name, 'plabel', 'start', e.emph ? 'font-weight:800;fill:var(--ink)' : 'font-weight:500;fill:var(--ink-3)'); // 강조 계열(합계 등)은 검은 굵은 글씨
       });
     }
 
