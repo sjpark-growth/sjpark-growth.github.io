@@ -1296,3 +1296,10 @@ body { overflow-x: clip; }
   .dim, .dimmed { opacity: 1 !important; filter: none !important; }
   a[href]::after { content: none !important; }
 }
+
+/* ---------- 성과 보드 — 범례 · 오른쪽 끝 라벨 호버 (2026-09-13) ----------
+   범례나 차트 오른쪽 끝 라벨(값 · 이름)에 마우스를 올리면 그 계열의 선 · 세부 수치 · 라벨만 남기고 나머지를 연하게 */
+#perfChart [data-sid] { transition: filter .2s ease; }
+#perfLegend [data-sid] { transition: opacity .2s ease; }
+#perfChart .endlab { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { #perfChart [data-sid], #perfLegend [data-sid] { transition: none; } }
