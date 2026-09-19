@@ -1307,14 +1307,45 @@ body { overflow-x: clip; }
 @media (max-width: 420px) { .tools span { white-space: normal; } }
 
 /* ---------- 첫 화면 업력 요약 (2026-09-19) ----------
-   연락처 칩 아래가 비어 보여, 「이메일 복사」 버튼을 맨 아래 연락처로 옮기고 그 자리에 3~4줄 요약을 둔다 */
-.herosum { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 7px; max-width: 60ch; }
-.herosum li { position: relative; padding-left: 16px; font-size: 13.8px; line-height: 1.55; color: var(--ink-2); }
-.herosum li::before { content: ""; position: absolute; left: 0; top: .62em; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent); opacity: .55; }
-.herosum li b { color: var(--ink); font-weight: 700; }
-@media (max-width: 900px) { .herosum { margin-top: 16px; } .herosum li { font-size: 13.2px; } }
-@media (max-width: 600px) { .herosum li { font-size: 13.5px; line-height: 1.6; } }
-/* 낮은 화면(첫 화면 한 장 유지) — 줄 간격과 글자를 한 단계 줄인다 */
-@media (max-height: 820px) and (min-width: 901px) { .herosum { margin-top: clamp(10px, 1.8vh, 18px); gap: 5px; } .herosum li { font-size: 13.2px; line-height: 1.45; } }
-@media print { .herosum { margin-top: 10pt; } .herosum li { font-size: 9.5pt; color: #333; } }
+   연락처 칩 아래가 비어 보여 「이메일 복사」를 맨 아래 연락처로 옮기고 그 자리에 네 줄 요약을 둔다.
+   갈래(MD · 퍼포먼스 · 그로스 · 종합)를 왼쪽 한 칸에 모아 세로로 맞추고, 한 항목이 한 줄에 들어가게 짧게 쓴다. */
+.herosum { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: max-content 1fr;
+  column-gap: 12px; row-gap: 6px; align-items: baseline; max-width: 62ch; }
+.herosum li { display: contents; }
+.herosum .hs-k { font-size: 11.5px; font-weight: 700; letter-spacing: .02em; color: var(--accent-ink); white-space: nowrap;
+  text-align: right; font-variant-numeric: tabular-nums; }
+.herosum span { font-size: 13.4px; line-height: 1.5; color: var(--ink-2); }
+.herosum span b { color: var(--ink); font-weight: 700; }
+@media (max-width: 900px) { .herosum { margin-top: 14px; column-gap: 10px; row-gap: 5px; } .herosum span { font-size: 13px; } }
+@media (max-width: 600px) { .herosum { grid-template-columns: max-content 1fr; } .herosum span { font-size: 13.2px; } }
+/* 낮은 화면 — 첫 화면 한 장을 지키려고 줄 간격 · 글자를 한 단계 줄인다 */
+@media (max-height: 820px) and (min-width: 901px) { .herosum { margin-top: clamp(8px, 1.4vh, 14px); row-gap: 4px; } .herosum span { font-size: 12.9px; line-height: 1.4; } }
+@media print { .herosum { margin-top: 8pt; row-gap: 3pt; } .herosum span { font-size: 9.5pt; color: #333; } .herosum .hs-k { font-size: 8.5pt; } }
+
+/* ---------- 낮은 노트북 화면(브라우저 UI 를 뺀 높이 ≤ 700px) 첫 화면 한 장 (2026-09-19) ----------
+   4칸 보드가 첫 화면 높이를 정한다. 카드 안쪽 여백 · 큰 숫자 · 간격을 한 단계 더 줄여 헤더 + 띠 + 첫 화면이 들어오게 한다. */
+@media (min-width: 1101px) and (max-height: 700px) {
+  .hero { padding-block: 6px 8px; }
+  .mboard-wrap { gap: 5px; }
+  .mboard { gap: 7px; }
+  .mp { padding: 7px 13px 6px; }
+  .mp-big { margin-top: 1px; }
+  .mp-big .to { font-size: clamp(23px, 3.6vh, 34px); }
+  .mp-big .from { font-size: clamp(14px, 2vh, 18px); }
+  .mp-sub { margin: 2px 0 2px; font-size: 11.5px; line-height: 1.35; }
+  .mb-h h2 { font-size: clamp(16px, 2.4vh, 20px); }
+  .hero-l { padding-top: 2px; }
+  .hero .kicker, .hero .contact, .thesis { margin-top: clamp(8px, 1.6vh, 16px); }
+  .herosum { margin-top: 8px; row-gap: 3px; }
+  .herosum span { font-size: 12.4px; line-height: 1.35; }
+  .herosum .hs-k { font-size: 11px; }
+}
+/* 아주 낮은 화면(≤ 620px) — 한 단계 더 */
+@media (min-width: 1101px) and (max-height: 620px) {
+  .mp { padding: 6px 12px 5px; }
+  .mp h3 { font-size: clamp(14px, 2vh, 17px); }
+  .mp-tag { font-size: 11.5px; }
+  .mp-big .to { font-size: clamp(21px, 3.4vh, 30px); }
+  .mp-sub { margin: 1px 0; font-size: 11px; }
+  .mboard { gap: 6px; }
+}
