@@ -561,7 +561,8 @@
     const W = Math.max(320, box.clientWidth || 800);
     const narrow = W < 560;
     const H = narrow ? 320 : 400;
-    const m = { l: 48, r: narrow ? 56 : (v.type === 'stack' ? 110 : v.series.length > 1 ? 168 : 76), t: 62, b: 30 };
+    /* 오른쪽 여백 = 끝 라벨 자리. duo 는 끝 라벨이 짧아(값 · 「9월 월 환산」) 168 이면 오른쪽이 비어 보인다 (2026-09-19) */
+    const m = { l: 48, r: narrow ? 56 : (v.type === 'stack' ? 110 : v.type === 'duo' ? 96 : v.series.length > 1 ? 168 : 76), t: 62, b: 30 };
     const step = (W - m.l - m.r) / N;
     const X = i => m.l + (i + 0.5) * step;
     const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `${v.title} 월별 차트` });
