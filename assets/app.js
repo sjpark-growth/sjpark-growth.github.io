@@ -152,10 +152,12 @@
     const contactHTML = `
       <a class="chip" href="mailto:${P.email}">${ICON.mail}<span>${P.email}</span></a>
       <a class="chip" href="tel:${P.phone.replace(/-/g, '')}">${ICON.phone}<span>${P.phone}</span></a>
-      <span class="chip">${ICON.pin}<span>${P.location}</span></span>
-      <button class="chip copy" type="button" data-copy="${P.email}">${ICON.copy}<span>이메일 복사</span></button>`;
+      <span class="chip">${ICON.pin}<span>${P.location}</span></span>`;
+    const copyChip = `<button class="chip copy" type="button" data-copy="${P.email}">${ICON.copy}<span>이메일 복사</span></button>`;
+    /* 첫 화면은 복사 버튼 자리에 업력 요약을 둔다 — 복사 버튼은 맨 아래 연락처에 그대로 (2026-09-19) */
     $('#heroContact').innerHTML = contactHTML;
-    $('#contact2').innerHTML = contactHTML;
+    $('#contact2').innerHTML = contactHTML + copyChip;
+    $('#heroSum').innerHTML = (P.highlights || []).map(h => `<li>${h}</li>`).join('');
     $('#contact-lede').textContent = `${P.role} · ${P.career}. 편하게 연락 주세요 — 메일이 가장 빠릅니다.`;
     // 요약 띠
     $('#h-lede').innerHTML = P.lede;
