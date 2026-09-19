@@ -971,7 +971,20 @@
     const item = t => `<span class="tk-item"><span aria-hidden="true">${t[0]}</span>${t[1]} <b>${t[2]}</b></span>`;
     const once = T.map(item).join('<span class="tk-sep" aria-hidden="true">·</span>');
     $('#tkTrack').innerHTML = `<span class="tk-run">${once}<span class="tk-sep" aria-hidden="true">·</span></span><span class="tk-run" aria-hidden="true">${once}<span class="tk-sep">·</span></span>`;
-    $('#tkAsOf').textContent = R.config.asOf.slice(2).replace(/-/g, '.') + ' 기준';
+    /* (2026-09-19) LIVE 옆 날짜 = 보는 날(오늘) — 자동으로 최신 날짜가 된다.
+       데이터 기준일(R.config.asOf)은 성과 섹션 · 꼬리말에 그대로 두고, 여기서는 말풍선으로만 알린다 */
+    paintLiveDate();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) paintLiveDate(); });
+  }
+
+  function paintLiveDate() {
+    const el = $('#tkAsOf'); if (!el) return;
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const ymd = String(d.getFullYear()).slice(2) + '.' + p(d.getMonth() + 1) + '.' + p(d.getDate());
+    if (el.textContent === ymd) return;
+    el.textContent = ymd;
+    const chip = el.closest('.tk-live');
+    if (chip) chip.title = '오늘 ' + ymd + ' · 데이터 기준일 ' + R.config.asOf;
   }
 
   /* ------------------------------------------------------------ chrome */
