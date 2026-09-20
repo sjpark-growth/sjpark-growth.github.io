@@ -954,7 +954,7 @@
     $('#beliefList').innerHTML = R.beliefs.map(b => `<article class="belief"><span class="q" aria-hidden="true">“</span><div><h3>${b.h}</h3><p>${b.p}</p>${b.ev ? `<span class="bev">${b.ev}</span>` : ""}</div></article>`).join('');
     const F = R.facts;
     const sec = (h, list) => `<section><h3>${h}</h3><dl>${list.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl></section>`;
-    $('#factGrid').innerHTML = sec('자격', F.certs) + sec('학력 · 교육', F.edu) + sec('기타', F.etc);
+    $('#factGrid').innerHTML = (F.seeking && F.seeking.length ? sec('찾고 있는 자리', F.seeking) : '') + sec('자격', F.certs) + sec('학력 · 교육', F.edu) + sec('기타', F.etc);
     const fa = $('#f-asof'); if (fa) fa.textContent = R.config.asOf;
     const fl = $('#footLine'); const Pf = R.profile;
     if (fl) fl.innerHTML = `© ${Pf.name} · 2026<span class="fsep">/</span><a href="mailto:${Pf.email}">${Pf.email}</a><span class="fsep">/</span><a href="tel:${Pf.phone.replace(/-/g, '')}">${Pf.phone}</a>`;

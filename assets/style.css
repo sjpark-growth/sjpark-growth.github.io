@@ -1378,3 +1378,9 @@ body { overflow-x: clip; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink-3: #707f94; } }
 :root[data-theme="dark"] { --ink-3: #707f94; }
 :root[data-theme="light"] { --ink-3: #5f6d82; }
+
+/* ===== (2026-09-20) 연락처 아래 칸이 4개(찾고 있는 자리 · 자격 · 학력 · 기타)로 늘어 =====
+   넓은 화면은 4열, 중간은 2×2, 휴대폰은 1열. 인쇄도 2열로 묶어 세로를 아낀다. */
+@media (min-width: 1100px) { .factgrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 901px) and (max-width: 1099px) { .factgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media print { .factgrid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
