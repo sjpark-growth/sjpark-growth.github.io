@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seongjoon Park · Growth Marketer</title>
+<meta name="description" content="Growth marketer — 9 ad channels in-house, blended ROAS 964% to 1,330%, built the team performance dashboard.">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f3f5f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a1019" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Seongjoon Park · Growth Marketer">
+<meta property="og:description" content="9 ad channels run in-house · blended ROAS 964% → 1,330% (+366%p) · built the performance dashboard himself.">
+<meta property="og:url" content="https://sjpark-growth.github.io/en.html">
+<meta property="og:image" content="https://sjpark-growth.github.io/assets/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1a2b'/%3E%3Cpath d='M7 22 L13 15 L18 18 L25 9' fill='none' stroke='%238b9bff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<!-- 색 · 글꼴 토큰은 본판과 같은 파일에서 가져온다 (외부 요청 없음) -->
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  /* 영문 요약은 한 장짜리라 본판 레이아웃을 쓰지 않는다 — 토큰만 빌려 쓰고 배치는 여기서 한다 */
+  body { background: var(--paper); color: var(--ink); font-family: var(--f-sans); line-height: 1.6; margin: 0; }
+  .en { max-width: 940px; margin: 0 auto; padding: 44px 22px 72px; }
+  .en a { color: var(--accent); }
+  .en-top { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+  .en-photo { width: 104px; height: 139px; border-radius: 10px; object-fit: cover; border: 1px solid var(--ring); flex: none; }
+  .en-id { min-width: 0; flex: 1 1 320px; }
+  .en-eyebrow { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 6px; }
+  .en h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.12; letter-spacing: -.03em; margin: 0 0 10px; }
+  .en-thesis { font-size: clamp(17px, 2.4vw, 21px); font-weight: 600; letter-spacing: -.02em; margin: 0 0 14px; }
+  .en-thesis em { font-style: normal; color: var(--accent-ink); }
+  .en-lede { color: var(--ink-2); margin: 0 0 16px; }
+  .en-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 6px; padding: 0; list-style: none; }
+  .en-chips li { border: 1px solid var(--ring); border-radius: 999px; padding: 5px 13px; font-size: 13.5px; background: var(--surface); }
+  .en-chips a { text-decoration: none; }
+  h2.en-h { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3);
+            margin: 42px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--rule); }
+  .en-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; padding: 0; margin: 0; list-style: none; }
+  .en-kpis li { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 15px 16px; }
+  .en-kpis .v { display: block; font-family: var(--f-num); font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; }
+  .en-kpis .v small { font-size: 17px; font-weight: 600; margin-left: 2px; color: var(--accent-ink); }
+  .en-kpis .k { display: block; margin-top: 7px; font-size: 14px; font-weight: 600; }
+  .en-kpis .d { display: block; margin-top: 3px; font-size: 12.5px; color: var(--ink-3); }
+  .en-note { font-size: 12.5px; color: var(--ink-3); margin: 12px 0 0; }
+  .en-do { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; padding: 0; margin: 0; list-style: none; }
+  .en-do li { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 15px 16px; }
+  .en-do b { display: block; font-size: 13px; font-family: var(--f-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 6px; }
+  .en-do span { font-size: 14px; color: var(--ink-2); }
+  .en-job { border-top: 1px solid var(--rule); padding: 16px 0; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 18px; break-inside: avoid; }
+  .en-job:first-of-type { border-top: 0; }
+  .en-job .co { font-weight: 700; font-size: 16px; }
+  .en-job .meta { font-size: 12.5px; color: var(--ink-3); margin-top: 3px; }
+  .en-job ul { margin: 0; padding-left: 17px; }
+  .en-job li { font-size: 14px; margin-bottom: 4px; color: var(--ink-2); }
+  .en-job li strong { color: var(--ink); }
+  .en-tools p { margin: 0 0 9px; font-size: 14px; color: var(--ink-2); }
+  .en-tools b { color: var(--ink); font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+  .en-foot { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); }
+  @media (max-width: 640px) { .en-job { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
+  @media print { .en { padding: 0; max-width: none; } h2.en-h { break-after: avoid; } }
+</style>
+</head>
+<body>
+<main class="en">
+
+  <div class="en-top">
+    <img class="en-photo" src="assets/profile.webp" alt="Seongjoon Park" width="104" height="139">
+    <div class="en-id">
+      <p class="en-eyebrow">Growth Marketer · MD × Performance × Automation · 8 yrs 10 mos</p>
+      <h1>Seongjoon Park</h1>
+      <p class="en-thesis">I push ad efficiency to its limit — and grow <em>what sits outside the ad</em>.</p>
+      <p class="en-lede">I run <b>9 ad channels in-house</b> for a Korean HMR (home meal replacement) brand, mostly without agencies. My background is marketplace <b>merchandising</b> — assortment, visibility and pricing — so when efficiency stalls I fix the product page, the category and the coupon structure, not just the bid. I built our unified performance dashboard myself with Claude Code.</p>
+      <ul class="en-chips">
+        <li><a href="mailto:j1o2o1n7@naver.com">j1o2o1n7@naver.com</a></li>
+        <li>+82 10-8916-5977</li>
+        <li>Seoul, South Korea</li>
+        <li><a href="./">Full report (Korean) ↗</a></li>
+        <li><a href="dashboard-demo.html?video&amp;explore" target="_blank" rel="noopener">Live dashboard demo ↗</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="en-h">Current role — Ignis, Jul 2025 – present</h2>
+  <ul class="en-kpis">
+    <li><span class="v">+₩1.02<small>B</small></span><span class="k">Monthly revenue at the same ad spend</span><span class="d">₩3.08B → ₩4.10B on one marketplace · spend −4.7%</span></li>
+    <li><span class="v">+366<small>%p</small></span><span class="k">Blended ROAS across 9 channels</span><span class="d">964% → 1,330% · H1 2026 vs H1 2025</span></li>
+    <li><span class="v">+83.8<small>%</small></span><span class="k">Conversion revenue</span><span class="d">on +33.3% ad spend — 2.5× the pace of spend</span></li>
+    <li><span class="v">+468<small>%p</small></span><span class="k">Coupang 1P (Rocket) ROAS</span><span class="d">1,426% → 1,893% · 10 straight months above the pre-hire peak</span></li>
+    <li><span class="v">−22.8<small>%p</small></span><span class="k">Brand-keyword dependency</span><span class="d">37.9% → 15.1% · budget moved to new demand</span></li>
+    <li><span class="v">+36.6<small>%</small></span><span class="k">Total revenue</span><span class="d">with paid share held flat — growth from outside the ad</span></li>
+  </ul>
+  <p class="en-note">ROAS = conversion revenue ÷ ad spend, before VAT and marketplace fees; period figures are spend-weighted. All numbers come from the performance dashboard, as of 2026-09-09. ₩1B here means one billion Korean won (about USD 750K).</p>
+
+  <h2 class="en-h">What I actually do</h2>
+  <ul class="en-do">
+    <li><b>Performance</b><span>Coupang 1P / Wing / NCA, Naver Shopping Search · Power Link · GFA, Meta Collaborative Ads, Kakao, and vertical marketplaces (Kurly, B-Mart, Ezwel, Ably) — run directly, with channel-level raw data pulled and checked myself.</span></li>
+    <li><b>Merchandising</b><span>30+ marketplaces: assortment, pricing, promotions. Daily ranking-score management on Naver and Coupang, marketplace SEO, category and search-tag work, and a coupon structure that cut Coupang price-matching cost by up to 95%.</span></li>
+    <li><b>Data &amp; automation</b><span>Built a unified dashboard over 9 channel reports (56 pivot tables) with Claude Code — parsing, validation and daily monitoring. Eight automations cut monitoring time by 30%+; RPA at a previous company saved 2,860 hours a year.</span></li>
+    <li><b>Leadership</b><span>Marketing team lead twice and a sales manager. Designed the team structure and rebuilt a team from 2 people to 19. Back in a hands-on role by choice.</span></li>
+  </ul>
+
+  <h2 class="en-h">Career</h2>
+
+  <section class="en-job">
+    <div><div class="co">Ignis</div><div class="meta">Jul 2025 – present · Channel Sales / Performance Marketing<br>HMR division — Hankki Tongsal, Grocery Seoul</div></div>
+    <ul>
+      <li>Own ad and visibility strategy for every marketplace outside the brand's own store — <strong>9 channels</strong>, mostly without agencies.</li>
+      <li>Same marketplace, July revenue <strong>₩3.08B → ₩4.10B</strong> while spend fell 4.7%.</li>
+      <li>Blended ROAS <strong>964% → 1,330%</strong>; Coupang 1P <strong>1,426% → 1,893%</strong>; Naver GFA <strong>304% → 586%</strong>.</li>
+      <li>Built the team's <strong>unified performance dashboard</strong> — product-level drill-down, price-matching-cost monitoring — plus eight workflow automations.</li>
+    </ul>
+  </section>
+
+  <section class="en-job">
+    <div><div class="co">EL Rise</div><div class="meta">May 2024 – Jun 2025 · Online MD / Sales Manager<br>Healthy Place and three other consumer brands</div></div>
+    <ul>
+      <li>Revenue on the marketplaces I owned grew <strong>5,000% year over year</strong> (₩3M → ₩150M per month).</li>
+      <li>Smart Store repurchase rate <strong>1.8% → 11.2%</strong>, average order value <strong>+49%</strong>.</li>
+      <li>Naver Shopping rank <strong>63rd → 3rd</strong>; search-ad ROAS <strong>182% → 514%</strong>.</li>
+      <li>Opened Kurly, B-Mart and Hyundai Ezwel; built the CS, logistics and margin-guideline processes from scratch.</li>
+    </ul>
+  </section>
+
+  <section class="en-job">
+    <div><div class="co">Ewha SMP (Sportler)</div><div class="meta">May 2022 – Nov 2023 · Marketing Manager → Team Lead<br>Sportler, adidas Fitness (home training · yoga)</div></div>
+    <ul>
+      <li>Turned an operating loss of <strong>₩890M</strong> into a profit of roughly <strong>₩500M</strong>.</li>
+      <li>Direct sourcing and a second factory cut the cost ratio <strong>33.8%</strong> on average; out-of-stock SKUs −48%.</li>
+      <li>Naver non-paid traffic <strong>+128%</strong>, Coupang consignment revenue <strong>+304%</strong>.</li>
+      <li>Introduced RPA and scraping for review, rank, stock and competitor monitoring — <strong>2,860 hours</strong> saved per year (1.5 FTE).</li>
+    </ul>
+  </section>
+
+  <section class="en-job">
+    <div><div class="co">Geosung Digital</div><div class="meta">Jul 2020 – Mar 2022 · Marketing Manager → Team Lead<br>Melkin Sports, Badra</div></div>
+    <ul>
+      <li>The company's record year — revenue <strong>₩56.65B</strong>, operating profit <strong>₩10.4B</strong> (audited financials).</li>
+      <li>Designed the marketing team's structure and grew it from <strong>2 people to 19</strong>.</li>
+      <li>Ran ₩150–200M of monthly ad spend; category-specific strategy cut spend <strong>41%</strong> at equal revenue.</li>
+      <li>Naver Brand Day: 10+ events, peak daily revenue <strong>₩379M</strong>; live commerce peak audience 350,000.</li>
+    </ul>
+  </section>
+
+  <section class="en-job">
+    <div><div class="co">H&amp;T Outsourcing System</div><div class="meta">Mar 2017 – Mar 2020 · Price Comparison Team<br>on assignment at Unies</div></div>
+    <ul>
+      <li>Price-comparison matching (Naver Shopping, Danawa, Enuri) for eBay Korea, 11st and Tmon listings; eBay BEST 100 review.</li>
+      <li>Top performer of ten in the internal promotion. This is where the habit of working from product and price data started.</li>
+    </ul>
+  </section>
+
+  <h2 class="en-h">Tools</h2>
+  <div class="en-tools">
+    <p><b>Ads</b> &nbsp;Coupang Ads (1P / 3P / NCA) · Naver Shopping Search, Power Link, Brand Search, GFA · Meta and Meta Collaborative Ads (CPAS) · Kakao Moment · Mobion · GDN</p>
+    <p><b>Commerce</b> &nbsp;Coupang Rocket / Wing · Naver Smart Store and Brand Store · Cafe24 · Godomall · EasyAdmin · Sabangnet · 30+ marketplace back offices</p>
+    <p><b>Data &amp; automation</b> &nbsp;Excel (pivot tables, dynamic arrays) · Google Sheets · GA4 · GTM · Power Automate · UiPath · Zapier · Make · Claude Code · GPT</p>
+    <p><b>Certifications</b> &nbsp;Search Ad Marketer Level 1 (KAIT, 2022) · Google Analytics IQ (2024)</p>
+  </div>
+
+  <h2 class="en-h">Looking for</h2>
+  <div class="en-tools">
+    <p><b>Role</b> &nbsp;Performance marketing · growth · online merchandising</p>
+    <p><b>Location</b> &nbsp;Seoul, South Korea</p>
+    <p><b>Availability</b> &nbsp;Currently employed — open to discussing a start date</p>
+  </div>
+
+  <p class="en-foot">
+    This one-page summary is written for English-speaking readers. The full report — performance charts, project write-ups and a live demo of the dashboard I built — is in Korean at <a href="./">sjpark-growth.github.io</a>.<br>
+    © Seongjoon Park · 2026
+  </p>
+
+</main>
+</body>
+</html>

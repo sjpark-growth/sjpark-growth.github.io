@@ -7,6 +7,7 @@
 | 경로 | 내용 |
 |---|---|
 | `index.html` | 페이지 뼈대 |
+| `en.html` | 영문 한 장 요약 — 외국계 지원용, 본판과 같은 스타일 토큰을 쓰고 내용은 직접 적는다 |
 | `assets/data.js` | **모든 문구·수치** — 이력서를 고칠 때는 보통 이 파일만 바꿉니다 |
 | `assets/series.js` | 성과 차트용 월별 시계열 (비율·지수·월 금액) |
 | `assets/app.js` · `assets/style.css` · `assets/motion.js` | 화면 구성 · 디자인 · 모션 영상 |

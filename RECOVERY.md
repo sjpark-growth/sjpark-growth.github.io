@@ -35,6 +35,7 @@ git push --mirror https://github.com/<새계정>/<새계정>.github.io.git
 - `index.html` 이 **루트**에 있다
 - `.nojekyll` 이 있다
 - `index.html` · `dashboard-demo.html` · `briefing-demo.html` 의 `<meta name="robots" content="noindex, nofollow">` 가 그대로다(일부러 넣은 검색 차단)
+- `en.html`(영문 한 장 요약)도 열리고 헤더의 EN 버튼으로 오갈 수 있다
 - 세 페이지가 모두 열리고, 이력서의 데모 버튼 2개와 데모끼리 오가는 버튼이 동작한다
 - 콘솔(F12) 오류 없음 · 폭 390px 에서 가로 스크롤 없음 · 다크 모드에서 글자가 읽힌다
 - 파일 이름 대소문자가 그대로다(서버는 구분합니다)
