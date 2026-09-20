@@ -392,7 +392,7 @@
     const frame = $('#dashFrame'), side = $('#dashSide');
     frame.innerHTML = `
       <div class="dash-view">
-        <iframe src="${p.tourSrc}" title="퍼포먼스 대시보드 축소판" tabindex="-1" aria-hidden="true"></iframe>
+        <iframe data-src="${p.tourSrc}" title="퍼포먼스 대시보드 축소판" tabindex="-1" aria-hidden="true"></iframe>
         <button class="dash-shield" type="button" aria-label="대시보드 크게 보기"><span>${ICON.expand}클릭해서 크게 보기</span></button>
         <span class="dash-badge">숫자는 모두 임의 값</span>
       </div>
@@ -416,6 +416,14 @@
     const bar = $('.dash-bar', frame), cap = $('.cap', bar), pbtn = $('.pbtn', bar), fil = $('.fil', bar), time = $('.time', bar), track = $('.bar', bar);
     const T = p.tour; const st = { mode: 'mini', t: 0, playing: false, last: 0, raf: 0, ready: false, visible: false, userPaused: false };
     const post = m => { try { ifr.contentWindow.postMessage(m, '*'); } catch (e) {} };
+    /* (2026-09-20) 축소판 데모는 약 870KB — 첫 화면에 필요 없으므로 이 구역이 가까워졌을 때 불러온다.
+       버튼을 먼저 누르는 경우를 대비해 조작 지점마다 loadFrame() 을 한 번 더 부른다(두 번째부터는 아무 일도 안 한다) */
+    let frameLoaded = false;
+    const loadFrame = () => { if (frameLoaded || !ifr.dataset.src) return; frameLoaded = true; ifr.src = ifr.dataset.src; };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); loadFrame(); } }, { rootMargin: '700px 0px' });
+      io.observe($('#dash'));
+    } else loadFrame();
     // 축소판 박스가 오른쪽 설명 높이만큼 늘어나면, 늘어난 만큼 대시보드를 더 보여 준다
     const fitScale = () => { const w = view.clientWidth, h = view.clientHeight, sc = w / 1440; ifr.style.transform = `scale(${sc})`; ifr.style.height = Math.max(810, Math.ceil(h / sc)) + 'px'; };
     fitScale();
@@ -438,6 +446,7 @@
     const play = () => { if (st.playing) return; st.playing = true; st.userPaused = false; st.last = performance.now(); st.raf = requestAnimationFrame(loop); ui(); };
     const pause = user => { if (user) st.userPaused = true; st.playing = false; cancelAnimationFrame(st.raf); ui(); };
     function setMode(mode) {
+      loadFrame();
       st.mode = mode;
       $$('.modesw button', side).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
       frame.classList.toggle('is-video', mode === 'video');
@@ -446,7 +455,7 @@
       else { pause(); post({ type: 'explore' }); }
     }
     side.addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) setMode(b.dataset.mode); if (e.target.closest('[data-big]')) openDemo(p.demo); });
-    shield.addEventListener('click', () => { if (st.mode === 'video') { st.playing ? pause(true) : play(); } else openDemo(p.demo); });
+    shield.addEventListener('click', () => { loadFrame(); if (st.mode === 'video') { st.playing ? pause(true) : play(); } else openDemo(p.demo); });
     pbtn.addEventListener('click', () => st.playing ? pause(true) : play());
     track.addEventListener('pointerdown', e => { const r = track.getBoundingClientRect(); st.t = clamp((e.clientX - r.left) / r.width, 0, 1) * T.duration; post({ type: 'tour', t: st.t }); ui(); });
     if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(en => {
@@ -928,7 +937,7 @@
     const grid = $('#archiveGrid');
     A.items.forEach(it => {
       const f = el('figure', { class: 'arc' }, `
-        <button type="button" aria-label="${it.title} 크게 보기"><img src="${it.src}" alt="${it.alt || it.title}" loading="eager" decoding="async">${it.kind ? `<span class="kind">${it.kind}</span>` : ''}</button>
+        <button type="button" aria-label="${it.title} 크게 보기"><img src="${it.src}" alt="${it.alt || it.title}" loading="lazy" decoding="async">${it.kind ? `<span class="kind">${it.kind}</span>` : ''}</button>
         <figcaption><b>${it.title}</b><span>${[it.co, it.year].filter(Boolean).join(' · ')}</span>${it.caption ? `<p>${it.caption}</p>` : ''}</figcaption>`);
       f.querySelector('img').addEventListener('error', () => { f.remove(); if (!grid.children.length) sec.hidden = true; });
       f.querySelector('button').addEventListener('click', () => openLightbox(it));
@@ -987,7 +996,35 @@
     if (el.textContent === ymd) return;
     el.textContent = ymd;
     const chip = el.closest('.tk-live');
-    if (chip) chip.title = '오늘 ' + ymd + ' · 데이터 기준일 ' + R.config.asOf;
+    if (chip) {
+      chip.title = '오늘 ' + ymd + ' · 데이터 기준일 ' + R.config.asOf;
+      /* 오늘 날짜만 보이면 "오늘자 숫자"로 읽힌다 — 데이터 기준일을 옆에 작게 항상 노출 */
+      let b = chip.querySelector('.tk-basis');
+      if (!b) { b = document.createElement('small'); b.className = 'tk-basis'; chip.appendChild(b); }
+      b.textContent = '데이터 ' + R.config.asOf.slice(2).replace(/-/g, '.');
+    }
+  }
+
+
+  /* ------------------------------------------------------------ 기간 자동 계산
+     "입사 후 N개월" · "N년 N개월" 을 손으로 고치지 않도록 오늘 날짜로 채운다.
+     · 근속 = 입사월로부터 지난 개월(경과)
+     · 총 경력 = jobs 의 각 구간을 시작월·종료월 포함으로 더한 값 (experience 는 제외) */
+  function ym2n(s) { if (!s) return null; const m = String(s).match(/([0-9]{4})[^0-9]([0-9]{1,2})/); return m ? (+m[1]) * 12 + (+m[2]) : null; }
+  function fmtMonths(m) { const y = Math.floor(m / 12), r = m % 12; return r ? y + '년 ' + r + '개월' : y + '년'; }
+  function paintPeriods() {
+    const d = new Date(), today = d.getFullYear() * 12 + (d.getMonth() + 1);
+    const cur = (R.jobs || []).find(j => j.now) || (R.jobs || [])[0];
+    const tenure = cur ? Math.max(0, today - ym2n(cur.from)) : 0;
+    let total = 0;
+    (R.jobs || []).forEach(j => {
+      const f = ym2n(j.from); if (f == null) return;
+      const t = j.now || !j.to ? today : ym2n(j.to);
+      if (t != null && t >= f) total += t - f + 1;
+    });
+    const txt = { tenure: tenure + '개월', career: fmtMonths(total) };
+    document.querySelectorAll('[data-auto]').forEach(el => { const v = txt[el.dataset.auto]; if (v) el.textContent = v; });
+    if (total) R.profile.career = '경력 ' + txt.career;
   }
 
   /* ------------------------------------------------------------ chrome */
@@ -1039,6 +1076,7 @@
   }
 
   /* ------------------------------------------------------------ boot */
+  paintPeriods();
   renderTicker();
   renderHero();
   renderBoard();

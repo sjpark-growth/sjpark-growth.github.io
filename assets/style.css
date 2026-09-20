@@ -1349,3 +1349,10 @@ body { overflow-x: clip; }
   .mp-sub { margin: 1px 0; font-size: 11px; }
   .mboard { gap: 6px; }
 }
+
+
+/* ===== (2026-09-20) LIVE 칩 — 데이터 기준일 병기 ===== */
+.ticker .tk-live .tk-basis { margin-left: 6px; padding-left: 6px; border-left: 1px solid currentColor; font: inherit; font-size: .92em; opacity: .62; letter-spacing: .02em; white-space: nowrap; }
+@media (max-width: 600px) { .ticker .tk-live .tk-basis { margin-left: 4px; padding-left: 4px; font-size: .88em; } }
+@media (max-width: 420px) { .ticker .tk-live .tk-basis { display: none; } }
+@media print { .ticker .tk-live .tk-basis { opacity: 1; color: #444; } }
