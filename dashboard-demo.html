@@ -1942,6 +1942,9 @@ header.masthead ~ .topgrid { margin-top: -4px; }
   var PIE_B = '#brandMode button[data-m="pie"]', PIE_M = '#mixMode button[data-m="pie"]', PIE_P = '#pMode button[data-m="pie"]';
   var HEAT_P = '#pMode button[data-m="heat"]', LINE_R = '#roasMode button[data-m="line"]';
   var UPDATES = [
+    { d: "2026-09-20", v: "V139", t: "매체별 성과 — 창 높이 부족하면 자동 접힘", items: [
+      ["<b>1블록이 창에 안 들어가면 자동으로 접습니다</b> — 쿠팡 · 네이버 세부 행을 사람이 직접 고르지 않았다면, 창 높이가 부족할 때만 필요한 만큼(네이버 → 쿠팡 순) 자동으로 접어 한 화면에 맞춥니다. 사람이 직접 접거나 편 매체는 건드리지 않고, 창을 키우면 다시 펼칩니다.", "#go-kpi"]
+    ] },
     { d: "2026-09-15", v: "V138", t: "차트 입체감 · 그림자", items: [
       ["<b>입체감</b> — 카드에 옅은 두 겹 그림자를 깔고(마우스를 올리면 조금 더 진하게), 누적 막대 · 매출 대비 막대 · 원형 조각 · 추이 선에 짧고 옅은 그림자를 넣었습니다. 히트맵 칸과 글자에는 넣지 않았고, 휴대폰 · 동작 줄이기 설정에서는 도형 그림자를 꺼 화면이 무거워지지 않게 했습니다.", "#go-ops"]
     ] },
@@ -3523,6 +3526,9 @@ header.masthead ~ .topgrid { margin-top: -4px; }
       /* 기본은 펼침(사용자 요청) — 접기는 사람이 직접 눌렀을 때만, 그 선택은 이 브라우저에 기억 */
       window.__hmrFold = FOLD;
     }
+    /* 창 높이가 부족할 때만 자동으로 접는 값 (v111) — 사람이 직접 고르지 않은 매체에만 쓰고, 기억하지 않는다(창 크기가 바뀌면 다시 계산) */
+    var AUTOFOLD = window.__hmrAutoFold;
+    if (!AUTOFOLD) { AUTOFOLD = {}; window.__hmrAutoFold = AUTOFOLD; }
     var FOLD_ICON = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
     var rows = "";
@@ -3531,7 +3537,9 @@ header.masthead ~ .topgrid { margin-top: -4px; }
       var s = agg(n.keys, mi), a = prev >= 0 ? agg(n.keys, prev) : { roas: 0 };
       var nBud = bvOn() ? bvNetBudget(n) : (n.budget || 0) + gsNetBud(n);   /* (V120) · (V136) 전체 = 파일 예산 + 그로서리서울 타겟 */
       var st = paceStatus(nBud, s.cost, mi);
-      var multi = n.keys.length > 1, folded = multi && !!FOLD[n.name];
+      var multi = n.keys.length > 1;
+      var lockedFold = multi && Object.prototype.hasOwnProperty.call(FOLD, n.name);
+      var folded = multi && (lockedFold ? !!FOLD[n.name] : !!AUTOFOLD[n.name]);
       grp += '<tr class="netrow' + (folded ? ' isfolded' : '') + '" data-grp="' + ni + '"><td><span class="chan"><b>' + n.name + (multi ? " 합계" : "") +
         '</b><span class="plat">' + n.plat + '</span>' +
         (multi ? '<button type="button" class="grpfold" data-grp="' + ni + '" data-name="' + n.name + '" aria-expanded="' + !folded +
@@ -3582,6 +3590,7 @@ header.masthead ~ .topgrid { margin-top: -4px; }
         var body = $("mediaBody"), g = b.dataset.grp, name = b.dataset.name;
         var fold = b.getAttribute("aria-expanded") === "true";
         FOLD[name] = fold;
+        delete AUTOFOLD[name];   /* 사람이 직접 골랐으니 자동 접힘 판단 대상에서 뺀다(v111) */
         try { localStorage.setItem("hmr.mediaFold", JSON.stringify(FOLD)); } catch (e) {}
         var net = body.querySelector('tr.netrow[data-grp="' + g + '"]');
         var subs = body.querySelectorAll('tr.subrow[data-grp="' + g + '"]');
@@ -3760,6 +3769,7 @@ header.masthead ~ .topgrid { margin-top: -4px; }
   });
   BV_HOOKS.push(renderPeriod);
   renderPeriod();
+  window.__hmrRenderPeriod = renderPeriod;   /* 창 높이 자동 접힘 스크립트(v111)에서 다시 그릴 때 쓴다 */
 
   /* ---- (V120) 브랜드 목표값 — 브랜드 보기에서 타겟(광고비) · t.ROAS 를 한 번에 ---- */
   if ($("brandTargetsBtn")) $("brandTargetsBtn").addEventListener("click", function () {
@@ -9698,6 +9708,89 @@ header.masthead ~ .topgrid { margin-top: -4px; }
       lw = window.innerWidth; lh = window.innerHeight;
       if (window.__hmrDaily) window.__hmrDaily();
     }, 220);
+  });
+})();
+</script>
+<script>
+/* ================= 매체별 성과 세부 행 자동 접힘 (v111) =================
+   1블록(topgrid)이 상단바가 줄어든(slim) 상태를 기준으로도 창 높이를 넘으면, 사람이 직접 접지도 펴지도
+   않은 매체부터(네이버 → 쿠팡 순 — 세부 행이 많은 쪽부터 접어야 한 매체만 접어도 될 가능성이 크다) 세부
+   행을 접어 한 화면에 맞춘다. 사람이 직접 누른 선택(FOLD, localStorage)은 손대지 않고, 이 조정 자체는
+   저장하지 않는다 — 창 크기가 바뀔 때마다 다시 재는 값이라 새로고침 · 다른 창에서는 늘 기본(펼침)부터 다시 잰다. */
+(function () {
+  "use strict";
+  function ready(fn) {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  ready(function () {
+    var head = document.querySelector(".masthead");
+    var topgrid = document.querySelector(".topgrid");
+    if (!head || !topgrid) return;
+    var NAMES = ["네이버", "쿠팡"];
+
+    function slimHeaderH() {
+      if (head.classList.contains("folded")) return head.offsetHeight;   /* 사람이 상단바를 더 접었으면 그 값이 더 정확하다 */
+      var wasSlim = head.classList.contains("slim");
+      if (wasSlim) return head.offsetHeight;
+      /* padding 이 240ms 동안 트랜지션되므로, 끄지 않고 재면 전환 도중 값을 잡아 실제보다 크게 잰다 */
+      var prevT = head.style.transition;
+      head.style.transition = "none";
+      head.classList.add("slim");
+      void head.offsetHeight;
+      var h = head.offsetHeight;
+      head.classList.remove("slim");
+      void head.offsetHeight;
+      head.style.transition = prevT;
+      return h;
+    }
+    function hasOwn(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+    function candidates(fold) {
+      var free = NAMES.filter(function (n) { return !hasOwn(fold, n); });
+      var list = [[]];
+      free.forEach(function (n) { list.push([n]); });
+      if (free.length > 1) list.push(free.slice());
+      return list;
+    }
+
+    var fitting = false;
+    function fit() {
+      if (fitting || typeof window.__hmrRenderPeriod !== "function") return;
+      if (!window.__hmrFold) window.__hmrFold = {};
+      if (!window.__hmrAutoFold) window.__hmrAutoFold = {};
+      var FOLD = window.__hmrFold, AUTO = window.__hmrAutoFold;
+      fitting = true;
+      try {
+        if (window.innerWidth < 1401) {
+          /* 이 폭 아래에서는 1블록이 한 화면 설계 대상이 아니다(보통 세로로 쌓여 그냥 스크롤한다) — 자동 접힘을 풀어 둔다 */
+          var changed = false;
+          NAMES.forEach(function (n) { if (AUTO[n]) { delete AUTO[n]; changed = true; } });
+          if (changed) window.__hmrRenderPeriod();
+          return;
+        }
+        var avail = window.innerHeight - slimHeaderH() - 6;
+        var list = candidates(FOLD);
+        for (var i = 0; i < list.length; i++) {
+          NAMES.forEach(function (n) { delete AUTO[n]; });
+          list[i].forEach(function (n) { AUTO[n] = true; });
+          window.__hmrRenderPeriod();
+          if (topgrid.offsetHeight <= avail) break;
+          /* 마지막 후보(= 접을 수 있는 매체 전부 접힘)까지 안 맞으면 그 상태로 남는다 */
+        }
+      } finally { fitting = false; }
+    }
+
+    var lw = window.innerWidth, lh = window.innerHeight, t = 0;
+    window.addEventListener("resize", function () {
+      clearTimeout(t);
+      t = setTimeout(function () {
+        if (Math.abs(window.innerWidth - lw) < 40 && Math.abs(window.innerHeight - lh) < 40) return;
+        lw = window.innerWidth; lh = window.innerHeight;
+        fit();
+      }, 220);
+    });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    setTimeout(fit, 60);   /* 첫 렌더 직후 한 번 */
   });
 })();
 </script>
