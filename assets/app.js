@@ -996,13 +996,7 @@
     if (el.textContent === ymd) return;
     el.textContent = ymd;
     const chip = el.closest('.tk-live');
-    if (chip) {
-      chip.title = '오늘 ' + ymd + ' · 데이터 기준일 ' + R.config.asOf;
-      /* 오늘 날짜만 보이면 "오늘자 숫자"로 읽힌다 — 데이터 기준일을 옆에 작게 항상 노출 */
-      let b = chip.querySelector('.tk-basis');
-      if (!b) { b = document.createElement('small'); b.className = 'tk-basis'; chip.appendChild(b); }
-      b.textContent = '데이터 ' + R.config.asOf.slice(2).replace(/-/g, '.');
-    }
+    if (chip) chip.title = '오늘 ' + ymd + ' · 데이터 기준일 ' + R.config.asOf;
   }
 
 
@@ -1055,6 +1049,15 @@
       window.MOTION && window.MOTION.redrawAll();
     });
     $('#printBtn').addEventListener('click', () => window.print());
+    /* (2026-09-20) 요약 인쇄 — 전체 리포트는 A4 22장이라 메일로 보내기 무겁다.
+       누르면 첫 화면 · 결정적 수치 · 역량 · 경력 · 연락처만 남겨 11장으로 줄인다. */
+    const sb = $('#shortBtn');
+    if (sb) sb.addEventListener('click', () => {
+      const on = document.body.classList.toggle('print-short');
+      sb.setAttribute('aria-pressed', String(on));
+      sb.classList.toggle('on', on);
+      sb.title = on ? '요약 인쇄 켜짐 — 첫 화면 · 결정적 수치 · 역량 · 경력 · 연락처만 (약 11장). 다시 누르면 전체' : '인쇄·PDF를 핵심 구간만 담아 짧게 (22장 → 11장)';
+    });
     document.addEventListener('click', async e => {
       const b = e.target.closest('[data-copy]'); if (!b) return;
       const span = b.querySelector('span'); const old = span.textContent;
