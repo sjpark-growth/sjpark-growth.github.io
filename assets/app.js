@@ -139,6 +139,23 @@
     });
   }
 
+  /* ------------------------------------------------------------ 갈래(포지션)별 첫 화면
+     ?for=performance | md | growth | leader — 첫 화면 세 줄과 요약 네 줄의 차례만 바꾼다.
+     값이 없거나 모르는 값이면 아무 일도 하지 않는다(기본 문구 그대로). */
+  function applyAngle() {
+    let key = '';
+    try { key = (new URLSearchParams(location.search).get('for') || '').toLowerCase().trim(); } catch (e) {}
+    const A = R.angles && R.angles[key];
+    if (!A) return;
+    document.documentElement.dataset.angle = key;
+    if (A.kicker) R.profile.kicker = A.kicker;
+    if (A.thesis) R.profile.thesis = A.thesis;
+    if (A.lede) R.profile.lede = A.lede;
+    if (A.first && Array.isArray(R.profile.highlights)) {
+      const i = R.profile.highlights.findIndex(h => h[0] === A.first);
+      if (i > 0) R.profile.highlights.unshift(R.profile.highlights.splice(i, 1)[0]);
+    }
+  }
   /* ------------------------------------------------------------ hero */
   function renderHero() {
     const P = R.profile;
@@ -1093,6 +1110,7 @@
   }
 
   /* ------------------------------------------------------------ boot */
+  applyAngle();
   paintPeriods();
   renderTicker();
   renderHero();

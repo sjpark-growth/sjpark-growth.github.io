@@ -71,6 +71,7 @@
 | `.anim-hold` | 같은 함수 | 다른 탭을 보는 동안 장식 애니메이션을 멈춘다 | **등장 애니메이션(rise 등)은 대상에서 뺀다** — 넣으면 백그라운드 탭에서 열었을 때 투명한 채로 굳는다 |
 | `loading="lazy"` | `app.js` 아카이브 이미지 | 스크롤해서 내려갈 때만 받는다 | `.arc button` 의 `aspect-ratio: 4/3` 이 자리를 잡아 주므로 지우지 않는다 |
 | `data-src` (대시보드 축소판 iframe) | `app.js` `renderShowcase()` | `#dash` 가 700px 앞에 오면 `src` 를 채운다 | 버튼을 먼저 누를 때를 위해 `loadFrame()` 을 조작 지점마다 부른다 |
+| `?for=performance` · `md` · `growth` · `leader` | `data.js` `angles` · `app.js` `applyAngle()` | 공고 성격에 맞춰 첫 화면 세 줄(kicker · thesis · lede)과 요약 네 줄의 차례만 바꾼다 | 나머지 내용은 전부 같다. 모르는 값이면 기본 문구가 나온다. 네 갈래 모두 첫 화면 한 장(1280×800)에 들어가는지 확인하고 문구를 늘린다 |
 | `assets/og-card.png` | `index.html` `<head>` | 카카오톡 · 슬랙 · 메일에 뜨는 링크 미리보기 카드(1200×630) | **경력 개월수가 그림 안에 박혀 있다.** 다시 만드는 법은 원본 폴더 `_work/og-card/만들기.txt` |
 
 색 대비: `--ink-3`(캡션 · 기간 · 부가 설명)은 라이트 `#5f6d82`(4.8:1) · 다크 `#707f94`(4.7:1)로
