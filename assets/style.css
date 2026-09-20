@@ -1362,4 +1362,19 @@ body { overflow-x: clip; }
    .anim-hold  : 다른 탭을 보고 있을 때 (html 에 붙는다)
    멈추기만 할 뿐 되돌리지 않으므로, 다시 보이면 이어서 움직인다. */
 .anim-idle, .anim-idle::before, .anim-idle::after { animation-play-state: paused !important; }
-.anim-hold *, .anim-hold *::before, .anim-hold *::after { animation-play-state: paused !important; }
+/* 다른 탭을 볼 때 — 끝없이 도는 장식만 멈춘다.
+   등장 애니메이션(rise 등)까지 멈추면 투명한 상태로 굳으므로 대상에서 뺀다. */
+.anim-hold .shine, .anim-hold .shine::before, .anim-hold .shine::after,
+.anim-hold .pulse, .anim-hold .job.is-now::after, .anim-hold .job-side .now::before,
+.anim-hold .gsweep, .anim-hold .gi-sweep,
+.anim-hold .nav-hot, .anim-hold .nav-hot::before, .anim-hold .nav-hot::after,
+.anim-hold .tk-track, .anim-hold .tk-live i { animation-play-state: paused !important; }
+
+/* ===== (2026-09-20) 라이트 모드 보조 글자 대비 =====
+   --ink-3 (캡션 · 기간 · 부가 설명) 이 종이색(#f3f5f9) 위에서 3.17:1 이라
+   WCAG AA 기준(본문 4.5:1)에 못 미쳤다. #7d8ba0 → #5f6d82 로 4.65:1.
+   다크 모드 값(#707f94, 4.68:1)은 그대로 둔다. */
+:root { --ink-3: #5f6d82; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink-3: #707f94; } }
+:root[data-theme="dark"] { --ink-3: #707f94; }
+:root[data-theme="light"] { --ink-3: #5f6d82; }
