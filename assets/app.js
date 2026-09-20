@@ -1027,6 +1027,20 @@
     if (total) R.profile.career = '경력 ' + txt.career;
   }
 
+  /* ------------------------------------------------------------ 움직임 예산
+     끝없이 도는 장식 애니메이션(숫자 반짝임 · 띠 쓸림 · 점 깜빡임)은
+       · 화면 밖으로 나가면 멈추고
+       · 다른 탭을 보고 있으면 전부 멈춘다.
+     보고 있는 동안의 움직임은 그대로다 — 노트북 배터리와 발열만 줄인다. */
+  const LOOPERS = '.shine, .pulse, .job.is-now, .job-side .now, .gsweep, .gi-sweep';
+  function wireAnimBudget() {
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('anim-idle', !e.isIntersecting)), { rootMargin: '150px 0px' });
+      $$(LOOPERS).forEach(n => io.observe(n));
+    }
+    const hold = () => document.documentElement.classList.toggle('anim-hold', document.hidden);
+    document.addEventListener('visibilitychange', hold); hold();
+  }
   /* ------------------------------------------------------------ chrome */
   function wireChrome() {
     const root = document.documentElement; const label = $('#themeLabel');
@@ -1090,6 +1104,7 @@
   renderRest();
   renderScores();
   wireChrome();
+  wireAnimBudget();
   onFirstView($('#kpis'), () => setTimeout(() => rollNumbers($('#kpis')), reduceMotion ? 0 : 200), 0.2);
   onFirstView($('#perfChart'), () => drawPerf(true), 0.2);
 })();

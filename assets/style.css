@@ -1356,3 +1356,10 @@ body { overflow-x: clip; }
 @media (max-width: 600px) { .ticker .tk-live .tk-basis { margin-left: 4px; padding-left: 4px; font-size: .88em; } }
 @media (max-width: 420px) { .ticker .tk-live .tk-basis { display: none; } }
 @media print { .ticker .tk-live .tk-basis { opacity: 1; color: #444; } }
+
+/* ===== (2026-09-20) 움직임 예산 — 안 보이는 동안은 멈춘다 =====
+   .anim-idle  : 화면 밖으로 나간 요소 (app.js 의 IntersectionObserver 가 붙인다)
+   .anim-hold  : 다른 탭을 보고 있을 때 (html 에 붙는다)
+   멈추기만 할 뿐 되돌리지 않으므로, 다시 보이면 이어서 움직인다. */
+.anim-idle, .anim-idle::before, .anim-idle::after { animation-play-state: paused !important; }
+.anim-hold *, .anim-hold *::before, .anim-hold *::after { animation-play-state: paused !important; }
