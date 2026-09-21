@@ -425,7 +425,7 @@
         <button type="button" data-mode="mini" aria-pressed="true">${ICON.grid}축소판</button>
         <button type="button" data-mode="video" aria-pressed="false">${ICON.play}영상으로 보기</button>
       </div>
-      <div class="actions"><button class="btn" type="button" data-big>${ICON.expand}크게 보기 · 직접 조작</button><a class="btn ghost" href="${p.demo}" target="_blank" rel="noopener">${ICON.ext}새 창</a>${p.demo2 ? `<a class="btn ghost" href="${p.demo2.href}" target="_blank" rel="noopener">${ICON.ext}${p.demo2.label}</a>` : ''}</div>
+      <div class="actions"><button class="btn" type="button" data-big>${ICON.expand}크게 보기 · 직접 조작</button><a class="btn ghost" href="${p.demo}" target="_blank" rel="noopener">${ICON.ext}새 창</a>${(Array.isArray(p.demo2) ? p.demo2 : p.demo2 ? [p.demo2] : []).map(d => `<a class="btn ghost" href="${d.href}" target="_blank" rel="noopener">${ICON.ext}${d.label}</a>`).join('')}</div>
       <ul class="facts">${facts}</ul>
       <ul class="how">${p.how.map(x => `<li>${x}</li>`).join('')}</ul>`;
 

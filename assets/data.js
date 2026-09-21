@@ -206,8 +206,11 @@ window.RESUME = {
         '<b>AI 로 직접 구축</b> — Claude Code 로 파서·검증 파이프라인을 만들고, 물어보면 결론 · 핵심 수치 · 차트로 답하는 <b>브리핑룸(Beta)</b>까지 붙였습니다',
       ],
       demo: 'dashboard-demo.html?video&explore',
-      /* 대시보드 옆 두 번째 데모 — 질문형 리포트(브리핑룸) */
-      demo2: { href: 'briefing-demo.html', label: '브리핑룸 데모' },
+      /* 대시보드 옆에 붙는 데모들 — 질문형 리포트(브리핑룸) · 주간 재고 신호판 */
+      demo2: [
+        { href: 'briefing-demo.html', label: '브리핑룸 데모' },
+        { href: 'stock-demo.html', label: '재고 신호판 데모' },
+      ],
       tourSrc: 'dashboard-demo.html?video',
       tour: { duration: 44, chapters: [
         [0, '실제 운영 대시보드 — 화면의 숫자는 모두 임의 값입니다'],
