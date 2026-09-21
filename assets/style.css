@@ -537,6 +537,7 @@ a.chip:hover { border-color: var(--accent); }
 .modal header b { font-size: 14px; }
 .modal header span { font-size: 12px; color: var(--ink-3); }
 .modal header .iconbtn:first-of-type { margin-left: auto; }
+.modal header .iconbtn ~ .iconbtn { margin-left: 0; }   /* 「새 창에서 열기」·「닫기」를 오른쪽에 나란히 붙인다 */
 .modal iframe { flex: 1 1 auto; width: 100%; border: 0; background: #f6f8fb; }
 
 /* ------------------------------------------------------------ ticker */
