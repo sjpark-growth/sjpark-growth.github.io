@@ -485,17 +485,17 @@
   /* ------------------------------------------------------------ performance board */
   const P = S.periods, PKEYS = ['B', 'H2', 'H1', 'R3', 'MTD'];
   const VIEWS = [
-    { id: 'amount', label: '광고비와 매출', title: '월 광고비와 월 전환매출', unit: '억원 · 26.9는 1~9일을 30일로 환산', type: 'duo',
+    { id: 'amount', label: '광고비와 매출', title: '월 광고비와 월 전환매출 (지수)', unit: '입사 전 6개월 월평균 = 100 · 26.9는 1~9일을 30일로 환산', type: 'duo',
       series: [
-        { id: 'rev', name: '월 전환매출', color: 'var(--accent)', values: S.amount.revenue, emph: true },
-        { id: 'spend', name: '월 광고비', color: 'var(--ink-3)', values: S.amount.spend },
-      ], dec: 2, suffix: '억',
-      caption: '입사 전 월평균 <b>광고비 1.02억 · 전환매출 9.8억</b>에서 26년 7–8월 <b>1.92억 · 21.4억</b>으로 — 광고비를 1.9배 늘리는 동안 매출은 <b>2.2배</b>가 됐습니다. 25년 9월부터는 매달 <b>광고비 1원당 전환매출이 입사 전(9.6원)보다 높습니다</b>.',
-      cmp: { cols: [['월 광고비', p => p.amount.spend], ['월 전환매출', p => p.amount.revenue]], dec: 1, suffix: '', note: '억원 · 월평균 (26.9는 30일 환산)', deltaCol: 1 } },
+        { id: 'rev', name: '월 전환매출', color: 'var(--accent)', values: S.index.revenue, emph: true },
+        { id: 'spend', name: '월 광고비', color: 'var(--ink-3)', values: S.index.spend },
+      ], dec: 0, suffix: '',
+      caption: '입사 전 월평균을 <b>100</b>으로 두면 26년 7–8월은 <b>광고비 189 · 전환매출 218</b> — 광고비를 1.9배 늘리는 동안 매출은 <b>2.2배</b>가 됐습니다. 25년 9월부터는 매달 <b>광고비 1원당 전환매출이 입사 전(9.6원)보다 높습니다</b>.',
+      cmp: { cols: [['월 광고비', p => p.index.spend], ['월 전환매출', p => p.index.revenue]], dec: 0, suffix: '', note: '지수 · 입사 전 6개월 월평균 = 100 (26.9는 30일 환산)', deltaCol: 1 } },
     { id: 'roas', label: '통합 ROAS', title: '통합 ROAS', unit: '9개 매체 · 광고비 가중 · 순수 ROAS %',
       type: 'line', min: 700, max: 1700, ref: { v: 964, label: '입사 전 평균 964%' }, dec: 0, suffix: '%',
       series: [{ id: 'total', name: '통합 ROAS', color: 'var(--accent)', values: S.roas.total, emph: true }],
-      caption: '진단 구간(25.7–8)의 저점을 지난 뒤 <b>25년 9월부터 13개월 연속 입사 전 평균(964%) 위</b>. 26년 1월 1,556%로 최고치를 찍었고, 월 광고비를 1.9억으로 늘린 확장 구간에서도 1,090% 이상을 지켰습니다.',
+      caption: '진단 구간(25.7–8)의 저점을 지난 뒤 <b>25년 9월부터 13개월 연속 입사 전 평균(964%) 위</b>. 26년 1월 1,556%로 최고치를 찍었고, 월 광고비를 입사 전의 1.9배로 늘린 확장 구간에서도 1,090% 이상을 지켰습니다.',
       cmp: { cols: [['ROAS', p => p.roas.total]], dec: 0, suffix: '%', note: '순수 ROAS · 광고비 가중', deltaCol: 0, deltaUnit: '%p' } },
     { id: 'channel', label: '채널별 ROAS', title: '주력 채널 ROAS', unit: '순수 ROAS %',
       type: 'line', min: 0, max: 2300, dec: 0, suffix: '%',
@@ -613,15 +613,15 @@
       v._Yr = Yr; v._Ys = Ys;
       rT.forEach(t => { s('line', { x1: m.l, x2: W - m.r, y1: Yr(t), y2: Yr(t), style: 'stroke:var(--grid)' }, grid); txt(grid, m.l - 8, Yr(t) + 4, nf(t), 'tick', 'end'); });
       sT.forEach(t => { s('line', { x1: m.l, x2: W - m.r, y1: Ys(t), y2: Ys(t), style: 'stroke:var(--grid)' }, grid); txt(grid, m.l - 8, Ys(t) + 4, nf(t, t % 1 ? 1 : 0), 'tick', 'end'); });
-      txt(grid, m.l + 6, m.t + 12, '월 전환매출 (억원)', 'tick strong', 'start');
-      txt(grid, m.l + 6, botT + 12, '월 광고비 (억원)', 'tick strong', 'start');
+      txt(grid, m.l + 6, m.t + 12, '월 전환매출 (지수)', 'tick strong', 'start');
+      txt(grid, m.l + 6, botT + 12, '월 광고비 (지수)', 'tick strong', 'start');
       s('line', { x1: m.l, x2: W - m.r, y1: plotB, y2: plotB, style: 'stroke:var(--axis)' }, grid);
       xLabels();
       // 광고비 막대
       const bw = Math.max(3, step - 5);
       const gs = s('g', { 'data-sid': 'spend' }, marks), gr = s('g', { 'data-sid': 'rev' }, marks);
       sp.forEach((val, i) => {
-        const proj = i === lastIdx && S.amount.lastIsProjected;
+        const proj = i === lastIdx && S.partialLast;
         s('rect', { x: X(i) - bw / 2, y: Ys(val), width: bw, height: plotB - Ys(val), rx: 2, class: 'grow', 'data-i': i, style: proj ? 'fill:none;stroke:var(--ink-3);stroke-dasharray:3 2' : `fill:${i < tenureIdx ? 'var(--before)' : 'var(--ink-3)'};opacity:${i < tenureIdx ? .6 : .85}` }, gs);
       });
       // 전환매출 선
@@ -629,9 +629,9 @@
       s('path', { d: pathD(pts.slice(tenureIdx)) + ` L ${X(lastIdx)} ${topB} L ${X(tenureIdx)} ${topB} Z`, class: 'fade', style: 'fill:var(--accent);opacity:.08' }, gr);
       s('path', { d: pathD(pts.slice(0, tenureIdx + 1)), style: 'fill:none;stroke:var(--before);stroke-width:2;stroke-linejoin:round' }, marks);
       progLine(gr, pts, tenureIdx, 'var(--accent)', 2.2, 5);
-      txt(marks, X(lastIdx) + 10, Yr(rev[lastIdx]) + 4, `${nf(rev[lastIdx], 1)}억`, 'dlab', 'start');
+      txt(marks, X(lastIdx) + 10, Yr(rev[lastIdx]) + 4, `${nf(rev[lastIdx], 0)}`, 'dlab', 'start');
       if (!narrow) txt(marks, X(lastIdx) + 10, Yr(rev[lastIdx]) + 20, '9월 월 환산', 'plabel', 'start', 'font-weight:500;fill:var(--ink-3)');
-      txt(marks, X(lastIdx) + 10, Ys(sp[lastIdx]) + 4, `${nf(sp[lastIdx], 2)}억`, 'dlab', 'start');
+      txt(marks, X(lastIdx) + 10, Ys(sp[lastIdx]) + 4, `${nf(sp[lastIdx], 0)}`, 'dlab', 'start');
       v.series.forEach(sr => { sr._dots = sr.values.map((val, i) => s('circle', { cx: X(i), cy: sr.id === 'rev' ? Yr(val) : Ys(val), r: 0, style: `fill:${sr.color};stroke:var(--surface);stroke-width:2;pointer-events:none` }, marks)); dots.push(sr); });
     } else if (v.type === 'stack') {
       const Y = p => m.t + (1 - p / 100) * (plotB - m.t);
@@ -711,10 +711,10 @@
       if (v.type === 'stack' || v.type === 'duo') $$('rect[data-i]', marks).forEach(r => r.style.filter = +r.dataset.i === i ? '' : 'opacity(.35)');
       refs.forEach(([ln, lb, off]) => { const j = i - off; if (j >= 0) { ln.setAttribute('x1', X(j)); ln.setAttribute('x2', X(j)); ln.style.opacity = '1'; lb.setAttribute('x', X(j)); lb.style.opacity = '1'; } else { ln.style.opacity = '0'; lb.style.opacity = '0'; } });
       const phase = i < tenureIdx ? '입사 전' : (R.phases.find(p => S.months[i] >= p.from && S.months[i] <= p.to) || {}).t;
-      const unitOf = sr => v.type === 'duo' ? '억' : v.suffix;
-      let rows = v.series.map(sr => `<div class="r"><span><i style="background:${sr.color}"></i>${sr.name}</span><b>${nf(sr.values[i], v.type === 'duo' ? (sr.id === 'rev' ? 1 : 2) : v.dec)}${unitOf(sr)}</b></div>`).join('');
-      if (v.type === 'duo') rows += `<div class="r"><span>광고비 1원당 매출</span><b>${nf(S.amount.revenue[i] / S.amount.spend[i], 1)}원</b></div>`;
-      const main = v.series.find(x => x.emph) || v.series[0], du = v.type === 'duo' ? '억' : v.suffix, dd = v.type === 'duo' ? 1 : v.dec;
+      const unitOf = sr => v.type === 'duo' ? '' : v.suffix;
+      let rows = v.series.map(sr => `<div class="r"><span><i style="background:${sr.color}"></i>${sr.name}</span><b>${nf(sr.values[i], v.type === 'duo' ? 0 : v.dec)}${unitOf(sr)}</b></div>`).join('');
+      if (v.type === 'duo') rows += `<div class="r"><span>광고비 1원당 매출</span><b>${nf(S.roas.total[i] / 100, 1)}원</b></div>`;
+      const main = v.series.find(x => x.emph) || v.series[0], du = v.type === 'duo' ? '' : v.suffix, dd = v.type === 'duo' ? 0 : v.dec;
       const cmpRow = [['전분기', 3], ['전년 동월', 12]].filter(([, o]) => i - o >= 0 && main.values[i - o] != null).map(([lb, o]) => `${lb}(${mLabel(S.months[i - o])}) ${nf(main.values[i - o], dd)}${du}`).join(' · ');
       if (cmpRow) rows += `<div class="f" style="margin-top:4px">${main.name} — ${cmpRow}</div>`;
       const partial = i === lastIdx && S.partialLast ? (v.type === 'duo' ? ' (1~9일 → 30일 환산)' : ' (1~9일)') : '';
@@ -745,8 +745,8 @@
     const g = s('g', { class: 'vlabs', 'pointer-events': 'none' }, svg);
     const skip = i => o.narrow && i % 2 === 1 && i !== lastIdx;
     if (v.type === 'duo') {
-      S.amount.revenue.forEach((val, i) => { if (!skip(i)) txt(g, o.X(i), v._Yr(val) - 9, nf(val, 1), 'vlab', 'middle'); });
-      S.amount.spend.forEach((val, i) => { if (!skip(i)) txt(g, o.X(i), v._Ys(val) - 4, nf(val, 2), 'vlab', 'middle'); });
+      S.index.revenue.forEach((val, i) => { if (!skip(i)) txt(g, o.X(i), v._Yr(val) - 9, nf(val, 0), 'vlab', 'middle'); });
+      S.index.spend.forEach((val, i) => { if (!skip(i)) txt(g, o.X(i), v._Ys(val) - 4, nf(val, 0), 'vlab', 'middle'); });
     } else if (v.type === 'line') {
       // 모든 계열에 값 표시 — 계열별 묶음(data-sid)이라 범례 포커스 때 함께 흐려진다
       // 같은 달 라벨이 겹치면 점 아래로 내리거나 한 줄씩 밀어낸다
@@ -794,7 +794,7 @@
 
   function renderTable(v) {
     const dec = sr => v.type === 'duo' ? 2 : v.dec;
-    const head = `<thead><tr><th>월</th>${v.series.map(sr => `<th>${sr.name}${v.type === 'duo' ? ' (억)' : ''}</th>`).join('')}</tr></thead>`;
+    const head = `<thead><tr><th>월</th>${v.series.map(sr => `<th>${sr.name}${v.type === 'duo' ? ' (지수)' : ''}</th>`).join('')}</tr></thead>`;
     const body = S.months.map((mo, i) => `<tr class="${i === tenureIdx ? 'tenure-start' : ''}"><td>${mo.replace('-', '.')}${i === lastIdx && S.partialLast ? (v.type === 'duo' ? ' (30일 환산)' : ' (1~9일)') : ''}${i === tenureIdx ? ' · 입사' : ''}</td>${v.series.map(sr => `<td>${nf(sr.values[i], dec(sr))}</td>`).join('')}</tr>`).join('');
     $('#perfTable').innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
   }
