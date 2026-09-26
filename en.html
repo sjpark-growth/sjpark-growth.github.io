@@ -62,9 +62,44 @@
   .en-foot { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); }
   @media (max-width: 640px) { .en-job { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
   @media print { .en { padding: 0; max-width: none; } h2.en-h { break-after: avoid; } }
+  /* 상단 바 — 본판과 같은 .mast · .iconbtn 스타일을 쓴다. 섹션 제목은 바 높이만큼 띄워 가리지 않게 */
+  .en [id] { scroll-margin-top: 72px; }
+  .mast .iconbtn.go { text-decoration: none; }
+  .mast .iconbtn.go.hot { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  @media (max-width: 600px) { .mast .iconbtn .lg { display: none; } }
 </style>
+<script>
+  /* 테마: 본판과 같은 저장값(psj-theme)을 먼저 찍어 깜빡임을 막는다 */
+  try { var t = localStorage.getItem('psj-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
 </head>
 <body>
+
+<header class="mast" id="top">
+  <div class="shell">
+    <a class="id" href="#top" style="text-decoration:none;color:inherit">Seongjoon Park <small>One-page summary 2026</small></a>
+    <nav aria-label="Sections">
+      <a href="#role">Results</a>
+      <a href="#do">What I do</a>
+      <a href="#career">Career</a>
+      <a href="#tools">Tools</a>
+      <a href="#looking">Contact</a>
+    </nav>
+    <div class="tools">
+      <button class="iconbtn" id="themeBtn" type="button" aria-label="Change color theme">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor"/></svg>
+        <span id="themeLabel">Auto</span>
+      </button>
+      <a class="iconbtn go hot" href="./" hreflang="ko" title="Full report in Korean — charts, projects, live demo"><span class="lg">Full report </span>(KO) ↗</a>
+      <a class="iconbtn go" href="dashboard-demo.html?video&amp;explore" target="_blank" rel="noopener" title="Live demo of the performance dashboard (numbers are dummy values)"><span class="lg">Live </span>demo ↗</a>
+      <button class="iconbtn" id="printBtn" type="button" title="Save this page as PDF or print">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6V2h8v4"/><rect x="2" y="6" width="12" height="6" rx="1.5"/><path d="M4.5 10h7v4h-7z"/></svg>
+        PDF
+      </button>
+    </div>
+  </div>
+</header>
+
 <main class="en">
 
   <div class="en-top">
@@ -78,13 +113,11 @@
         <li><a href="mailto:j1o2o1n7@naver.com">j1o2o1n7@naver.com</a></li>
         <li>+82 10-8916-5977</li>
         <li>Seoul, South Korea</li>
-        <li><a href="./">Full report (Korean) ↗</a></li>
-        <li><a href="dashboard-demo.html?video&amp;explore" target="_blank" rel="noopener">Live dashboard demo ↗</a></li>
       </ul>
     </div>
   </div>
 
-  <h2 class="en-h">Current role — Ignis, Jul 2025 – present</h2>
+  <h2 class="en-h" id="role">Current role — Ignis, Jul 2025 – present</h2>
   <ul class="en-kpis">
     <li><span class="v">+₩1.02<small>B</small></span><span class="k">Monthly revenue at the same ad spend</span><span class="d">₩3.08B → ₩4.10B on one marketplace · spend −4.7%</span></li>
     <li><span class="v">+366<small>%p</small></span><span class="k">Blended ROAS across 9 channels</span><span class="d">964% → 1,330% · H1 2026 vs H1 2025</span></li>
@@ -95,7 +128,7 @@
   </ul>
   <p class="en-note">ROAS = conversion revenue ÷ ad spend, before VAT and marketplace fees; period figures are spend-weighted. All numbers come from the performance dashboard, as of 2026-09-09. ₩1B here means one billion Korean won (about USD 750K).</p>
 
-  <h2 class="en-h">What I actually do</h2>
+  <h2 class="en-h" id="do">What I actually do</h2>
   <ul class="en-do">
     <li><b>Performance</b><span>Coupang 1P / Wing / NCA, Naver Shopping Search · Power Link · GFA, Meta Collaborative Ads, Kakao, and vertical marketplaces (Kurly, B-Mart, Ezwel, Ably) — run directly, with channel-level raw data pulled and checked myself.</span></li>
     <li><b>Merchandising</b><span>30+ marketplaces: assortment, pricing, promotions. Daily ranking-score management on Naver and Coupang, marketplace SEO, category and search-tag work, and a coupon structure that cut Coupang price-matching cost by up to 95%.</span></li>
@@ -103,7 +136,7 @@
     <li><b>Leadership</b><span>Marketing team lead twice and a sales manager. Designed the team structure and rebuilt a team from 2 people to 19. Back in a hands-on role by choice.</span></li>
   </ul>
 
-  <h2 class="en-h">Career</h2>
+  <h2 class="en-h" id="career">Career</h2>
 
   <section class="en-job">
     <div><div class="co">Ignis</div><div class="meta">Jul 2025 – present · Channel Sales / Performance Marketing<br>HMR division — Hankki Tongsal, Grocery Seoul</div></div>
@@ -153,7 +186,7 @@
     </ul>
   </section>
 
-  <h2 class="en-h">Tools</h2>
+  <h2 class="en-h" id="tools">Tools</h2>
   <div class="en-tools">
     <p><b>Ads</b> &nbsp;Coupang Ads (1P / 3P / NCA) · Naver Shopping Search, Power Link, Brand Search, GFA · Meta and Meta Collaborative Ads (CPAS) · Kakao Moment · Mobion · GDN</p>
     <p><b>Commerce</b> &nbsp;Coupang Rocket / Wing · Naver Smart Store and Brand Store · Cafe24 · Godomall · EasyAdmin · Sabangnet · 30+ marketplace back offices</p>
@@ -161,7 +194,7 @@
     <p><b>Certifications</b> &nbsp;Search Ad Marketer Level 1 (KAIT, 2022) · Google Analytics IQ (2024)</p>
   </div>
 
-  <h2 class="en-h">Looking for</h2>
+  <h2 class="en-h" id="looking">Looking for</h2>
   <div class="en-tools">
     <p><b>Role</b> &nbsp;Performance marketing · growth · online merchandising</p>
     <p><b>Location</b> &nbsp;Seoul, South Korea</p>
@@ -174,5 +207,21 @@
   </p>
 
 </main>
+<script>
+  /* 테마 버튼 · PDF 버튼 — 본판(app.js wireChrome)과 같은 동작 */
+  (function () {
+    var root = document.documentElement, label = document.getElementById('themeLabel');
+    var names = { system: 'Auto', light: 'Light', dark: 'Dark' };
+    var cur = function () { return root.getAttribute('data-theme') || 'system'; };
+    label.textContent = names[cur()];
+    document.getElementById('themeBtn').addEventListener('click', function () {
+      var next = { system: 'light', light: 'dark', dark: 'system' }[cur()];
+      if (next === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', next);
+      try { next === 'system' ? localStorage.removeItem('psj-theme') : localStorage.setItem('psj-theme', next); } catch (e) {}
+      label.textContent = names[next];
+    });
+    document.getElementById('printBtn').addEventListener('click', function () { window.print(); });
+  })();
+</script>
 </body>
 </html>
