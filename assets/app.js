@@ -174,7 +174,9 @@
     /* 첫 화면은 복사 버튼 자리에 업력 요약을 둔다 — 복사 버튼은 맨 아래 연락처에 그대로 (2026-09-19) */
     $('#heroContact').innerHTML = contactHTML;
     $('#contact2').innerHTML = contactHTML + copyChip;
-    $('#heroSum').innerHTML = (P.highlights || []).map(h => `<li${h[2] === 'gap' ? ' class="gap"' : ''}><b class="hs-k">${h[0]}</b><span>${h[1]}</span></li>`).join('');
+    $('#heroSum').innerHTML = (() => { let sub = false; return (P.highlights || []).map(h => { // 'gap' 줄부터는 구분선 아래 검은 글씨
+      const sep = h[2] === 'gap' && !sub ? '<li class="hs-sep" aria-hidden="true"></li>' : ''; if (h[2] === 'gap') sub = true;
+      return `${sep}<li${sub ? ' class="sub"' : ''}><b class="hs-k">${h[0]}</b><span>${h[1]}</span></li>`; }).join(''); })();
     $('#contact-lede').textContent = `${P.role} · ${P.career}. 편하게 연락 주세요 — 메일이 가장 빠릅니다.`;
     // 요약 띠
     $('#h-lede').innerHTML = P.lede;
@@ -851,12 +853,12 @@
     const more = R.toolsMore, box = $('#toolMore');
     if (more && more.length && box) {
       const cnt = more.reduce((n, [, l]) => n + l.length, 0);
-      box.insertAdjacentHTML('beforebegin', `<button class="morebtn" id="toolMoreBtn" type="button" aria-expanded="false" aria-controls="toolMore">전체 툴 · 스킬 더 보기 <span>+${cnt}</span><i aria-hidden="true">▾</i></button>`);
+      $('#toolRow .toolgrp:last-child').insertAdjacentHTML('beforeend', `<button class="morebtn" id="toolMoreBtn" type="button" aria-expanded="false" aria-controls="toolMore">더 보기 <span>+${cnt}</span><i aria-hidden="true">▾</i></button>`);
       box.innerHTML = more.map(([h, list]) => `<div class="toolgrp"><h4>${h}</h4><div class="tools">${list.map(t => `<span>${t}</span>`).join('')}</div></div>`).join('');
       $('#toolMoreBtn').addEventListener('click', e => {
         const open = box.hidden; box.hidden = !open;
         e.currentTarget.setAttribute('aria-expanded', String(open));
-        e.currentTarget.firstChild.textContent = open ? '전체 툴 · 스킬 접기 ' : '전체 툴 · 스킬 더 보기 ';
+        e.currentTarget.firstChild.textContent = open ? '접기 ' : '더 보기 ';
       });
     }
   }
@@ -936,7 +938,8 @@
         </div>
         <div class="job-main">
           <p class="scope">${j.scope}</p>
-          <div class="groups">${j.groups.map(g => `<div><h4>${g.h}</h4><ul>${g.items.map(i => `<li>${i}</li>`).join('')}</ul></div>`).join('')}</div>
+          <div class="groups">${[...j.groups].sort((a, b) => /^성과/.test(a.h) - /^성과/.test(b.h)) /* 성과(결과)는 항상 오른쪽 */
+            .map(g => `<div class="${/^성과/.test(g.h) ? 'g-result' : ''}"><h4>${g.h}</h4><ul>${g.items.map(i => `<li>${i}</li>`).join('')}</ul></div>`).join('')}</div>
           ${j.see ? `<div class="see">관련 사례 ${j.see.map(id => `<a href="${linkOf(id)}">${shortTitle(id)}</a>`).join(' · ')}</div>` : ''}
         </div>
       </article>`).join('');
@@ -1069,11 +1072,14 @@
     /* (2026-09-20) 요약 인쇄 — 전체 리포트는 A4 22장이라 메일로 보내기 무겁다.
        누르면 첫 화면 · 결정적 수치 · 역량 · 경력 · 연락처만 남겨 11장으로 줄인다. */
     const sb = $('#shortBtn');
+    /* (2026-09-26) 누르면 요약 모드만 켜지고 화면에는 변화가 없어 고장 난 것처럼 보였다 —
+       이제 누르면 바로 요약본으로 인쇄 창을 띄우고, 끝나면 전체로 되돌린다. */
     if (sb) sb.addEventListener('click', () => {
-      const on = document.body.classList.toggle('print-short');
-      sb.setAttribute('aria-pressed', String(on));
-      sb.classList.toggle('on', on);
-      sb.title = on ? '요약 인쇄 켜짐 — 첫 화면 · 결정적 수치 · 역량 · 경력 · 연락처만 (약 11장). 다시 누르면 전체' : '인쇄·PDF를 핵심 구간만 담아 짧게 (22장 → 11장)';
+      document.body.classList.add('print-short');
+      const off = () => { document.body.classList.remove('print-short'); removeEventListener('afterprint', off); };
+      addEventListener('afterprint', off);
+      window.print();
+      setTimeout(off, 1500);   // afterprint 가 오지 않는 브라우저 대비
     });
     document.addEventListener('click', async e => {
       const b = e.target.closest('[data-copy]'); if (!b) return;

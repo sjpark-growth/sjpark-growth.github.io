@@ -1401,6 +1401,39 @@ body { overflow-x: clip; }
 /* 첫 화면 요약(매체별 다섯 줄) — 숫자와 갈래 이름을 한 번 더 강조 */
 .herosum span b { color: var(--accent-ink); font-weight: 800; }
 .herosum .hs-k { font-weight: 800; }
-/* MD · 그로스 · 종합 세 줄은 매체별 다섯 줄과 살짝 띄운다(li 는 display: contents 라 안쪽 두 칸에 준다) */
-.herosum li.gap > * { margin-top: 8px; }
-@media print { .herosum li.gap > * { margin-top: 4pt; } }
+/* 갈래별 세 줄(MD · 그로스 · 종합) — 옅은 구분선 아래, 파란 강조 대신 검은 글씨로 매체별 줄과 구분 */
+.herosum li.hs-sep { display: block; grid-column: 1 / -1; height: 0; border-top: 1px solid var(--rule); margin: 3px 0; }
+.herosum li.sub .hs-k, .herosum li.sub span b { color: var(--ink); }
+
+/* 숨긴 요소(hidden)는 어떤 display 규칙보다 우선해 감춘다 — 비운 칸이 빈 박스로 남지 않게 */
+[hidden] { display: none !important; }
+
+/* 역량 「더 보기」 버튼 — 따로 한 줄을 차지하지 않게 마지막 칸(자동화 · AI) 아래 오른쪽 끝에 둔다 */
+.toolrow > .toolgrp:last-child { display: flex; flex-direction: column; }
+.toolrow > .toolgrp:last-child .tools { margin-bottom: 12px; }
+.toolrow .morebtn { margin-top: auto; align-self: flex-end; }
+
+/* 경력 카드 — 오른쪽 「성과」 칸은 결과 칸답게 한 번 더 강조하고, 왼쪽 칸 높이 기준 상하 가운데 */
+.job-main .groups > .g-result { padding-left: 16px; border-left: 3px solid var(--accent); align-self: center; }
+.job-main .groups > .g-result h4 { color: var(--accent-ink); font-size: 13px; }
+.job-main .groups > .g-result li { font-size: 15.5px; }
+@media (max-width: 820px) { .job-main .groups > .g-result { padding-left: 12px; } }
+@media (max-width: 600px) { .job-main .groups > .g-result li { font-size: 15px; } }
+
+/* 인쇄 · PDF 가독성 (2026-09-26 점검)
+   · 경력 타임라인: 화면용 가로 스크롤바가 종이에 찍히지 않게 폭에 맞춘다
+   · 여러 칸을 한 틀로 묶은 격자(첫 화면 성과 칸 · 결정적 수치 · 역량): 페이지가 넘어가면 틀만 남아 빈 띠가 생긴다 → 인쇄에서는 틀을 없애고 칸마다 테두리
+   · 툴 칩 묶음은 페이지 중간에서 자르지 않는다 · 그로스 구간의 옅은 배경은 종이에서 빼고 흰 바탕으로 */
+@media print {
+  .gantt { overflow: visible !important; }
+  .gantt svg { min-width: 0 !important; }
+  .hk { background: none !important; border: 0 !important; border-radius: 0 !important; overflow: visible !important; gap: 6pt !important; }
+  .hk .kpi { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+  .hk .kpi:first-child { background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface)); }
+  .kpis .shell > ul { background: none !important; border: 0 !important; border-radius: 0 !important; overflow: visible !important; gap: 6pt !important; }
+  .kpis .shell > ul > li { border: 1px solid var(--rule); border-radius: 10px; break-inside: avoid; }
+  .pillars { background: none !important; border: 0 !important; border-radius: 0 !important; overflow: visible !important; gap: 8pt !important; }
+  .pillar { border: 1px solid var(--rule) !important; border-radius: 12px; }
+  .toolgrp { break-inside: avoid; }
+  .growth { background: none !important; }
+}
