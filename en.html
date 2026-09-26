@@ -64,8 +64,9 @@
   @media print { .en { padding: 0; max-width: none; } h2.en-h { break-after: avoid; } }
   /* 상단 바 — 본판과 같은 .mast · .iconbtn 스타일을 쓴다. 섹션 제목은 바 높이만큼 띄워 가리지 않게 */
   .en [id] { scroll-margin-top: 72px; }
-  .mast .iconbtn.go { text-decoration: none; }
+  .mast .iconbtn.go { text-decoration: none; gap: 0; }
   .mast .iconbtn.go.hot { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .mast .tools .iconbtn span.lg { font: inherit; padding: 0; background: none; color: inherit; border-radius: 0; transform: none !important; white-space: pre; }
   @media (max-width: 600px) { .mast .iconbtn .lg { display: none; } }
 </style>
 <script>
