@@ -66,6 +66,11 @@
     for (const e of es) { const f = roMap.get(e.target); if (!f) continue; const w = Math.round(e.contentRect.width); if (f.w !== w) { f.w = w; clearTimeout(f.t); f.t = setTimeout(f.fn, 60); } }
   }) : null;
   function observeWidth(node, fn) { if (!ro) return; roMap.set(node, { fn, w: Math.round(node.clientWidth), t: 0 }); ro.observe(node); }
+  // 폭과 높이를 모두 본다 — 첫 화면 차트는 칸 높이에 맞춰 그리므로 창 높이만 바뀌어도 다시 그린다
+  const ro2 = 'ResizeObserver' in window ? new ResizeObserver(es => {
+    for (const e of es) { const f = roMap.get(e.target); if (!f) continue; const w = Math.round(e.contentRect.width), h = Math.round(e.contentRect.height); if (f.w !== w || f.h !== h) { f.w = w; f.h = h; clearTimeout(f.t); f.t = setTimeout(f.fn, 60); } }
+  }) : null;
+  function observeSize(node, fn) { if (!ro2) return; roMap.set(node, { fn, w: Math.round(node.clientWidth), h: Math.round(node.clientHeight), t: 0 }); ro2.observe(node); }
 
   /* 개선 구간 강조선 — 입사 이후 구간이 오른쪽으로 갈수록 밝아지고(다크: 흰색) 굵어진다 */
   let gradSeq = 0;
@@ -181,7 +186,9 @@
     // 요약 띠
     $('#h-lede').innerHTML = P.lede;
     $('#h-now').innerHTML = P.now.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
-    $('#kpis').innerHTML = R.kpis.map(k => `
+    /* 핵심 성과 — 바로 위 차트 칸에 큰 숫자로 이미 나온 지표(board)는 뺀다 */
+    const onBoard = new Set(R.board.filter(b => !b.off).map(b => b.id));
+    $('#kpis').innerHTML = R.kpis.filter(k => !k.board || !onBoard.has(k.board)).map(k => `
       <li class="kpi">
         <span class="k">${k.e ? `<span class="emo" aria-hidden="true">${k.e}</span>` : ''}${k.k}</span>
         <span class="v"><span class="shine" data-roll-from="${k.from}" data-roll-to="${k.v}">${k.v}</span><small>${k.u}</small></span>
@@ -192,13 +199,30 @@
     $('#moreWins').innerHTML = (R.moreWins || []).map(w => `<li>${w}</li>`).join('');
   }
 
-  /* ------------------------------------------------------------ 4칸 모션 보드 */
+  /* ------------------------------------------------------------ 첫 화면 성과 리포트 (대시보드 1칸 + 차트 3칸)
+     넓은 화면에서는 칸 높이가 창 높이에 맞춰 정해지고, 차트는 그 칸의 남은 높이를 채운다(boardH).
+     좁은 화면 · 인쇄에서는 예전처럼 110px 높이로 그린다. */
   function renderBoard() {
     const host = $('#mboard');
-    R.board.forEach((b, i) => {
-      const a = el('article', { class: 'mp', 'data-id': b.id, style: `--d:${i}` });
-      a.innerHTML = `
-        <header><div>${b.group ? `<span class="mp-group g-${b.group === '체질 개선' ? 'body' : 'roas'}">${b.group}</span>` : ''}<h3>${b.title}</h3></div><span class="mp-tag">${b.tag}</span></header>
+    const feat = R.projects.find(x => x.featured) || {};
+    R.board.filter(b => !b.off).forEach((b, i) => {
+      const a = el('article', { class: 'mp' + (b.poster ? ' mp-dash' : ''), 'data-id': b.id, style: `--d:${i}` });
+      const head = `<header><div>${b.group ? `<span class="mp-group ${b.poster ? 'g-live' : b.group === '체질 개선' ? 'g-body' : 'g-roas'}">${b.poster ? '<i aria-hidden="true"></i>' : ''}${b.group}</span>` : ''}<h3>${b.title}</h3></div><span class="mp-tag">${b.tag}</span></header>`;
+      if (b.poster) {
+        // 대시보드 칸 — 가벼운 썸네일만 먼저 보이고, 누르면 실제 데모(약 3MB)를 연다
+        a.innerHTML = `${head}
+          <p class="mp-sub">${b.sub}</p>
+          <button class="mp-shot" type="button" aria-label="퍼포먼스 대시보드 데모 크게 열기 — 직접 조작">
+            <img src="${b.poster}" alt="" width="800" height="450" loading="lazy" decoding="async">
+            <span class="mp-badge">숫자는 모두 임의 값</span>
+            <span class="mp-open">${ICON.expand}클릭해서 직접 조작</span>
+          </button>
+          <p class="mp-span">${b.span || ''}<a href="#dash">영상으로 보기 ↓</a></p>`;
+        host.appendChild(a);
+        $('.mp-shot', a).addEventListener('click', () => openDemo(feat.demo || 'dashboard-demo.html?video&explore'));
+        return;
+      }
+      a.innerHTML = `${head}
         <div class="mp-big">${b.from ? `<span class="from">${b.from}${b.unit}</span><span class="ar" aria-hidden="true">→</span>` : ''}<span class="to shine" data-roll-from="${b.from || '0'}" data-roll-to="${b.to}">${b.to}<small>${b.unit}</small></span></div>
         <p class="mp-sub">${b.sub}</p>
         <div class="mp-chart"></div>
@@ -207,14 +231,16 @@
       const box = a.querySelector('.mp-chart');
       const draw = anim => { const svg = BOARD[b.id](box); if (anim && !reduceMotion) animateBoard(svg, b.id); };
       draw(false);
-      observeWidth(box, () => draw(false));
+      observeSize(box, () => draw(false));
       a._draw = draw;
       a.addEventListener('mouseenter', () => { if (!a._busy) { a._busy = true; draw(true); setTimeout(() => a._busy = false, 1600); } });
     });
     // 처음 한 번 + 보이는 동안 12초마다 다시 그린다
-    const cards = $$('.mp', host);
+    const cards = $$('.mp', host).filter(c => c._draw);
     let rt = 0; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => cards.forEach(c => c._draw(false)), 120); });
     addEventListener('load', () => setTimeout(() => cards.forEach(c => c._draw(false)), 60)); // 창 높이가 확정된 뒤 한 번 더
+    addEventListener('beforeprint', () => { PRINTING = true; cards.forEach(c => c._draw(false)); });
+    addEventListener('afterprint', () => { PRINTING = false; cards.forEach(c => c._draw(false)); });
     let visible = false;
     if ('IntersectionObserver' in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { threshold: 0.2 }).observe(host);
     setTimeout(() => { cards.forEach((c, i) => setTimeout(() => c._draw(true), i * 180)); rollNumbers(host); }, reduceMotion ? 0 : 500);
@@ -259,11 +285,19 @@
       hideTip();
     });
   }
-  // 첫 화면이 한 화면에 들어오도록 — 창 높이에 맞춰 차트 높이를 정한다 (넓은 화면 2열 배치일 때만)
-  const boardH = () => innerWidth > 1100 ? Math.max(80, Math.min(118, Math.round((innerHeight - 520) / 2))) : 110;
+  // 첫 화면이 한 화면에 들어오도록 — 넓은 화면(2열 배치)에서는 차트 칸(.mp-chart)의 남은 높이를 그대로 쓴다.
+  // 좁은 화면 · 인쇄에서는 칸 높이가 차트에서 정해지므로 고정 110px
+  const FILL = window.matchMedia('(min-width: 1101px)');
+  let PRINTING = false;   // 인쇄할 때는 차트를 낮게 다시 그려 1쪽(표지)에 차트 네 칸까지 들어가게 한다
+  const boardH = box => {
+    if (PRINTING) return 84;
+    if (!FILL.matches || !box) return 110;
+    const h = Math.round(box.clientHeight);
+    return h > 40 ? Math.min(260, h) : 110;
+  };
   const BOARD = {
     mix(box) {
-      const W = Math.max(240, box.clientWidth || 360), H = boardH(), m = { l: 0, r: 0, t: 4, b: 16 };
+      const W = Math.max(240, box.clientWidth || 360), H = boardH(box), m = { l: 0, r: 0, t: 4, b: 16 };
       const step = (W - m.l - m.r) / N, bw = Math.max(3, step - 3);
       const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '매체별 광고비 비중 월별' });
       const Y = p => m.t + (1 - p / 100) * (H - m.t - m.b);
@@ -282,11 +316,15 @@
       s('circle', { cx: a1[0], cy: a1[1], r: 3.5, style: 'fill:var(--surface);stroke:var(--ink);stroke-width:2' }, svg);
       s('circle', { cx: z1[0], cy: z1[1], r: 4, style: 'fill:var(--ink);stroke:var(--surface);stroke-width:2' }, svg);
       txt(svg, a1[0] + 5, a1[1] - 5, `1P ${nf(S.mix.cp1[tenureIdx], 0)}%`, 'dlab', 'start', 'font-size:11px');
-      txt(svg, z1[0] - 3, z1[1] + 14, `${nf(S.mix.cp1[lastIdx], 0)}%`, 'dlab', 'end', 'font-size:11px');
+      const endY = z1[1] + 14;
+      txt(svg, z1[0] - 3, endY, `${nf(S.mix.cp1[lastIdx], 0)}%`, 'dlab', 'end', 'font-size:11px');
       // 최신 달 윙·네이버 비중 — 각 칸의 가운데 높이, 마지막 막대 바로 왼쪽
+      // 첫 화면 칸이 낮아 끝 라벨(1P %)과 겹치는 라벨은 뺀다 — 색 설명(범례)과 말풍선에 그대로 있다
       const lx = m.l + lastIdx * step - 1;
       [['윙', 'cp3', S.mix.cp1[lastIdx]], ['네이버', 'naver', S.mix.cp1[lastIdx] + S.mix.cp3[lastIdx]]].forEach(([n, k, base]) => {
-        const v = S.mix[k][lastIdx]; txt(svg, lx, Y(base + v / 2) + 4, `${n} ${nf(v, 0)}%`, 'dlab', 'end', 'font-size:11px');
+        const v = S.mix[k][lastIdx], ly = Y(base + v / 2) + 4;
+        if (Math.abs(ly - endY) < 12 || ly < 9) return;
+        txt(svg, lx, ly, `${n} ${nf(v, 0)}%`, 'dlab', 'end', 'font-size:11px');
       });
       const tx = m.l + step * tenureIdx; s('line', { x1: tx, x2: tx, y1: 0, y2: H - m.b, style: 'stroke:var(--accent);stroke-width:1.5' }, svg);
       txt(svg, 0, H - 3, '25.1', 'tick'); txt(svg, tx, H - 3, '입사', 'tick strong', 'middle', 'fill:var(--accent-ink)'); txt(svg, W, H - 3, '26.9', 'tick', 'end');
@@ -296,7 +334,7 @@
       return svg;
     },
     brand(box) {
-      const W = Math.max(240, box.clientWidth || 360), H = boardH(), m = { l: 0, r: 0, t: 8, b: 16 };
+      const W = Math.max(240, box.clientWidth || 360), H = boardH(box), m = { l: 0, r: 0, t: 8, b: 16 };
       const step = W / N, Y = v => m.t + (1 - v / 50) * (H - m.t - m.b);
       const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '브랜드 키워드 의존도 월별' });
       s('rect', { x: 0, y: 0, width: step * tenureIdx, height: H - m.b, style: 'fill:var(--band-b)' }, svg);
@@ -315,7 +353,7 @@
       box.replaceChildren(svg); return svg;
     },
     roas(box) {
-      const W = Math.max(240, box.clientWidth || 360), H = boardH(), m = { l: 2, r: 8, t: 10, b: 16 };
+      const W = Math.max(240, box.clientWidth || 360), H = boardH(box), m = { l: 2, r: 8, t: 10, b: 16 };
       const step = (W - m.l - m.r) / N, X = i => m.l + (i + .5) * step, Y = v => m.t + (1 - (v - 700) / 1000) * (H - m.t - m.b);
       const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '통합 ROAS 월별' });
       s('rect', { x: 0, y: 0, width: m.l + step * tenureIdx, height: H - m.b, style: 'fill:var(--band-b)' }, svg);
@@ -331,7 +369,8 @@
       s('line', { x1: 4, x2: X(h0) - step / 2, y1: hy, y2: hy, style: 'stroke:var(--good);stroke-width:1;stroke-dasharray:2 3;opacity:.6' }, svg);
       s('line', { x1: X(h0) - step / 2, x2: X(h1) + step / 2, y1: hy, y2: hy, style: 'stroke:var(--good);stroke-width:2.2;stroke-dasharray:4 3' }, svg);
       txt(svg, 4, hy - 5, `26 상반기 평균 ${nf(S.periods.H1.roas.total, 0)}%`, 'tick strong', 'start', 'fill:var(--good);font-size:10.5px');
-      txt(svg, X(lastIdx) - 2, Y(S.roas.total[lastIdx]) + 16, `26.9 ${nf(S.roas.total[lastIdx], 0)}%`, 'tick', 'end', 'font-size:10px');
+      let ly = Y(S.roas.total[lastIdx]) + 16; if (Math.abs(ly - (ry + 13)) < 12) ly = Y(S.roas.total[lastIdx]) - 9; // 「입사 전 평균」 라벨과 겹치면 점 위로
+      txt(svg, X(lastIdx) - 2, ly, `26.9 ${nf(S.roas.total[lastIdx], 0)}%`, 'tick', 'end', 'font-size:10px;paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round');
       const tx = m.l + step * tenureIdx; s('line', { x1: tx, x2: tx, y1: 0, y2: H - m.b, style: 'stroke:var(--accent);stroke-width:1.5' }, svg);
       txt(svg, 0, H - 3, '25.1', 'tick'); txt(svg, tx, H - 3, '입사', 'tick strong', 'middle', 'fill:var(--accent-ink)'); txt(svg, W, H - 3, '26.9', 'tick', 'end');
       boardHover(svg, W, H, m.l, step, null, i => `<div class="t">${ymTitle(i)}</div><div class="r"><span>통합 ROAS</span><b>${nf(S.roas.total[i], 0)}%</b></div><div class="f">입사 전 평균 964% 대비 ${S.roas.total[i] >= 964 ? '+' : ''}${nf(S.roas.total[i] - 964, 0)}%p</div>`, { get: i => S.roas.total[i], y: i => Y(S.roas.total[i]), fmt: v => `${nf(v, 0)}%`, dot: true });
@@ -339,7 +378,7 @@
     },
     multi(box) {
       // 한 줄 = 매체 | 개선 전 | 막대(점선 = 개선 전 크기) | 개선 후 | 개선 폭
-      const rows = R.boardMulti, W = Math.max(260, box.clientWidth || 360), rowH = Math.max(21, Math.min(27, Math.round(boardH() / 4.3))), H = rows.length * rowH + 16;
+      const rows = R.boardMulti, W = Math.max(260, box.clientWidth || 360), rowH = Math.max(21, Math.min(27, Math.round(boardH(box) / 4.3))), H = rows.length * rowH + 16;
       const lw = 66, bw0 = 44, aw = 44, dw = 48, bx = lw + bw0, bwMax = Math.max(40, W - bx - aw - dw - 8), maxR = 3.3;
       const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '매체별 ROAS 개선 전후' });
       const cols = ['var(--c-1p)', 'var(--c-nv)', 'var(--c-3p)', 'var(--c-sm)'];
@@ -437,12 +476,21 @@
     const post = m => { try { ifr.contentWindow.postMessage(m, '*'); } catch (e) {} };
     /* (2026-09-20) 축소판 데모는 약 870KB — 첫 화면에 필요 없으므로 이 구역이 가까워졌을 때 불러온다.
        버튼을 먼저 누르는 경우를 대비해 조작 지점마다 loadFrame() 을 한 번 더 부른다(두 번째부터는 아무 일도 안 한다) */
+    /* (2026-09-26) 데모가 뜨기 전(약 3MB)에는 첫 화면과 같은 썸네일을 뒤에 깔아 빈 칸으로 보이지 않게 한다.
+       인쇄 직전까지 데모가 안 떴으면 썸네일이 대신 찍힌다 */
+    const poster = (R.board.find(b => b.poster) || {}).poster;
+    const showPoster = () => { if (poster && !view.style.backgroundImage) view.style.backgroundImage = `url("${poster}")`; };
     let frameLoaded = false;
-    const loadFrame = () => { if (frameLoaded || !ifr.dataset.src) return; frameLoaded = true; ifr.src = ifr.dataset.src; };
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); loadFrame(); } }, { rootMargin: '700px 0px' });
+    const loadFrame = () => { if (frameLoaded || !ifr.dataset.src) return; frameLoaded = true; showPoster(); ifr.src = ifr.dataset.src; };
+    addEventListener('beforeprint', showPoster);
+    /* (2026-09-26) 첫 화면에 대시보드 썸네일이 올라오면서 이 구역이 위로 당겨져, 700px 여유로는 첫 로드 때 데모 본체(약 3MB)까지 받았다.
+       이제 페이지 로드가 끝난 뒤에, 구역이 200px 앞으로 다가왔을 때만 받는다(그 전에는 뒤에 깐 썸네일이 보인다) */
+    const watchFrame = () => {
+      if (!('IntersectionObserver' in window)) return loadFrame();
+      const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); loadFrame(); } }, { rootMargin: '200px 0px' });
       io.observe($('#dash'));
-    } else loadFrame();
+    };
+    if (document.readyState === 'complete') watchFrame(); else addEventListener('load', watchFrame, { once: true });
     // 축소판 박스가 오른쪽 설명 높이만큼 늘어나면, 늘어난 만큼 대시보드를 더 보여 준다
     const fitScale = () => { const w = view.clientWidth, h = view.clientHeight, sc = w / 1440; ifr.style.transform = `scale(${sc})`; ifr.style.height = Math.max(810, Math.ceil(h / sc)) + 'px'; };
     fitScale();
@@ -1046,7 +1094,7 @@
        · 화면 밖으로 나가면 멈추고
        · 다른 탭을 보고 있으면 전부 멈춘다.
      보고 있는 동안의 움직임은 그대로다 — 노트북 배터리와 발열만 줄인다. */
-  const LOOPERS = '.shine, .pulse, .job.is-now, .job-side .now, .gsweep, .gi-sweep';
+  const LOOPERS = '.shine, .pulse, .job.is-now, .job-side .now, .gsweep, .gi-sweep, .mp-group.g-live i';
   function wireAnimBudget() {
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('anim-idle', !e.isIntersecting)), { rootMargin: '150px 0px' });
@@ -1068,9 +1116,26 @@
       label.textContent = names[next];
       window.MOTION && window.MOTION.redrawAll();
     });
-    $('#printBtn').addEventListener('click', () => window.print());
+    /* (2026-09-26) 인쇄 전 지연 로딩 이미지(참고 자료 · 대시보드 썸네일)를 먼저 받는다.
+       맨 위에서 바로 「PDF」를 누르면 아직 안 받은 이미지가 빈 회색 칸으로 찍히던 것 방지.
+       다 받았으면 바로, 아니면 최대 2.5초 기다렸다가 인쇄 창을 연다 */
+    const loadLazy = () => {
+      const imgs = $$('img[loading="lazy"]');
+      imgs.forEach(i => { i.loading = 'eager'; });
+      return Promise.all(imgs.filter(i => !i.complete).map(i => new Promise(r => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); })));
+    };
+    const printAll = done => {
+      const go = () => { window.print(); if (done) setTimeout(done, 1500); };   // done: afterprint 가 오지 않는 브라우저 대비
+      const pend = loadLazy();
+      if (!$$('img').some(i => !i.complete)) return go();
+      document.documentElement.classList.add('is-preparing');
+      Promise.race([pend, new Promise(r => setTimeout(r, 2500))]).then(() => { document.documentElement.classList.remove('is-preparing'); go(); });
+    };
+    addEventListener('beforeprint', loadLazy);   // Ctrl+P 로 바로 인쇄할 때도 가능한 만큼 받아 둔다
+    $('#printBtn').addEventListener('click', () => printAll());
     /* (2026-09-20) 요약 인쇄 — 전체 리포트는 A4 22장이라 메일로 보내기 무겁다.
-       누르면 첫 화면 · 결정적 수치 · 역량 · 경력 · 연락처만 남겨 11장으로 줄인다. */
+       누르면 첫 화면 · 결정적 수치 · 역량 · 경력 · 연락처만 남겨 11장으로 줄인다.
+       (2026-09-26) 첫 화면 3분할 · 인쇄 정리 후 전체 18장 · 요약 7장 */
     const sb = $('#shortBtn');
     /* (2026-09-26) 누르면 요약 모드만 켜지고 화면에는 변화가 없어 고장 난 것처럼 보였다 —
        이제 누르면 바로 요약본으로 인쇄 창을 띄우고, 끝나면 전체로 되돌린다. */
@@ -1078,8 +1143,7 @@
       document.body.classList.add('print-short');
       const off = () => { document.body.classList.remove('print-short'); removeEventListener('afterprint', off); };
       addEventListener('afterprint', off);
-      window.print();
-      setTimeout(off, 1500);   // afterprint 가 오지 않는 브라우저 대비
+      printAll(off);
     });
     document.addEventListener('click', async e => {
       const b = e.target.closest('[data-copy]'); if (!b) return;
@@ -1091,7 +1155,13 @@
     const links = $$('.mast nav a'); const secs = links.map(a => $(a.getAttribute('href')));
     const mast = $('.mast');
     // 메뉴 이동: 고정 헤더 높이(좁은 화면에서는 두 줄)를 빼고 섹션 제목이 바로 보이는 위치로
-    const setMastH = () => document.documentElement.style.setProperty('--mast-h', mast.offsetHeight + 'px');
+    /* (2026-09-26) 넓은 화면인데 메뉴가 두 줄로 접히면(글자 폭이 넓은 맑은 고딕 등) 첫 화면이 그만큼 밀린다 —
+       그때만 이름 옆 꼬리표를 숨기고 버튼 여백을 줄여 한 줄로 되돌린다 */
+    const setMastH = () => {
+      mast.classList.remove('tight');
+      if (innerWidth > 1100 && mast.offsetHeight > 64) mast.classList.add('tight');
+      document.documentElement.style.setProperty('--mast-h', mast.offsetHeight + 'px');
+    };
     setMastH(); addEventListener('resize', setMastH);
     links.forEach(a => a.addEventListener('click', e => {
       const t = $(a.getAttribute('href')); if (!t) return;

@@ -54,11 +54,11 @@
         <span id="themeLabel">자동</span>
       </button>
       <a class="iconbtn" id="enBtn" href="en.html" hreflang="en" title="English one-page summary">EN</a>
-      <button class="iconbtn" id="shortBtn" type="button" title="핵심만 담은 요약본을 PDF로 저장 · 인쇄 (첫 화면 · 결정적 수치 · 역량 · 경력 · 연락처)">
+      <button class="iconbtn" id="shortBtn" type="button" title="핵심만 담은 요약본을 PDF로 저장 · 인쇄 (첫 화면 성과 리포트 · 핵심 요약 · 역량 · 경력 · 연락처, 약 7장)">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 4h11"/><path d="M2.5 8h7"/><path d="M2.5 12h4"/></svg>
         요약 PDF
       </button>
-      <button class="iconbtn" id="printBtn" type="button" title="페이지 전체를 PDF로 저장 · 인쇄">
+      <button class="iconbtn" id="printBtn" type="button" title="페이지 전체를 PDF로 저장 · 인쇄 (약 18장)">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6V2h8v4"/><rect x="2" y="6" width="12" height="6" rx="1.5"/><path d="M4.5 10h7v4h-7z"/></svg>
         전체 PDF
       </button>
@@ -89,7 +89,12 @@
         <div class="contact" id="heroContact"></div>
         <ul class="herosum" id="heroSum"></ul>
       </div>
-      <div class="mboard-wrap"><div class="mb-h"><h2 id="mbTitle">현재 성과</h2><span>이그니스 · 입사 후 <span data-auto="tenure">14개월</span> · 26.9 기준</span></div><div class="mboard" id="mboard" aria-labelledby="mbTitle"></div></div>
+      <!-- 오른쪽 = 성과 리포트: 위는 대시보드 + 차트 세 칸, 아래는 핵심 성과 (2026-09-26 3분할) -->
+      <div class="mboard-wrap hero-r">
+        <div class="mb-h"><h2 id="mbTitle">성과 리포트</h2><span>이그니스 · 입사 후 <span data-auto="tenure">14개월</span> · 26.9 기준</span><a class="mb-more" href="#perf">상세 리포트 ↓</a></div>
+        <div class="mboard" id="mboard" aria-labelledby="mbTitle"></div>
+        <div class="hkey"><h3 class="hkey-h" id="hkeyH">핵심 성과</h3><ul class="hk" id="kpis" aria-labelledby="hkeyH"></ul></div>
+      </div>
     </div>
   </section>
 
@@ -97,12 +102,11 @@
   <section class="summary" id="summary" aria-labelledby="sum-h">
     <div class="shell">
       <div class="sum-l">
-        <h2 class="hk-h" id="sum-h">결정적 수치 <span>이그니스 · 입사 후 <span data-auto="tenure">14개월</span></span></h2>
+        <h2 class="hk-h" id="sum-h">핵심 요약 <span>이그니스 · 입사 후 <span data-auto="tenure">14개월</span></span></h2>
         <p class="lede" id="h-lede"></p>
-        <dl class="nowbox" id="h-now"></dl>
       </div>
       <div class="sum-r">
-        <ul class="hk" id="kpis"></ul>
+        <dl class="nowbox" id="h-now"></dl>
         <div class="more"><h2 class="hk-h">그 밖의 개선</h2><ul id="moreWins"></ul></div>
       </div>
     </div>
