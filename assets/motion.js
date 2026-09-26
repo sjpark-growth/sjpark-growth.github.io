@@ -239,7 +239,7 @@
       const pC = seg(t, 9.6, 15.8);
       g.alpha(E.out(seg(t, 9.6, 10.3)), () => {
         g.box(64, 64, 1152, 44, { fill: C.panel2, r: 10 });
-        g.text('채널세일즈 퍼포먼스 대시보드', 86, 93, { size: 19, weight: 700 });
+        g.text('퍼포먼스 대시보드', 86, 93, { size: 19, weight: 700 });
         ['기간 소진', '운영 구조', 'ROAS 추이', '예산 페이스', '일별 효율', '품목별'].forEach((s, k) => g.pill(s, 620 + k * 96, 74, { size: 12, padX: 9, padY: 6, fill: 'rgba(139,155,255,.12)', color: C.ink2 }));
         // KPI 5
         const kp = ['총 광고비', '전환매출', '통합 ROAS', '예산 집행률', '광고 의존도'];
