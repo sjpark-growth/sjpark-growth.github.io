@@ -174,7 +174,7 @@
     /* 첫 화면은 복사 버튼 자리에 업력 요약을 둔다 — 복사 버튼은 맨 아래 연락처에 그대로 (2026-09-19) */
     $('#heroContact').innerHTML = contactHTML;
     $('#contact2').innerHTML = contactHTML + copyChip;
-    $('#heroSum').innerHTML = (P.highlights || []).map(h => `<li><b class="hs-k">${h[0]}</b><span>${h[1]}</span></li>`).join('');
+    $('#heroSum').innerHTML = (P.highlights || []).map(h => `<li${h[2] === 'gap' ? ' class="gap"' : ''}><b class="hs-k">${h[0]}</b><span>${h[1]}</span></li>`).join('');
     $('#contact-lede').textContent = `${P.role} · ${P.career}. 편하게 연락 주세요 — 메일이 가장 빠릅니다.`;
     // 요약 띠
     $('#h-lede').innerHTML = P.lede;
