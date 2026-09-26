@@ -29,7 +29,7 @@ window.RESUME = {
     nameEn: 'Park Seong-joon',
     role: '그로스 마케터 · MD × 퍼포먼스',
     career: '경력 8년 10개월',
-    photo: 'assets/profile.webp',
+    photo: 'assets/profile.jpg',   // JPEG — WebP 는 PDF 로 저장할 때 무손실로 풀려 한 장에 0.7MB 가 된다
     email: 'j1o2o1n7@naver.com',
     phone: '010-8916-5977',
     location: '서울 마포구',

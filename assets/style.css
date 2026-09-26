@@ -1697,3 +1697,21 @@ body { overflow-x: clip; }
 .mast.tight nav { gap: 4px; }
 .mast.tight nav a { padding-inline: 9px; }
 .mast.tight .iconbtn { padding-inline: 9px; }
+
+/* ===== (2026-09-27) PDF 빈 장 줄이기 — 글꼴이 넓은 PC(Noto Sans KR 등)에서도 =====
+   · 큰 구간(#work · #pillars · #career · #contact)마다 새 장에서 시작하던 것을 풀고 이어서 흘린다 — 글꼴에 따라 구간 끝이
+     조금만 넘쳐도 반쯤 빈 장 · 꼬리말만 있는 장이 생겼다. 제목은 줄 중간에서 끊지 않고 다음 내용과 붙여 둔다
+   · 경력 카드는 한 장의 반 이상이라 통째로 넘기면 반 장씩 빈다 → 카드 안 덩어리(회사 머리 · 한 줄 요약 · 목록 한 줄) 사이에서만 나눈다.
+     카드 윗여백은 첫 줄의 안쪽 여백으로 옮긴다 — 카드 첫머리에서 나뉘어 빈 테두리만 남는 것을 막는다 */
+@media print {
+  #work, #pillars, #career, #contact { break-before: auto !important; }
+  h2, h3, h4, .sec-h, .growth-h { break-inside: avoid; }
+  .sec-h, .growth-h, .chart-title { break-after: avoid; }
+  .gantt, .cnote { break-inside: avoid; }
+  .job { break-inside: auto !important; padding-top: 0 !important; }
+  .job > :first-child { padding-top: 14px; }
+  .job-side { break-inside: avoid; break-after: avoid; }
+  .job .jscale, .job-main .scope, .job-main li, .job-main .see { break-inside: avoid; }
+  .job-main h4 { break-after: avoid; }
+  .job-main .groups > * { align-self: start !important; }   /* 가운데 정렬된 칸은 쪼개지지 않아 카드 안이 빈 채로 넘어간다 */
+}

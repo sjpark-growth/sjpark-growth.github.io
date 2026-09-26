@@ -1004,10 +1004,17 @@
     $('#archiveNote').textContent = A.note || '';
     const grid = $('#archiveGrid');
     A.items.forEach(it => {
+      /* (2026-09-27) 목록 칸은 같은 이름의 JPEG 사본을 쓴다 — 크롬은 PDF 로 저장할 때 WebP 를 무손실로 풀어 넣어 한 장에 0.7MB 씩 커진다
+         (JPEG 는 그대로 들어간다). 크게 보기는 원본 WebP. JPEG 사본이 없으면 원본으로 되돌린다 */
+      const thumb = it.src.replace(/\.webp$/i, '.jpg');
       const f = el('figure', { class: 'arc' }, `
-        <button type="button" aria-label="${it.title} 크게 보기"><img src="${it.src}" alt="${it.alt || it.title}" loading="lazy" decoding="async">${it.kind ? `<span class="kind">${it.kind}</span>` : ''}</button>
+        <button type="button" aria-label="${it.title} 크게 보기"><img src="${thumb}" alt="${it.alt || it.title}" loading="lazy" decoding="async">${it.kind ? `<span class="kind">${it.kind}</span>` : ''}</button>
         <figcaption><b>${it.title}</b><span>${[it.co, it.year].filter(Boolean).join(' · ')}</span>${it.caption ? `<p>${it.caption}</p>` : ''}</figcaption>`);
-      f.querySelector('img').addEventListener('error', () => { f.remove(); if (!grid.children.length) sec.hidden = true; });
+      const img = f.querySelector('img');
+      img.addEventListener('error', () => {
+        if (thumb !== it.src && !img.dataset.fallback) { img.dataset.fallback = '1'; img.src = it.src; return; }
+        f.remove(); if (!grid.children.length) sec.hidden = true;
+      });
       f.querySelector('button').addEventListener('click', () => openLightbox(it));
       grid.appendChild(f);
     });
