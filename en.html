@@ -106,7 +106,7 @@
   <div class="en-top">
     <img class="en-photo" src="assets/profile.jpg" alt="Seongjoon Park" width="104" height="139">
     <div class="en-id">
-      <p class="en-eyebrow">Growth Marketer · MD × Performance × Automation · 8 yrs 10 mos</p>
+      <p class="en-eyebrow">Growth Marketer · MD × Performance × Automation · <span data-career>8 yrs 9 mos</span></p>
       <h1>Seongjoon Park</h1>
       <p class="en-thesis">I push ad efficiency to its limit — and grow <em>what sits outside the ad</em>.</p>
       <p class="en-lede">I run <b>9 ad channels in-house</b> for a Korean HMR (home meal replacement) brand, mostly without agencies. My background is marketplace <b>merchandising</b> — assortment, visibility and pricing — so when efficiency stalls I fix the product page, the category and the coupon structure, not just the bid. I built our unified performance dashboard myself with Claude Code.</p>
@@ -160,7 +160,7 @@
   </section>
 
   <section class="en-job">
-    <div><div class="co">Ewha SMP (Sportler)</div><div class="meta">May 2022 – Nov 2023 · Marketing Manager → Team Lead<br>Sportler, adidas Fitness (home training · yoga)</div></div>
+    <div><div class="co">Ewha SMP (Sportler)</div><div class="meta">May 2022 – Oct 2023 · Marketing Manager → Team Lead<br>Sportler, adidas Fitness (home training · yoga)</div></div>
     <ul>
       <li>Turned an operating loss of <strong>₩890M</strong> into a profit of roughly <strong>₩500M</strong>.</li>
       <li>Direct sourcing and a second factory cut the cost ratio <strong>33.8%</strong> on average; out-of-stock SKUs −48%.</li>
@@ -222,6 +222,17 @@
       label.textContent = names[next];
     });
     document.getElementById('printBtn').addEventListener('click', function () { window.print(); });
+    /* 경력 기간 — 한국어판 paintPeriods() 와 같은 계산(경력 구간 합, 현 직장은 이번 달까지 · 양 끝 달 포함).
+       고정 글자로 두면 매달 한국어판과 어긋나서 넣었다. 구간을 바꾸면 data.js 의 jobs 와 같이 고친다 */
+    var cs = document.querySelector('[data-career]');
+    if (cs) {
+      var d = new Date(), now = d.getFullYear() * 12 + d.getMonth() + 1, n = 0;
+      [[2017, 3, 2020, 3], [2020, 7, 2022, 3], [2022, 5, 2023, 10], [2024, 5, 2025, 6], [2025, 7]].forEach(function (j) {
+        n += (j[2] ? j[2] * 12 + j[3] : now) - (j[0] * 12 + j[1]) + 1;
+      });
+      var y = Math.floor(n / 12), m = n % 12;
+      cs.textContent = y + ' yrs' + (m ? ' ' + m + (m === 1 ? ' mo' : ' mos') : '');
+    }
   })();
 </script>
 </body>
