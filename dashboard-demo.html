@@ -1171,7 +1171,8 @@
   
   .prodscroll { overflow-x: auto; }
   
-  .chart-h.prodhead { flex-wrap: wrap; row-gap: 6px; }   
+  .chart-h.prodhead { flex-wrap: wrap; row-gap: 6px; }
+  @media (max-width: 1100px) { .chart-h { flex-wrap: wrap; row-gap: 6px; } }   
   .skuctl { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   @media (max-width: 640px) { .skuctl, .skuctl input { width: 100%; } .skuctl select { flex: 1 1 auto; } }
   .skuctl select, .skuctl input { font: inherit; font-size: 12.5px; padding: 4px 8px; border: 1px solid var(--rule-strong); border-radius: 3px; background: var(--surface); color: var(--ink); }
