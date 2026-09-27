@@ -43,7 +43,7 @@
 | 전체 매출 +36.6% | kpis · growth.main · projects.nonad · jobs · scores |
 | 쿠팡 PMC 최대 −95% | moreWins · growth.coupon · projects.nonad · jobs · motion.js(nonad) |
 | 모니터링 시간 30%+ 단축 · 자동화 8건 | ticker · moreWins · pillars · projects.automation · beliefs · motion.js(automation) |
-| 경력 8년 10개월 | profile.career · index.html(경력 제목) |
+| 경력 8년 10개월 (자동 계산 — jobs 구간 합) | profile.career · index.html(경력 제목) · en.html 머리 줄(같은 구간을 인라인 스크립트로 계산 — jobs 를 바꾸면 en.html 의 구간 목록도 고친다). **이화에스엠피 끝 달은 채용 사이트 경력 인증(건강보험 상실일) 기준 2023.11** — 마지막 근무일 기준(2023.10)과 한 달 다르지만 사이트 인증 표시와 맞춘 확정 기준이다(`이력서_사이트입력용.md`). 앞당기지 않는다 |
 | 대시보드 광고 채널 22개(외부몰 13 · 자사몰 9) — `dashboard-demo.html` 의 `NETWORKS` 채널 수 | ticker · board.dash · projects.dashboard(title · headline · facts · tour) · angles.performance · (화면에 안 나오는 motion.js dashboard 장면은 옛 「9종」 그대로) |
 
 - `motion.js` 의 모션 영상 속 숫자와 `app.js` 의 VIEWS 캡션도 같은 기준이다. 숫자를 바꾸면 함께 검색해서 맞춘다.
