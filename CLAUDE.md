@@ -35,7 +35,7 @@
 
 | 수치 | 나오는 곳 |
 |---|---|
-| 통합 ROAS 964% → 1,330% (+366%p) | ticker · board.roas · kpis · pillars(PERFORMANCE) · jobs(이그니스) · careerNote · scores |
+| 통합 ROAS 964% → 1,330% (+366%p) | ticker · board.roas · kpis · pillars(PERFORMANCE) · jobs(현 직장) · careerNote · scores |
 | 쿠팡 1P 1,426% → 1,893% (+468%p) | ticker · board.multi(꺼 둠) · boardMulti · kpis · profile.highlights · projects.cp1 · jobs |
 | 브랜드 키워드 의존도 37.9% → 15.1% (−22.8%p) | ticker · board.brand · kpis · projects.brand · jobs · careerNote |
 | 동일 몰 7월 매출 30.8억 → 41억 (+10.2억), 광고비 −4.7% | ticker · kpis · growth.coupon · jobs · scores |
