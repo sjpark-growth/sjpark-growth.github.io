@@ -1,4 +1,4 @@
-# 데모 가림 — main 에 데모가 올라오면 품목 · 상품 실명을 가리고(tools/demo-wash.js) 바뀐 것을 다시 올린다.
+# 데모 가림 — main 에 데모 · 본문 파일이 올라오면 품목 · 상품 실명을 가리고(tools/demo-wash.js) 바뀐 것을 다시 올린다.
 # PC 의 자동 동기화가 가림을 빠뜨려도 공개 사이트에는 1~2분 안에 가린 판이 나간다.
 # PC 에서 pre-commit 훅(.githooks)을 켜 두면 올리기 전에 가려지므로 여기서는 「가릴 것 없음」으로 끝난다.
 name: 데모 가림
@@ -10,6 +10,10 @@ on:
       - dashboard-demo.html
       - briefing-demo.html
       - stock-demo.html
+      - assets/motion.js
+      - assets/data.js
+      - index.html
+      - en.html
       - tools/demo-wash.*
   workflow_dispatch:
 
@@ -37,8 +41,8 @@ jobs:
           if git diff --quiet; then echo "가릴 것 없음"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dashboard-demo.html briefing-demo.html stock-demo.html tools/demo-wash.json
-          git commit -q -m "데모 자동 가림 — 품목 · 상품 실명" -m "동기화로 올라온 데모에 남은 실명을 tools/demo-wash.js 로 가렸습니다 (${GITHUB_SHA::7})."
+          git add dashboard-demo.html briefing-demo.html stock-demo.html assets/motion.js assets/data.js index.html en.html tools/demo-wash.json
+          git commit -q -m "데모 자동 가림 — 품목 · 상품 실명" -m "올라온 데모 · 본문에 남은 실명을 tools/demo-wash.js 로 가렸습니다 (${GITHUB_SHA::7})."
           git push
           # 이 푸시로 Pages 가 다시 배포되지만, 혹시 몰라 한 번 더 요청한다
           curl -fsS -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github+json" \

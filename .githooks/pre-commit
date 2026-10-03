@@ -1,14 +1,8 @@
 #!/bin/sh
-# 데모를 커밋하기 전에 품목 · 상품 실명을 가린다(tools/demo-wash.js) — 공개 사이트에 실명이 한순간도 나가지 않게.
-# 켜는 법(이 저장소에서 한 번): git config core.hooksPath .githooks
-demos=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(dashboard|briefing|stock)-demo\.html$')
-[ -z "$demos" ] && exit 0
+# 커밋하기 전에 데모 3종 · 본문 파일(모션 영상 · data.js · index · en)의 품목 · 상품 실명을 가린다(tools/demo-wash.js).
+# 공개 사이트에 실명이 한순간도 나가지 않게. 켜는 법(이 저장소에서 한 번): git config core.hooksPath .githooks
 if ! command -v node >/dev/null 2>&1; then
   echo "demo-wash: node 가 없어 가림을 건너뜀 — 올린 뒤 GitHub Actions 「데모 가림」이 가린다" >&2
   exit 0
 fi
-node tools/demo-wash.js $demos
-status=$?
-git add $demos tools/demo-wash.json
-[ $status -ne 0 ] && echo "demo-wash: 가린 뒤에도 실명 의심이 남아 커밋을 멈췄다 — 위 메시지를 보고 tools/demo-wash.json 의 allow · 칸 목록을 고친다" >&2
-exit $status
+exec node tools/demo-wash.js --staged

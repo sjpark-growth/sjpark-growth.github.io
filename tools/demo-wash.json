@@ -425,5 +425,11 @@
    "시트\\s*:\\s*",
    ""
   ]
+ ],
+ "site": [
+  "assets/motion.js",
+  "assets/data.js",
+  "index.html",
+  "en.html"
  ]
 }
