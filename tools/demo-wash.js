@@ -4,6 +4,7 @@
  *   node tools/demo-wash.js            세 데모를 가리고 덮어쓴다(바뀐 것이 없으면 그대로)
  *   node tools/demo-wash.js --check    덮어쓰지 않고 검사만 — 가릴 것이 남았으면 종료 코드 1
  *   node tools/demo-wash.js a.html …   파일을 골라서
+ *   node tools/demo-wash.js --staged   pre-commit 훅용 — 커밋에 들어가는 데모 · 본문 파일만 가리고 다시 스테이징
  *
  * 규칙(자세한 것은 CLAUDE.md 「5-3. 데모 가림」)
  *  1. 범주 값(SKU · PRODUCT · PMC · STOCK …의 품목 칸)은 대응표의 코드로 바꾼다. 처음 보는 범주는 새 코드를 붙여 대응표에 더한다.
@@ -12,6 +13,8 @@
  *  3. 캠페인 수정 메모는 상품명에서 지운 낱말 · 범주명 · 맛 이름만 골라 「○○」 · 코드로 바꾸고,
  *     사내 운영 흔적(결재자 · 대화 인용 · 사내 게시글 · 시트 이름 — 대응표의 memo 규칙)을 지운다.
  *  4. 대시보드 머리(doctype · 뷰포트 · [hidden] 숨김 규칙 · 마진 가림)가 빠져 있으면 되살린다 — 없으면 빈 ✕ 팝업이 뜬다.
+ *  5. 본문 파일(대응표의 site — 모션 영상 · data.js · index · en)도 같은 대응표로 본다. 낱말 하나로 떨어진 품목명은
+ *     데모와 같은 코드로 바꾸고, 조사가 붙어 자동으로 못 바꾼 것은 줄 번호를 알려 주며 실패한다.
  *
  * 대응표(tools/demo-wash.json)에는 실명을 적지 않는다. 실명은 해시로만 남고 코드만 평문이다 — 이 저장소는 공개라서.
  * 같은 입력이면 늘 같은 결과(멱등)라서 두 번 돌려도 바뀌지 않는다.
@@ -258,6 +261,37 @@ function washFile(name, src) {
   return out;
 }
 
+/* ── 본문 파일(모션 영상 · data.js · index · en) ─────────────── */
+// 품목명이 낱말 하나로 떨어져 있으면(「우리 상품 · 그 품목」 · 「B사 그 품목」) 데모와 같은 코드로 바꾼다.
+// 한 글자 품목명은 따옴표 · 「· 」 바로 뒤이거나 문자열 끝(「닭가슴살 그것'」)일 때만 — 「볼 수 있다」 같은 말을 건드리지 않게.
+function oneChar(all, off, run) {
+  const prev = all[off - 1] || '', next = all[off + run.length] || '';
+  const head = /['"`]/.test(prev) || all.slice(Math.max(0, off - 2), off) === '· ';
+  return (head && (next === '' || /['"`\s]/.test(next))) || (prev === ' ' && /['"`]/.test(next));
+}
+function washSite(src) {
+  return src.replace(/[가-힣]+/g, (run, off, all) => {
+    const h = hash(run), code = conf.cats[h] || conf.flavors[h];
+    if (!code) return run;
+    const prev = all[off - 1] || '', next = all[off + run.length] || '';
+    if (/[A-Za-z0-9]/.test(prev) || /[A-Za-z0-9]/.test(next)) return run;
+    return run.length >= 2 || oneChar(all, off, run) ? code : run;
+  });
+}
+function siteResidue(text) {                                    // [줄 번호, 낱말] — 조사가 붙은 말처럼 자동으로 못 바꾼 것
+  const out = [];
+  for (const m of text.matchAll(/[가-힣]+/g)) {
+    const run = m[0]; let w = null;
+    if (run.length === 1) { if (conf.cats[hash(run)] && oneChar(text, m.index, run)) w = run; }
+    else for (let i = 0; i < run.length && !w; i++) for (let L = Math.min(maxLen, run.length - i); L >= 2 && !w; L--) {
+      if (L === 2 && (i > 0 || run.length > 2 && !/^[이가은는을를의도만와과로에]/.test(run.slice(2)))) continue;   // 두 글자는 낱말 머리 + 조사일 때만
+      const x = run.substr(i, L), h = hash(x); if (conf.cats[h] || conf.flavors[h]) w = x;
+    }
+    if (w) out.push([text.slice(0, m.index).split('\n').length, w]);
+  }
+  return out;
+}
+
 /* 데이터 밖의 글(화면 문구 · 코드) */
 function publicText(src) {
   let out = '', p = 0;
@@ -286,34 +320,54 @@ function residue(text) {
 
 function main() {
   const args = process.argv.slice(2);
-  const check = args.includes('--check');
-  const files = args.filter((a) => !a.startsWith('--')).map((a) => path.basename(a));
-  const list = files.length ? files : DEFAULT_FILES;
+  const check = args.includes('--check'), staged = args.includes('--staged');
+  const SITE = conf.site || [];
+  let files = args.filter((a) => !a.startsWith('--')).map((a) => a.replace(/\\/g, '/').replace(/^\.\//, ''));
+  if (staged) {                                                 // pre-commit 훅: 커밋에 들어가는 파일만
+    const { execSync } = require('child_process');
+    const names = execSync('git diff --cached --name-only --diff-filter=ACM', { cwd: ROOT }).toString().split('\n').filter(Boolean);
+    files = names.filter((n) => DEFAULT_FILES.includes(n) || SITE.includes(n));
+    if (!files.length) process.exit(0);
+  }
+  const list = files.length ? files.map((a) => (SITE.includes(a) ? a : path.basename(a))) : DEFAULT_FILES.concat(SITE);
   const srcs = {};
   for (const n of DEFAULT_FILES) { const p = path.join(ROOT, n); if (fs.existsSync(p)) { srcs[n] = fs.readFileSync(p, 'utf8'); noteUsed(srcs[n]); PUBLIC_TEXT += publicText(srcs[n]); } }
   for (const v of Object.values(conf.cats).concat(Object.values(conf.remap))) usedCat.delete(v);   // 우리가 붙인 코드는 「이미 있음」에서 뺀다
   for (const v of Object.values(conf.flavors)) usedFlavor.delete(v);
   let bad = 0;
-  const outs = {};
+  const outs = {}, written = [];
   for (let pass = 0; pass < 2; pass++) for (const n of DEFAULT_FILES) if (srcs[n]) outs[n] = washFile(n, srcs[n]);   // 첫 바퀴에 모은 낱말로 둘째 바퀴의 메모를 가린다
   for (const n of list) {
+    const isSite = SITE.includes(n);
+    if (isSite) { const p = path.join(ROOT, n); if (!fs.existsSync(p)) continue; srcs[n] = fs.readFileSync(p, 'utf8'); outs[n] = washSite(srcs[n]); }
     if (!srcs[n]) { if (files.length) console.error(`· ${n}: 파일 없음`); continue; }
     const out = outs[n];
-    const again = washFile(n, out);
+    const again = isSite ? washSite(out) : washFile(n, out);
     if (again !== out) { console.error(`✗ ${n}: 두 번 돌리면 또 바뀜 — 규칙 확인 필요`); bad = 1; }
-    const left = residue(out);
-    if (left.size) { console.error(`✗ ${n}: 가린 뒤에도 실명 의심 ${[...left.values()].reduce((a, b) => a + b, 0)}곳 (해시 ${[...left.keys()].slice(0, 5).join(', ')}…)`); bad = 1; }
+    if (isSite) {
+      const left = siteResidue(out);
+      if (left.length) {                                        // 공개 저장소의 Actions 기록에는 낱말을 찍지 않는다
+        console.error(`✗ ${n}: 품목 · 맛 실명 ${left.length}곳 — 데모와 같은 코드(「F제품」 식)나 일반 표현으로 고친다: `
+          + left.map(([ln, w]) => (process.env.CI ? `${ln}줄` : `${ln}줄 「${w}」`)).join(', '));
+        bad = 1;
+      }
+    } else {
+      const left = residue(out);
+      if (left.size) { console.error(`✗ ${n}: 가린 뒤에도 실명 의심 ${[...left.values()].reduce((a, b) => a + b, 0)}곳 (해시 ${[...left.keys()].slice(0, 5).join(', ')}…)`); bad = 1; }
+    }
     if (out === srcs[n]) { console.log(`✓ ${n}: 가릴 것 없음`); continue; }
     if (check) { console.error(`✗ ${n}: 가리지 않은 실명이 있음 — node tools/demo-wash.js 로 가린다`); bad = 1; continue; }
-    fs.writeFileSync(path.join(ROOT, n), out);
+    fs.writeFileSync(path.join(ROOT, n), out); written.push(n);
     console.log(`✓ ${n}: 가림 (${srcs[n].length} → ${out.length} 글자)`);
   }
   if (confDirty && !check) {
     conf.deny = [...deny].sort();
-    fs.writeFileSync(CONF_PATH, JSON.stringify(conf, null, 1) + '\n');
+    fs.writeFileSync(CONF_PATH, JSON.stringify(conf, null, 1) + '\n'); written.push('tools/demo-wash.json');
     console.log('· 대응표에 새 낱말 · 코드를 더했다 — tools/demo-wash.json 도 같이 커밋한다');
   } else if (confDirty && check) { console.error('✗ 대응표에 없는 새 품목 · 맛 · 낱말이 있음'); bad = 1; }
+  if (staged && written.length) require('child_process').execFileSync('git', ['add', '--'].concat(written), { cwd: ROOT });
+  if (staged && bad) console.error('demo-wash: 실명이 남아 커밋을 멈췄다 — 위 줄을 고친 뒤 다시 커밋한다(CLAUDE.md 4 · 5-3)');
   process.exit(bad);
 }
 if (require.main === module) main();
-else module.exports = { washFile, washName, scrubNote, catCode, residue, hash, conf, noteUsed, publicText, setPublic: (t) => { PUBLIC_TEXT = t; } };
+else module.exports = { washFile, washName, washSite, siteResidue, scrubNote, catCode, residue, hash, conf, noteUsed, publicText, setPublic: (t) => { PUBLIC_TEXT = t; } };
