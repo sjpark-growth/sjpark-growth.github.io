@@ -9,7 +9,8 @@
  *  1. 범주 값(SKU · PRODUCT · PMC · STOCK …의 품목 칸)은 대응표의 코드로 바꾼다. 처음 보는 범주는 새 코드를 붙여 대응표에 더한다.
  *  2. 상품명 · 규격 · 검색어 칸은 「허용 목록」 방식이다. 일반어(냉동 · 세트 · 개입 …) · 숫자 · 가린 코드만 남기고,
  *     범주명은 코드로, 「~맛」은 맛 코드로 바꾸고, 나머지 낱말은 지운다 — 새 상품이 생겨도 실명이 남지 않는다.
- *  3. 캠페인 수정 메모는 상품명에서 지운 낱말 · 범주명 · 맛 이름만 골라 「○○」 · 코드로 바꾼다.
+ *  3. 캠페인 수정 메모는 상품명에서 지운 낱말 · 범주명 · 맛 이름만 골라 「○○」 · 코드로 바꾸고,
+ *     사내 운영 흔적(결재자 · 대화 인용 · 사내 게시글 · 시트 이름 — 대응표의 memo 규칙)을 지운다.
  *  4. 대시보드 머리(doctype · 뷰포트 · [hidden] 숨김 규칙 · 마진 가림)가 빠져 있으면 되살린다 — 없으면 빈 ✕ 팝업이 뜬다.
  *
  * 대응표(tools/demo-wash.json)에는 실명을 적지 않는다. 실명은 해시로만 남고 코드만 평문이다 — 이 저장소는 공개라서.
@@ -160,6 +161,15 @@ function scrubNote(s, f) {
   });
 }
 
+const MEMO = (conf.memo || []).map(([re, to]) => [new RegExp(re, 'g'), to]);
+function scrubMemo(s) {                                         // 사내 운영 흔적 — 운영 기록(예산 · 목표 · 초기화 …)은 남긴다
+  if (typeof s !== 'string' || !s) return s;
+  let out = s;
+  for (const [re, to] of MEMO) out = out.replace(re, to);
+  if (out === s) return s;
+  return out.replace(/\(\s*\)/g, '').replace(/\s*·\s*(·\s*)+/g, ' · ').replace(/^\s*·\s*|\s*·\s*$/g, '').replace(/\s{2,}/g, ' ').trim();
+}
+
 /* ── 파일 구조 ─────────────────────────────────────────── */
 function blocks(src) {
   const re = /^[ \t]*(?:var|const|let) ([A-Za-z_][A-Za-z0-9_]*) = *(?:\/\*W\*\/)? *([\[{])/gm; const out = []; let m;
@@ -174,7 +184,7 @@ const mapKeys = (o, fn) => { if (!o || typeof o !== 'object' || Array.isArray(o)
 
 /* 칸별 처리 — 동기화가 구조를 바꾸면 여기에 칸을 더한다(검사 모드가 남은 실명을 알려 준다) */
 function washBlocks(B, f) {
-  const C = (v) => catCode(v, f), N = (s, c) => washName(s, f, c), M = (s) => scrubNote(s, f);
+  const C = (v) => catCode(v, f), N = (s, c) => washName(s, f, c), M = (s) => scrubMemo(scrubNote(s, f));
   const sku = (rows) => (rows || []).forEach((r) => { r[2] = C(r[2]); r[4] = N(r[4], r[2]); r[5] = N(r[5]); });
   if (B.SKU && B.SKU.rows) sku(B.SKU.rows);
   if (B.BR && B.BR.sku) sku(B.BR.sku.rows);
