@@ -136,6 +136,7 @@
       const fmt = v => (sign ? '+' : neg ? '−' : '') + (comma ? v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : v.toFixed(dec));
       const dur = 1200, t0 = performance.now();
       const tick = now => {
+        if (node._rollDone) return;   // (2026-10-03) 인쇄 직전에 목표값으로 마무리됐으면 멈춘다
         const p = clamp((now - t0) / dur, 0, 1);
         node.innerHTML = fmt(from + (to - from) * ease(p)) + tailHTML;
         if (p < 1) requestAnimationFrame(tick); else { node.innerHTML = toStr + tailHTML; node.classList.add('pop'); setTimeout(() => node.classList.remove('pop'), 900); }
@@ -143,6 +144,12 @@
       requestAnimationFrame(tick);
     });
   }
+  /* (2026-10-03) 인쇄 · PDF 저장 직전에는 굴리던 숫자를 모두 목표값으로 — 「전체 PDF」가 지연 이미지를 받으려 스크롤하는 사이
+     굴리기가 시작되고 곧바로 인쇄 창이 떠, 「+0.0」 · 「1,202%」 같은 중간값이 PDF 에 찍힌 적이 있다 */
+  addEventListener('beforeprint', () => $$('[data-roll-to]').forEach(node => {
+    node.dataset.rolled = '1'; node._rollDone = true;
+    const tail = node.querySelector('small'); node.innerHTML = node.dataset.rollTo.trim() + (tail ? tail.outerHTML : '');
+  }));
 
   /* ------------------------------------------------------------ 갈래(포지션)별 첫 화면
      ?for=performance | md | growth | leader — 첫 화면 세 줄과 요약 네 줄의 차례만 바꾼다.
