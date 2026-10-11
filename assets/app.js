@@ -492,7 +492,18 @@
     addEventListener('beforeprint', showPoster);
     /* (2026-09-26) 첫 화면에 대시보드 썸네일이 올라오면서 이 구역이 위로 당겨져, 700px 여유로는 첫 로드 때 데모 본체(약 3MB)까지 받았다.
        이제 페이지 로드가 끝난 뒤에, 구역이 200px 앞으로 다가왔을 때만 받는다(그 전에는 뒤에 깐 썸네일이 보인다) */
+    /* (2026-10-11) 휴대폰(폭 600px 이하) · 데이터 절약 모드에서는 데모 본체(약 3MB)를 저절로 받지 않는다 — 썸네일만 깔아 두고
+       「크게 보기」 · 「축소판」 · 「영상으로 보기」를 누를 때 받는다(loadFrame). 창이 600px 보다 넓어지면 그때부터 예전처럼 다가올 때 받는다 */
+    const narrow = window.matchMedia ? matchMedia('(max-width: 600px)') : null;
+    const saveData = !!(navigator.connection && navigator.connection.saveData);
     const watchFrame = () => {
+      if (saveData) return showPoster();
+      if (narrow && narrow.matches) {
+        showPoster();
+        const onWide = () => { if (narrow.matches) return; narrow.removeEventListener ? narrow.removeEventListener('change', onWide) : narrow.removeListener(onWide); watchFrame(); };
+        narrow.addEventListener ? narrow.addEventListener('change', onWide) : narrow.addListener(onWide);
+        return;
+      }
       if (!('IntersectionObserver' in window)) return loadFrame();
       const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); loadFrame(); } }, { rootMargin: '200px 0px' });
       io.observe($('#dash'));
@@ -1189,7 +1200,7 @@
       scrollTo({ top: Math.max(0, y), behavior: reduceMotion ? 'auto' : 'smooth' });
       try { history.replaceState(null, '', a.getAttribute('href')); } catch (err) {}
     }));
-    // 왼쪽 위 이름(박성준 Growth Report 2026)을 누르면 맨 위로
+    // 왼쪽 위 이름(박성준 · 그로스 마케터)을 누르면 맨 위로
     $('.mast .id').addEventListener('click', e => {
       e.preventDefault(); scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
       try { history.replaceState(null, '', '#top'); } catch (err) {}

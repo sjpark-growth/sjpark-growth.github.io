@@ -385,7 +385,7 @@
   /* 3 · 브랜드 키워드 다이어트 */
   SCENES.brand = {
     duration: 14, poster: 12.8,
-    chapters: [[0, '검색 광고비 중 브랜드 키워드 비중 — 월별'], [6, '개별 채널 개선 — 개선 전 6개월 평균(%) → 26년 9월(%)'], [11, '그 사이 통합 ROAS 는 964% → 1,166% (+202%p)']],
+    chapters: [[0, '검색 광고비 중 브랜드 키워드 비중 — 월별'], [6, '개별 채널 개선 — 개선 전 6개월 평균(%) → 26년 9월(%)'], [11, '그 사이 통합 ROAS 는 964% → 1,166% (+202%p) — 입사 전 6개월(25.1–6) → 26.9 단월(1~9일)']],
     draw(g, t) {
       const A = 1 - seg(t, 5.6, 6.2);
       g.kicker(t < 6 ? 'BRAND KEYWORD SHARE · 4개 검색 채널' : t < 11 ? 'BY CHANNEL' : 'EFFICIENCY');
@@ -414,7 +414,7 @@
       });
       g.alpha(E.out(seg(t, 11, 11.6)), () => {
         g.box(120, 520, 1040, 76, { fill: C.panel, r: 12, stroke: C.line });
-        g.text('같은 기간 통합 ROAS', 150, 566, { size: 20, color: C.ink2, weight: 600 });
+        g.text('통합 ROAS · 26.9 단월(1~9일)', 150, 566, { size: 20, color: C.ink2, weight: 600 });
         const v = lerp(964, 1166, E.inOut(seg(t, 11.3, 12.6)));
         g.text('964%', 520, 570, { size: 30, color: C.ink3, font: 'num', weight: 600 });
         g.arrow(610, 560, 668, 560, { color: C.ink3 });

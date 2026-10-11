@@ -12,7 +12,7 @@
 | `assets/series.js` | 성과 차트용 월별 시계열 (비율·지수·월 금액) |
 | `assets/app.js` · `assets/style.css` · `assets/motion.js` | 화면 구성 · 디자인 · 모션 영상 |
 | `dashboard-demo.html` | 퍼포먼스 대시보드 데모 (모든 숫자는 임의 값) |
-| `archive/` | 참고 자료 이미지 |
+| `archive/` | 참고 자료 이미지 — 같은 이름으로 **두 벌**: `.jpg`(목록 칸 · 인쇄/PDF 용, q80) · `.webp`(크게 보기 원본). PDF 용량 때문에 일부러 둔 것이라 한쪽만 지우지 않고, 새 이미지를 넣을 때도 둘 다 만듭니다(CLAUDE.md 8장) |
 | `videos/` | 직접 녹화한 영상을 넣는 곳 |
 | `CLAUDE.md` | 편집 가이드 — 사람과 AI 모두 이 문서를 보고 이어서 고칠 수 있습니다 |
 
