@@ -1715,3 +1715,49 @@ body { overflow-x: clip; }
   .job-main h4 { break-after: avoid; }
   .job-main .groups > * { align-self: start !important; }   /* 가운데 정렬된 칸은 쪼개지지 않아 카드 안이 빈 채로 넘어간다 */
 }
+
+/* ===== (2026-09-30) 대시보드 쇼케이스도 첫 화면처럼 노트북 한 화면에 =====
+   가로 861px 이상이면 구역 높이를 「창 높이 − 상단 바」로 고정한다(125% 배율 노트북 1366×768 → 창 약 1093×520 도 포함).
+   왼쪽 축소판은 남는 높이를 채우고(fitScale 이 대시보드를 더 보여 준다), 오른쪽 설명은 위(소개 · 버튼 · 숫자 3칸)를 그대로 두고
+   「구축 내용」 목록만 칸 안에서 스크롤한다 — 끝이 잘린 것처럼 보이지 않게 아래를 흐리게. 창이 아주 낮으면 오른쪽 칸 전체가 스크롤된다.
+   글자 · 여백은 창 높이(vh)에 맞춰 줄어든다 */
+@media screen and (min-width: 861px) {
+  #dash {
+    --dp: clamp(8px, 1.8vh, 22px);
+    box-sizing: border-box; display: flex; flex-direction: column;
+    height: clamp(380px, calc(100vh - var(--mast-h, 55px)), 940px);
+    height: clamp(380px, calc(100svh - var(--mast-h, 55px)), 940px);
+    padding-block: var(--dp); scroll-margin-top: var(--mast-h, 55px);
+  }
+  #dash > .shell { flex: 1 1 0; min-height: 0; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
+  #dash .sec-h { flex: none; margin-bottom: clamp(6px, 1.4vh, 16px); row-gap: clamp(2px, .6vh, 8px); }
+  #dash .sec-h .tag { font-size: 10.5px; padding: 2px 8px; }
+  #dash .sec-h h2 { font-size: clamp(20px, 4.2vh, 34px); }
+  #dash .dash-wrap { flex: 1 1 0; min-height: 0; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: stretch; gap: clamp(12px, 1.6vw, 22px); }
+  #dash .dash-frame { display: flex; flex-direction: column; }
+  #dash .dash-view { flex: 1 1 auto; aspect-ratio: auto; min-height: 0; }
+  #dash .dash-side { min-height: 0; overflow-y: auto; scrollbar-width: thin; gap: clamp(6px, 1.2vh, 12px); }
+  #dash .dash-side > * { flex: none; }
+  #dash .dash-side .proj-meta { font-size: 12px; }
+  #dash .dash-side .hook { font-size: clamp(13px, 2.1vh, 15px); line-height: 1.55; }
+  #dash .dash-side .modesw { padding: 3px; }
+  #dash .dash-side .modesw button { padding: clamp(5px, 1vh, 9px) 10px; font-size: 13.5px; }
+  #dash .dash-side .actions { gap: 6px; }
+  #dash .dash-side .actions .btn { height: clamp(30px, 4.8vh, 38px); padding: 0 12px; font-size: 13px; }
+  #dash .dash-side .facts li { padding: clamp(5px, 1vh, 9px) 10px; }
+  #dash .dash-side .facts .fv { font-size: clamp(17px, 3vh, 22px); }
+  #dash .dash-side .facts .fk { font-size: 11.5px; line-height: 1.3; }
+  #dash .dash-side .how {
+    flex: 1 1 0; min-height: 4.6em; overflow-y: auto; overscroll-behavior: contain;
+    font-size: 13.5px; line-height: 1.5; gap: 6px; padding: 2px 6px 16px 0;
+    scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent;
+    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 24px), transparent);
+            mask-image: linear-gradient(180deg, #000 calc(100% - 24px), transparent);
+  }
+  #dash .dash-side .how.at-end { -webkit-mask-image: none; mask-image: none; }
+}
+/* 태블릿 가로 · 좁은 노트북(861~1100px) — 한 줄짜리 보조 문구는 빼고 설명 칸을 조금 넓게 */
+@media screen and (min-width: 861px) and (max-width: 1100px) {
+  #dash .sec-h .aside { display: none; }
+  #dash .dash-wrap { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+}

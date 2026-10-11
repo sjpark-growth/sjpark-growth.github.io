@@ -36,14 +36,16 @@
 
 | 수치 | 나오는 곳 |
 |---|---|
-| 통합 ROAS 964% → 1,330% (+366%p) | ticker · board.roas · kpis · pillars(PERFORMANCE) · jobs(현 직장) · careerNote · scores |
+| 통합 ROAS 964% → 1,330% (+366%p) | ticker · board.roas · kpis · jobs(현 직장) · careerNote · scores — 2026-09-28 반복을 줄이려고 profile.highlights(종합) · pillars(PERFORMANCE)에서 뺐다. 다시 늘리지 않는다 |
+| 쿠팡 윙 ROAS 437% → 659% (+222%p) | profile.highlights · boardMulti · projects.cp3 · pillars(PERFORMANCE) |
+| 기간 이름 | 25년 1~6월은 「입사 전 6개월」로 통일(「25년 상반기 평균」 「전년 동기」 「입사 전 평균」 쓰지 않음) — board.roas · kpis · app.js 차트 라벨 |
 | 쿠팡 1P 1,426% → 1,893% (+468%p) | ticker · board.multi(꺼 둠) · boardMulti · kpis · profile.highlights · projects.cp1 · jobs |
 | 브랜드 키워드 의존도 37.9% → 15.1% (−22.8%p) | ticker · board.brand · kpis · projects.brand · jobs · careerNote |
 | 동일 몰 7월 매출 30.8억 → 41억 (+10.2억), 광고비 −4.7% | ticker · kpis · growth.coupon · jobs · scores |
 | 전환매출 +83.8% (광고비 +33.3%) | ticker · kpis · jobs |
 | 전체 매출 +36.6% | kpis · growth.main · projects.nonad · jobs · scores |
 | 쿠팡 PMC 최대 −95% | moreWins · growth.coupon · projects.nonad · jobs · motion.js(nonad) |
-| 모니터링 시간 30%+ 단축 · 자동화 8건 | ticker · moreWins · pillars · projects.automation · beliefs · motion.js(automation) |
+| 모니터링 시간 30%+ 단축 · 자동화 8건 | ticker · moreWins · profile.highlights(종합) · pillars · projects.automation · beliefs · motion.js(automation) |
 | 경력 8년 10개월 (자동 계산 — jobs 구간 합) | profile.career · index.html(경력 제목) · en.html 머리 줄(같은 구간을 인라인 스크립트로 계산 — jobs 를 바꾸면 en.html 의 구간 목록도 고친다). **이화에스엠피 끝 달은 채용 사이트 경력 인증(건강보험 상실일) 기준 2023.11** — 마지막 근무일 기준(2023.10)과 한 달 다르지만 사이트 인증 표시와 맞춘 확정 기준이다(`이력서_사이트입력용.md`). 앞당기지 않는다 |
 | 대시보드 광고 채널 22개(외부몰 13 · 자사몰 9) — `dashboard-demo.html` 의 `NETWORKS` 채널 수 | ticker · board.dash · projects.dashboard(title · headline · facts · tour) · angles.performance · (화면에 안 나오는 motion.js dashboard 장면은 옛 「9종」 그대로) |
 
@@ -53,6 +55,7 @@
 
 - 매체 수수료율 · 마진 · 거래 조건 · 동료 이름 · 대행사 자료 · 원본 광고비/매출 파일.
 - 실제 대시보드 원본(사내 기밀). 데모는 반드시 숫자를 바꾼 사본만 쓴다.
+  - 숫자만이 아니라 **제조사 · 상품코드(SKU · 옵션ID) · 실제 브랜드명**도 가린다. 게시본에서 데모를 새로 옮겨 오거나 데모를 고친 뒤에는, 반영(push) 전에 데모 · `en.html` 의 JS 문자열 · 주석 · 데이터 배열까지 이 이름들이 남아 있지 않은지 검색한다(2026-10-05 인사이트 리포트 — 데모가 실데이터에 너무 가까웠던 적이 있다).
 - 품목 · 상품 · 맛 실명(품목군 이름, 상품명의 고유 낱말) — 데모 3종은 물론 본문(모션 영상 · data.js · index · en)에도. 「F제품 · DS맛」 식 코드나 업종 일반어(닭가슴살 · 간편식 · 단백질 간식 …)로 쓴다. `tools/demo-wash.js` 가 가리고 막는다 — 5-3.
 - 절대 금액은 이미 공개한 것(월 광고비 · 월 전환매출 억 단위, 동일 몰 7월 매출)만 쓴다. 더 넣을 때는 본인 확인 후에.
 
@@ -81,6 +84,7 @@
 | `?for=performance` · `md` · `growth` · `leader` | `data.js` `angles` · `app.js` `applyAngle()` | 공고 성격에 맞춰 첫 화면 세 줄(kicker · thesis · lede)과 요약 네 줄의 차례만 바꾼다 | 나머지 내용은 전부 같다. 모르는 값이면 기본 문구가 나온다. 네 갈래 모두 첫 화면 한 장(1280×800)에 들어가는지 확인하고 문구를 늘린다 |
 | `assets/og-card.png` | `index.html` `<head>` | 카카오톡 · 슬랙 · 메일에 뜨는 링크 미리보기 카드(1200×630) | **경력 개월수가 그림 안에 박혀 있다.** 다시 만드는 법은 원본 폴더 `_work/og-card/만들기.txt` |
 | 첫 화면 칸 높이 맞춤 | `style.css` 맨 아래 3분할 블록 · `app.js` `boardH()` | 넓은 화면(≥1101px)에서 오른쪽 리포트 칸이 창 높이를 채우고, 차트는 칸의 남은 높이에 맞춰 다시 그려진다 | 칸에 줄을 더하면 차트가 그만큼 낮아진다. 네 갈래 · 1280×720 에서 차트가 80px 아래로 내려가지 않는지 본다 |
+| 대시보드 절 한 화면 맞춤 (2026-09-30) | `style.css` 맨 아래 「대시보드 쇼케이스도 첫 화면처럼」 블록 · `app.js` `renderShowcase()` 의 `howEnd` | 가로 861px 이상에서 `#dash` 높이를 「창 높이 − 상단 바」(380~940px)로 고정 — 125% 배율 노트북(1366×768 → 창 약 1093×520)도 포함. 글자 · 버튼 · 여백은 창 높이(vh)에 맞춰 줄어든다. 축소판은 남는 높이를 채우고, 오른쪽 「구축 내용」(`how`) 목록만 칸 안에서 스크롤(끝까지 내리면 아래 흐림이 사라짐). 창이 아주 낮으면 오른쪽 칸 전체가 스크롤 | `how` 항목을 늘려도 절은 길어지지 않고 스크롤만 길어진다. 소개 · 버튼 · 숫자 3칸을 늘리면 목록 칸이 줄어드니 1093×520 · 1280×640 에서 목록이 2줄 이상 보이는지 본다. 휴대폰(≤860px) · 인쇄는 예전 그대로 |
 | `assets/dash-poster.webp` | `data.js` `board`(dash 칸) · 대시보드 절 배경 · 인쇄 | 대시보드 데모(임의 값 화면)를 찍은 썸네일(800×450, 36KB) | **데모 화면을 크게 바꾸면 다시 찍는다**: `dashboard-demo.html?video&explore` 를 1440×900 으로 열어 위 82px(데모 안내 띠)를 잘라 800×450 WebP. 실제 대시보드 화면을 찍지 않는다 |
 | 데모 본체 늦게 받기 | `app.js` `renderShowcase()` | 페이지 로드가 끝난 뒤, 대시보드 절이 200px 앞에 올 때만 데모(약 3MB)를 받는다. 그 전엔 썸네일이 대신 보인다 | 여유를 늘리면 첫 로드에 3MB 가 다시 끼어든다(1280×800 에서 700px 여유일 때 그랬다) |
 | `.mast.tight` | `app.js` `setMastH()` | 넓은 화면인데 상단 바가 두 줄로 접히면(맑은 고딕 등 폭 넓은 글꼴) 꼬리표 · 테마 글자를 숨겨 한 줄로 | 메뉴를 늘리면 1101px 에서 한 줄인지 본다 |

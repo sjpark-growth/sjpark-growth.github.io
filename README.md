@@ -22,4 +22,18 @@
 2. GitHub 저장소 화면에서 **Add file → Upload files** 로 바뀐 파일을 끌어다 놓고 **Commit changes** 를 누릅니다.
 3. 1~2분 뒤 사이트 주소에 반영됩니다. (반영이 안 보이면 Ctrl+F5 로 새로고침)
 
+## 공고별 링크 (`?for=`)
+
+주소 끝에 붙이면 첫 화면 세 줄(kicker · thesis · lede)만 공고 성격에 맞게 바뀝니다. 나머지 내용은 같습니다.
+
+| 공고 성격 | 보낼 링크 |
+|---|---|
+| 기본 | https://sjpark-growth.github.io/ |
+| 퍼포먼스 마케팅 | https://sjpark-growth.github.io/?for=performance |
+| 온라인 MD | https://sjpark-growth.github.io/?for=md |
+| 그로스 | https://sjpark-growth.github.io/?for=growth |
+| 팀장 · 리더 | https://sjpark-growth.github.io/?for=leader |
+
+모르는 값이면 기본 화면이 나옵니다. 문구는 `assets/data.js` 의 `angles` 에서 고칩니다.
+
 검색엔진에는 노출되지 않도록 `noindex` 가 설정되어 있습니다 — 링크를 받은 사람만 열어 볼 수 있습니다.
