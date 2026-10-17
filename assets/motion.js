@@ -385,7 +385,7 @@
   /* 3 · 브랜드 키워드 다이어트 */
   SCENES.brand = {
     duration: 14, poster: 12.8,
-    chapters: [[0, '검색 광고비 중 브랜드 키워드 비중 — 월별'], [6, '개별 채널 개선 — 개선 전 6개월 평균(%) → 26년 9월(%)'], [11, '그 사이 통합 ROAS 는 964% → 1,166% (+202%p) — 입사 전 6개월(25.1–6) → 26.9 단월(1~9일)']],
+    chapters: [[0, '검색 광고비 중 브랜드 키워드 비중 — 월별'], [6, '개별 채널 개선 — 개선 전 6개월 평균(%) → 26년 9월(%)'], [11, '그 사이 통합 ROAS 는 962% → 1,130% (+168%p) — 입사 전 6개월(25.1–6) → 26.9 단월']],
     draw(g, t) {
       const A = 1 - seg(t, 5.6, 6.2);
       g.kicker(t < 6 ? 'BRAND KEYWORD SHARE · 4개 검색 채널' : t < 11 ? 'BY CHANNEL' : 'EFFICIENCY');
@@ -401,25 +401,25 @@
         tenureLine(g, ax, top - 30, base);
         drawMonthTicks(g, ax, base + 28);
         if (cur != null) {
-          g.text(ml(S.months[cur]) + (cur === N - 1 ? ' (1~9일)' : ''), 1190, 110, { size: 18, color: C.ink2, align: 'right' });
+          g.text(ml(S.months[cur]) + (cur === N - 1 && S.partialLast ? ' (1~' + S.days[N - 1] + '일)' : ''), 1190, 110, { size: 18, color: C.ink2, align: 'right' });
           g.text(fmt(S.brand.total[cur], 1) + '%', 1190, 170, { size: 60, weight: 600, font: 'num', align: 'right', color: cur >= TEN ? C.ink : C.ink2 });
         }
       });
       const B = seg(t, 6, 11), aB = E.out(seg(t, 6, 6.5)) * (1 - seg(t, 13.6, 14));
       g.alpha(aB, () => {
-        const rows = [['4개 채널 합계', 37.9, 15.1, C.ink], ['쿠팡 1P 로켓', 19.5, 6.5, C.c1p], ['쿠팡 윙', 44.6, 19.3, C.c3p], ['네이버 쇼핑검색', 53.8, 20.4, C.cnv], ['네이버 파워링크', 67.2, 16.5, C.csm]];
+        const rows = [['4개 채널 합계', 38.0, 15.8, C.ink], ['쿠팡 1P 로켓', 19.5, 6.2, C.c1p], ['쿠팡 윙', 44.6, 17.5, C.c3p], ['네이버 쇼핑검색', 53.9, 24.4, C.cnv], ['네이버 파워링크', 67.2, 19.7, C.csm]];
         rows.forEach(([lb, a, b, col], k) => g.beforeAfter(120, 140 + k * 76, 700, lb, a, b, 70, { progress: seg(t, 6.4 + k * 0.4, 8.4 + k * 0.4), color: col, unit: '%', dec: 1, h: 24 }));
         g.text('개선 전 6개월 평균  →  26년 9월', 1180, 112, { size: 16, color: C.ink2, align: 'right', alpha: seg(t, 6.2, 6.8) });
         g.alpha(seg(t, 8.8, 9.4) * (1 - seg(t, 10.8, 11.2)), () => g.text('점선 = 개선 전 6개월 평균', 120, 548, { size: 16, color: C.ink3 }));
       });
       g.alpha(E.out(seg(t, 11, 11.6)), () => {
         g.box(120, 520, 1040, 76, { fill: C.panel, r: 12, stroke: C.line });
-        g.text('통합 ROAS · 26.9 단월(1~9일)', 150, 566, { size: 20, color: C.ink2, weight: 600 });
-        const v = lerp(964, 1166, E.inOut(seg(t, 11.3, 12.6)));
-        g.text('964%', 520, 570, { size: 30, color: C.ink3, font: 'num', weight: 600 });
+        g.text('통합 ROAS · 26.9 단월', 150, 566, { size: 20, color: C.ink2, weight: 600 });
+        const v = lerp(962, 1130, E.inOut(seg(t, 11.3, 12.6)));
+        g.text('962%', 520, 570, { size: 30, color: C.ink3, font: 'num', weight: 600 });
         g.arrow(610, 560, 668, 560, { color: C.ink3 });
         g.text(fmt(v) + '%', 690, 572, { size: 38, weight: 600, font: 'num', color: C.good });
-        g.text('+202%p · 의존도를 낮추고도 효율 상승', 880, 566, { size: 18, color: C.ink2 });
+        g.text('+168%p · 의존도를 낮추고도 효율 상승', 880, 566, { size: 18, color: C.ink2 });
       });
     },
   };
@@ -465,7 +465,7 @@
       });
       g.alpha(E.out(seg(t, 10, 10.5)), () => {
         const p = E.inOut(seg(t, 10.3, 12));
-        [['브랜드 키워드 비중', 19.5, 6.5, '%', 1, C.c1p, '입사 전 6개월 → 26.9'], ['전환율 CVR', 9.0, 17.7, '%', 1, C.good, '25.7 → 26.7 · 운영 보고서']].forEach(([lb, a, b, u, d, col, s], k) => {
+        [['브랜드 키워드 비중', 19.5, 6.2, '%', 1, C.c1p, '입사 전 6개월 → 26.9'], ['전환율 CVR', 9.0, 17.7, '%', 1, C.good, '25.7 → 26.7 · 운영 보고서']].forEach(([lb, a, b, u, d, col, s], k) => {
           const cx = 380 + k * 520, cy = 330, r = 130;
           const cur = lerp(a, b, p);
           g.arc(cx, cy, r, -Math.PI / 2, Math.PI * 1.5, { color: 'rgba(255,255,255,.07)', w: 22 });
@@ -496,7 +496,7 @@
         });
         tenureLine(g, ax, top - 20, base);
         g.alpha(seg(t, 2.4, 2.9), () => g.pill('25.12 최저 · 30', ax.X(11), Y(30) - 50, { size: 14, align: 'center', fill: 'rgba(255,255,255,.08)', color: C.ink2 }));
-        g.alpha(seg(t, 3.8, 4.3), () => g.pill('26.9 · 185', ax.X(N - 1), Y(184.5) - 50, { size: 14, align: 'right', fill: 'rgba(238,122,69,.2)', color: C.c3p }));
+        g.alpha(seg(t, 3.8, 4.3), () => g.pill('26.9 · ' + S.index.cp3Spend[N - 1], ax.X(N - 1), Y(S.index.cp3Spend[N - 1]) - 50, { size: 14, align: 'right', fill: 'rgba(238,122,69,.2)', color: C.c3p }));
         // ROAS 라인 (아래 패널)
         const b2 = 560, t2 = 420, Y2 = v => b2 - (v - 350) / (1000 - 350) * (b2 - t2);
         g.line(110, Y2(473.6), 1170, Y2(473.6), { color: 'rgba(239,107,107,.55)', dash: [6, 5], w: 1.5 });
@@ -543,11 +543,11 @@
   /* 6 · 네이버 */
   SCENES.naver = {
     duration: 13, poster: 11.8,
-    chapters: [[0, '파워링크·쇼핑검색에 몰려 있던 브랜드 키워드를 걷어냄'], [4.8, '지면별 효율을 평탄화한 뒤 쇼핑검색 예산 비중 40% → 70%'], [8.8, 'GFA ROAS 304% → 586% (+282%p) · 상반기 광고비 +59.5%에 매출 +66.2%']],
+    chapters: [[0, '파워링크·쇼핑검색에 몰려 있던 브랜드 키워드를 걷어냄'], [4.8, '지면별 효율을 평탄화한 뒤 쇼핑검색 예산 비중 40% → 70%'], [8.8, 'GFA ROAS 304% → 623% (+319%p) · 상반기 광고비 +58.2%에 매출 +65.1%']],
     draw(g, t) {
       g.kicker(t < 4.8 ? 'NAVER · 브랜드 키워드 비중' : t < 8.8 ? 'BUDGET MIX · 운영 보고서' : 'RESULT');
       g.alpha(1 - seg(t, 4.4, 4.9), () => {
-        [['쇼핑검색', 53.8, 20.4], ['파워링크', 67.2, 16.5]].forEach(([lb, a, b], k) => {
+        [['쇼핑검색', 53.9, 24.4], ['파워링크', 67.2, 19.7]].forEach(([lb, a, b], k) => {
           const y = 190 + k * 170, p = E.inOut(seg(t, 0.6 + k * .4, 3.2 + k * .4)), cur = lerp(a, b, p);
           g.text(lb, 140, y - 20, { size: 24, weight: 700 });
           g.box(140, y, 800, 70, { fill: 'rgba(255,255,255,.05)', r: 10 });
@@ -574,7 +574,7 @@
       g.alpha(E.out(seg(t, 8.8, 9.3)), () => {
         const p = E.inOut(seg(t, 9.1, 10.8));
         const base = 520, maxH = 320;
-        [['입사 전 6개월', 304, C.before], ['최근 3개월', lerp(304, 586, p), C.cnv]].forEach(([lb, v, col], k) => {
+        [['입사 전 6개월', 304, C.before], ['최근 3개월', lerp(304, 623, p), C.cnv]].forEach(([lb, v, col], k) => {
           const x = 170 + k * 220, h = maxH * v / 650;
           g.box(x, base - h, 150, h, { fill: col, r: 8 });
           g.text(fmt(v) + '%', x + 75, base - h - 16, { size: 34, weight: 600, font: 'num', align: 'center' });
@@ -584,8 +584,8 @@
         g.alpha(seg(t, 10.4, 11), () => {
           g.box(700, 200, 480, 250, { fill: C.panel, r: 14, stroke: C.line });
           g.text('26년 상반기 · 전년 동기 대비', 730, 244, { size: 17, color: C.ink2 });
-          g.text('광고비', 730, 306, { size: 20, color: C.ink2 }); g.text('+59.5%', 1150, 310, { size: 38, weight: 600, font: 'num', align: 'right', color: C.ink2 });
-          g.text('매출', 730, 380, { size: 20, color: C.ink2 }); g.text('+66.2%', 1150, 386, { size: 46, weight: 600, font: 'num', align: 'right', color: C.good });
+          g.text('광고비', 730, 306, { size: 20, color: C.ink2 }); g.text('+58.2%', 1150, 310, { size: 38, weight: 600, font: 'num', align: 'right', color: C.ink2 });
+          g.text('매출', 730, 380, { size: 20, color: C.ink2 }); g.text('+65.1%', 1150, 386, { size: 46, weight: 600, font: 'num', align: 'right', color: C.good });
           g.text('늘린 만큼 더 빠르게 따라온 매출', 730, 428, { size: 16, color: C.ink3 });
         });
       });

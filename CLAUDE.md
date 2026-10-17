@@ -31,26 +31,35 @@
 ## 3. 수치 원칙 (반드시 지킬 것)
 
 - **ROAS 는 순수 ROAS = 전환매출 ÷ 광고비** (VAT · 몰 수수료 차감 전). 기간 값은 광고비 가중 평균.
-- ROAS 개선은 항상 **개선 폭(%p)** 을 함께 적는다. 예: `964% → 1,330% (+366%p)`.
-- 기준일: 대시보드 월별 데이터 2026-09-09. 26년 9월 금액은 1~9일을 30일로 환산.
+- ROAS 개선은 항상 **개선 폭(%p)** 을 함께 적는다. 예: `962% → 1,328% (+366%p)`.
+- 기준일: 대시보드 월별 데이터 **2026-09-30(9월 전체)** — 대시보드 백업 v141(2026-10-09). 10월 일부 데이터는 쓰지 않는다(완전한 마지막 달까지만).
+  - 2026-10-17 갱신 때 대시보드가 고쳐 둔 과거 월값(네이버 쇼핑검색 25.1 · 26.3–8, 파워링크 26.4 · 26.8)도 함께 반영됐다 — 그래서 고정 기간 숫자(입사 전 6개월 · 26 상반기 · 26.7)도 조금 바뀌었다(964% → 962% 등).
+  - 정의는 그대로: 10개 키(9개 매체 + 메타/기타) — 대시보드에 새로 생긴 자사몰 · 토스 채널은 넣지 않는다. 전환매출 = 대시보드 내부 매출 × 1.1 ÷ (1 − 수수료).
+  - `assets/series.js` 와 계산표는 작업 폴더의 `_work/data/build_series_site.js <대시보드 백업> <YYYY-MM> <series.js>` 로 만든다(손으로 고치지 않는다). 세일즈 시트 · PMC 원천 숫자(동일 몰 30.8억 → 41억, 전체 매출 +36.6%, PMC −95%)는 이 도구 밖이다.
 - 같은 숫자가 여러 곳에 나온다. 하나를 바꾸면 아래 목록을 모두 맞춘다.
 
 | 수치 | 나오는 곳 |
 |---|---|
-| 통합 ROAS 964% → 1,330% (+366%p) | ticker · board.roas · kpis · jobs(현 직장) · careerNote · scores — 2026-09-28 반복을 줄이려고 profile.highlights(종합) · pillars(PERFORMANCE)에서 뺐다. 다시 늘리지 않는다 |
-| 쿠팡 윙 ROAS 437% → 659% (+222%p) | profile.highlights · boardMulti · projects.cp3 · pillars(PERFORMANCE) |
+| 통합 ROAS 962% → 1,328% (+366%p) | ticker · board.roas · kpis · jobs(현 직장) · careerNote · scores · en.html(머리 · KPI · 경력) · index.html(og · twitter description) · 공유 카드 — 2026-09-28 반복을 줄이려고 profile.highlights(종합) · pillars(PERFORMANCE)에서 뺐다. 다시 늘리지 않는다 |
+| 쿠팡 윙 ROAS 437% → 659% (+222%p) · 매출 +100.2%(광고비 +32.8%, 26.7–8 YoY) | profile.highlights · boardMulti · projects.cp3 · pillars(PERFORMANCE) · motion.js(cp3) |
 | 기간 이름 | 25년 1~6월은 「입사 전 6개월」로 통일(「25년 상반기 평균」 「전년 동기」 「입사 전 평균」 쓰지 않음) — board.roas · kpis · app.js 차트 라벨 |
 | 쿠팡 1P 1,426% → 1,893% (+468%p) | ticker · board.multi(꺼 둠) · boardMulti · kpis · profile.highlights · projects.cp1 · jobs |
-| 브랜드 키워드 의존도 37.9% → 15.1% (−22.8%p) | ticker · board.brand · kpis · projects.brand · jobs · careerNote |
-| 동일 몰 7월 매출 30.8억 → 41억 (+10.2억), 광고비 −4.7% | ticker · kpis · growth.coupon · jobs · scores |
-| 전환매출 +83.8% (광고비 +33.3%) | ticker · kpis · jobs |
+| 브랜드 키워드 의존도 38.0% → 15.8% (−22.2%p) · 입사 전 6개월 → 26.9 | ticker · board.brand · kpis · projects.brand · jobs · careerNote · en.html · motion.js(brand) · app.js VIEWS(brand 캡션 「41.8%(25.1) → 15.8%(26.9)」) · 공유 카드. 채널별(1P 19.5 → 6.2 · 윙 44.6 → 17.5 · 쇼핑검색 53.9 → 24.4 · 파워링크 67.2 → 19.7)은 projects.brand · cp1 · naver · motion.js |
+| 동일 몰 7월 매출 30.8억 → 41억 (+10.2억 · +33.1%), 광고비 −4.5% | ticker · kpis · growth.coupon · jobs · scores · en.html(₩3.08B → ₩4.10B · spend −4.5%) · 공유 카드. 광고비 % 는 10개 키 7월 광고비(26.7 vs 25.7), 매출은 세일즈 시트 기준(대시보드 밖) |
+| 전환매출 +83.6% (광고비 +33.0%) · 26 상반기 YoY | ticker · kpis · jobs · en.html |
 | 전체 매출 +36.6% | kpis · growth.main · projects.nonad · jobs · scores |
-| 쿠팡 PMC 최대 −95% | moreWins · growth.coupon · projects.nonad · jobs · motion.js(nonad) |
+| 쿠팡 PMC 최대 −95% (25.9 → 26.2) | moreWins · growth.coupon · projects.nonad · jobs · motion.js(nonad) |
 | 모니터링 시간 30%+ 단축 · 자동화 8건 | ticker · moreWins · profile.highlights(종합) · pillars · projects.automation · beliefs · motion.js(automation) |
 | 경력 8년 11개월 (2026-10 기준 · 자동 계산 — jobs 구간 합. 「입사 후 N개월」은 2026-10 에 15개월) | profile.career · index.html(경력 제목 · data-auto 기본값 5곳) · en.html(data-career 기본값) · 경력 막대(app.js renderCareer — 현 직장 끝 = 오늘이 속한 달, 2026-10-17 부터) · en.html 머리 줄(같은 구간을 인라인 스크립트로 계산 — jobs 를 바꾸면 en.html 의 구간 목록도 고친다). **이화에스엠피 끝 달은 채용 사이트 경력 인증(건강보험 상실일) 기준 2023.11** — 마지막 근무일 기준(2023.10)과 한 달 다르지만 사이트 인증 표시와 맞춘 확정 기준이다(`이력서_사이트입력용.md`). 앞당기지 않는다 |
+| 26.9 단월 통합 ROAS 1,130% (+168%p, 입사 전 6개월 962% 대비) — 기간을 꼭 붙인다(「26.9 단월」) | motion.js(brand 장면) |
+| 네이버 GFA ROAS 304% → 623% (+319%p) · 입사 전 6개월 → 최근 3개월(26.7–9) | ticker · profile.highlights · boardMulti · board.multi(꺼 둠) · projects.naver · jobs · en.html · motion.js(naver) |
+| 네이버 합계 ROAS 592% → 668% (+76%p) · 입사 전 6개월 → 26.9 단월, 네이버 상반기 매출 +65.1%(광고비 +58.2%) | projects.naver · app.js VIEWS(channel 캡션) · motion.js(naver) |
+| 매체 믹스 1P 39% → 25% (−13.9%p, 25.7 → 26.9) · 26.9 비중 1P 25 · 윙 30 · 네이버 42 · 윙 비중 13.2% → 29.7%(25.12 → 26.9) | board.mix · app.js VIEWS(mix 캡션) · projects.cp3 |
+| 연속 기록 — 통합 ROAS 13개월 연속 입사 전 평균 위(25.9–26.9) · 쿠팡 1P 10개월 연속 입사 전 최고치(1,635%) 위(25.12–26.9) | app.js VIEWS(roas · channel 캡션) · projects.cp1 · motion.js(cp1) · en.html. 새 달을 넣을 때 끊기지 않았는지 본다 |
 | 대시보드 광고 채널 22개(외부몰 13 · 자사몰 9) — `dashboard-demo.html` 의 `NETWORKS` 채널 수 | ticker · board.dash · projects.dashboard(title · headline · facts · tour) · angles.performance · (화면에 안 나오는 motion.js dashboard 장면은 옛 「9종」 그대로) |
 
 - `motion.js` 의 모션 영상 속 숫자와 `app.js` 의 VIEWS 캡션도 같은 기준이다. 숫자를 바꾸면 함께 검색해서 맞춘다.
+- 첫 화면 차트의 「입사 전 평균」 기준선(통합 ROAS · 브랜드 의존도)과 VIEWS 의 ROAS 기준선은 `series.js` 의 `periods.B` 값을 읽는다(2026-10-17 — 손으로 적지 않는다).
 
 ## 4. 올리면 안 되는 것
 
