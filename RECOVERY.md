@@ -5,7 +5,7 @@
 
 ## 1. 그냥 보기
 
-내려받아 `index.html` 을 더블클릭하면 인터넷 없이 열립니다(데모 2개 포함).
+내려받아 `index.html` 을 더블클릭하면 인터넷 없이 열립니다(데모 3개 포함).
 
 ## 2. 다른 계정 · 다른 주소로 다시 올리기
 
@@ -34,16 +34,17 @@ git push --mirror https://github.com/<새계정>/<새계정>.github.io.git
 
 - `index.html` 이 **루트**에 있다
 - `.nojekyll` 이 있다
-- `index.html` · `dashboard-demo.html` · `briefing-demo.html` 의 `<meta name="robots" content="noindex, nofollow">` 가 그대로다(일부러 넣은 검색 차단)
+- `index.html` · `en.html` · `dashboard-demo.html` · `briefing-demo.html` · `stock-demo.html` 다섯 파일의 `<meta name="robots" content="noindex, nofollow">` 가 그대로다(일부러 넣은 검색 차단)
 - `en.html`(영문 한 장 요약)도 열리고 헤더의 EN 버튼으로 오갈 수 있다
-- 세 페이지가 모두 열리고, 이력서의 데모 버튼 2개와 데모끼리 오가는 버튼이 동작한다
+- 데모 세 페이지가 모두 열리고, 이력서의 데모 버튼(대시보드 · 브리핑룸 · 재고 신호판)과 데모끼리 오가는 버튼이 동작한다
+- 루트의 `favicon.ico` 가 있다(데모 탭 아이콘 — 없으면 데모를 열 때마다 404 가 난다)
 - 콘솔(F12) 오류 없음 · 폭 390px 에서 가로 스크롤 없음 · 다크 모드에서 글자가 읽힌다
 - 파일 이름 대소문자가 그대로다(서버는 구분합니다)
 
-## 5. 데모 두 개에 대하여
+## 5. 데모 세 개에 대하여
 
-`dashboard-demo.html`(퍼포먼스 대시보드) · `briefing-demo.html`(브리핑룸)은 실제 운영 대시보드의
-**숫자를 임의 값으로 바꾼 사본**입니다. 실제 수치가 아닙니다.
+`dashboard-demo.html`(퍼포먼스 대시보드) · `briefing-demo.html`(브리핑룸) · `stock-demo.html`(재고 신호판)은 실제 운영 도구의
+**숫자를 임의 값으로 바꾸고 품목 · 상품 이름을 코드로 가린 사본**입니다. 실제 수치가 아닙니다.
 
 - 글꼴까지 파일 안에 들어 있어 서버 없이 단독으로 열립니다.
 - 서로를 상대 경로로 링크하므로 **같은 폴더에 같은 이름**으로 두어야 합니다.

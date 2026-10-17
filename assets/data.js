@@ -28,7 +28,7 @@ window.RESUME = {
     name: '박성준',
     nameEn: 'Park Seong-joon',
     role: '그로스 마케터 · MD × 퍼포먼스',
-    career: '경력 8년 10개월',
+    career: '경력 8년 11개월',   // JS 가 꺼졌을 때의 기본값 — 화면에서는 app.js paintPeriods() 가 오늘 기준으로 덮어쓴다(2026-10 기준 값)
     photo: 'assets/profile.jpg',   // JPEG — WebP 는 PDF 로 저장할 때 무손실로 풀려 한 장에 0.7MB 가 된다
     email: 'j1o2o1n7@naver.com',
     phone: '010-8916-5977',
@@ -220,7 +220,9 @@ window.RESUME = {
         { href: 'briefing-demo.html', label: '브리핑룸 데모' },
         { href: 'stock-demo.html', label: '재고 신호판 데모' },
       ],
-      tourSrc: 'dashboard-demo.html?video',
+      /* 축소판도 크게 보기(demo)와 같은 주소 — 주소가 다르면 같은 3MB 를 두 번 받는다(2026-10-17).
+         explore 로 열려도 축소판은 dash-ready 뒤 explore · 영상 모드는 tour 메시지를 보내 그대로 동작한다 */
+      tourSrc: 'dashboard-demo.html?video&explore',
       tour: { duration: 44, chapters: [
         [0, '실제 운영 대시보드 — 화면의 숫자는 모두 임의 값입니다'],
         [5.6, '운영 구조 모니터 — 채널별 브랜드 키워드 의존도 (히트맵 ↔ 금액 누적)'],

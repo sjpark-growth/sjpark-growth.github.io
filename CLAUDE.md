@@ -8,7 +8,8 @@
 - 스크립트 로드 순서: `series.js` → `data.js` → `motion.js` → `app.js`.
 - **문구와 수치는 `assets/data.js` 한 곳에 모은다.** `app.js` 에는 차트 캡션 몇 개(VIEWS)와 첫 화면 차트 라벨만 하드코딩되어 있다.
 - `assets/series.js` 는 대시보드 월별 데이터에서 자동 생성된 시계열이다. 손으로 고치지 않는다.
-- `dashboard-demo.html` 은 실제 운영 대시보드의 **숫자를 임의 값으로 바꾼 사본**이다. 금액 · 비율 · ROAS 모두 실제 값이 아니며, 원본으로 되돌리거나 원본 파일을 여기에 두지 않는다.
+- 데모 3종 `dashboard-demo.html`(퍼포먼스 대시보드) · `briefing-demo.html`(브리핑룸) · `stock-demo.html`(재고 신호판)은 실제 운영 도구의 **숫자를 임의 값으로 바꾸고 품목 · 상품 이름을 코드로 가린 사본**이다. 금액 · 비율 · ROAS 모두 실제 값이 아니며, 원본으로 되돌리거나 원본 파일을 여기에 두지 않는다. 내용은 주간 동기화(`_work/sync`)가 다룬다 — 손으로 고치지 않는다.
+- 루트 `favicon.ico`(2026-10-17)는 아이콘 링크가 없는 데모 3종이 `/favicon.ico` 를 찾다 404 가 나지 않게 둔 것이다. 모양은 `index.html` 의 SVG 아이콘과 같다(16 · 32 · 48px).
 - `tools/` · `.githooks/` · `.github/` 는 사이트가 아니라 관리 도구다(데모 가림 — 5-3).
 
 ## 2. data.js 에서 자주 고치는 곳
@@ -46,7 +47,7 @@
 | 전체 매출 +36.6% | kpis · growth.main · projects.nonad · jobs · scores |
 | 쿠팡 PMC 최대 −95% | moreWins · growth.coupon · projects.nonad · jobs · motion.js(nonad) |
 | 모니터링 시간 30%+ 단축 · 자동화 8건 | ticker · moreWins · profile.highlights(종합) · pillars · projects.automation · beliefs · motion.js(automation) |
-| 경력 8년 10개월 (자동 계산 — jobs 구간 합) | profile.career · index.html(경력 제목) · en.html 머리 줄(같은 구간을 인라인 스크립트로 계산 — jobs 를 바꾸면 en.html 의 구간 목록도 고친다). **이화에스엠피 끝 달은 채용 사이트 경력 인증(건강보험 상실일) 기준 2023.11** — 마지막 근무일 기준(2023.10)과 한 달 다르지만 사이트 인증 표시와 맞춘 확정 기준이다(`이력서_사이트입력용.md`). 앞당기지 않는다 |
+| 경력 8년 11개월 (2026-10 기준 · 자동 계산 — jobs 구간 합. 「입사 후 N개월」은 2026-10 에 15개월) | profile.career · index.html(경력 제목 · data-auto 기본값 5곳) · en.html(data-career 기본값) · 경력 막대(app.js renderCareer — 현 직장 끝 = 오늘이 속한 달, 2026-10-17 부터) · en.html 머리 줄(같은 구간을 인라인 스크립트로 계산 — jobs 를 바꾸면 en.html 의 구간 목록도 고친다). **이화에스엠피 끝 달은 채용 사이트 경력 인증(건강보험 상실일) 기준 2023.11** — 마지막 근무일 기준(2023.10)과 한 달 다르지만 사이트 인증 표시와 맞춘 확정 기준이다(`이력서_사이트입력용.md`). 앞당기지 않는다 |
 | 대시보드 광고 채널 22개(외부몰 13 · 자사몰 9) — `dashboard-demo.html` 의 `NETWORKS` 채널 수 | ticker · board.dash · projects.dashboard(title · headline · facts · tour) · angles.performance · (화면에 안 나오는 motion.js dashboard 장면은 옛 「9종」 그대로) |
 
 - `motion.js` 의 모션 영상 속 숫자와 `app.js` 의 VIEWS 캡션도 같은 기준이다. 숫자를 바꾸면 함께 검색해서 맞춘다.
@@ -82,11 +83,11 @@
 | `loading="lazy"` | `app.js` 아카이브 이미지 | 스크롤해서 내려갈 때만 받는다 | `.arc button` 의 `aspect-ratio: 4/3` 이 자리를 잡아 주므로 지우지 않는다 |
 | `data-src` (대시보드 축소판 iframe) | `app.js` `renderShowcase()` | 페이지 로드가 끝난 뒤 `#dash` 가 200px 앞에 오면 `src` 를 채운다(2026-09-26, 이전 700px) | 버튼을 먼저 누를 때를 위해 `loadFrame()` 을 조작 지점마다 부른다 |
 | `?for=performance` · `md` · `growth` · `leader` | `data.js` `angles` · `app.js` `applyAngle()` | 공고 성격에 맞춰 첫 화면 세 줄(kicker · thesis · lede)과 요약 네 줄의 차례만 바꾼다 | 나머지 내용은 전부 같다. 모르는 값이면 기본 문구가 나온다. 네 갈래 모두 첫 화면 한 장(1280×800)에 들어가는지 확인하고 문구를 늘린다 |
-| `assets/og-card.png` | `index.html` `<head>` | 카카오톡 · 슬랙 · 메일에 뜨는 링크 미리보기 카드(1200×630) | **경력 개월수가 그림 안에 박혀 있다.** 다시 만드는 법은 원본 폴더 `_work/og-card/만들기.txt` |
+| `assets/og-card.png` | `index.html` `<head>` | 카카오톡 · 슬랙 · 메일에 뜨는 링크 미리보기 카드(1200×630) | **경력 개월수가 그림 안에 박혀 있다.** 다시 만드는 법은 원본 폴더 `C:\Users\wns82\박성준_웹이력서\_work\og-card\만들기.txt`(이 저장소 밖 작업 폴더) |
 | 첫 화면 칸 높이 맞춤 | `style.css` 맨 아래 3분할 블록 · `app.js` `boardH()` | 넓은 화면(≥1101px)에서 오른쪽 리포트 칸이 창 높이를 채우고, 차트는 칸의 남은 높이에 맞춰 다시 그려진다 | 칸에 줄을 더하면 차트가 그만큼 낮아진다. 네 갈래 · 1280×720 에서 차트가 80px 아래로 내려가지 않는지 본다 |
 | 대시보드 절 한 화면 맞춤 (2026-09-30) | `style.css` 맨 아래 「대시보드 쇼케이스도 첫 화면처럼」 블록 · `app.js` `renderShowcase()` 의 `howEnd` | 가로 861px 이상에서 `#dash` 높이를 「창 높이 − 상단 바」(380~940px)로 고정 — 125% 배율 노트북(1366×768 → 창 약 1093×520)도 포함. 글자 · 버튼 · 여백은 창 높이(vh)에 맞춰 줄어든다. 축소판은 남는 높이를 채우고, 오른쪽 「구축 내용」(`how`) 목록만 칸 안에서 스크롤(끝까지 내리면 아래 흐림이 사라짐). 창이 아주 낮으면 오른쪽 칸 전체가 스크롤 | `how` 항목을 늘려도 절은 길어지지 않고 스크롤만 길어진다. 소개 · 버튼 · 숫자 3칸을 늘리면 목록 칸이 줄어드니 1093×520 · 1280×640 에서 목록이 2줄 이상 보이는지 본다. 휴대폰(≤860px) · 인쇄는 예전 그대로 |
-| `assets/dash-poster.webp` | `data.js` `board`(dash 칸) · 대시보드 절 배경 · 인쇄 | 대시보드 데모(임의 값 화면)를 찍은 썸네일(800×450, 36KB) | **데모 화면을 크게 바꾸면 다시 찍는다**: `dashboard-demo.html?video&explore` 를 1440×900 으로 열어 위 82px(데모 안내 띠)를 잘라 800×450 WebP. 실제 대시보드 화면을 찍지 않는다 |
-| 데모 본체 늦게 받기 | `app.js` `renderShowcase()` | 페이지 로드가 끝난 뒤, 대시보드 절이 200px 앞에 올 때만 데모(약 3MB)를 받는다. 그 전엔 썸네일이 대신 보인다. **폭 600px 이하 · 데이터 절약 모드에서는 저절로 받지 않고**(2026-10-11) 「크게 보기」 · 「축소판」 · 「영상으로 보기」를 누를 때 받는다 | 여유를 늘리면 첫 로드에 3MB 가 다시 끼어든다(1280×800 에서 700px 여유일 때 그랬다). 휴대폰(390px)에서 끝까지 내려도 Network 에 `dashboard-demo.html` 이 없어야 한다 |
+| `assets/dash-poster.webp` | `data.js` `board`(dash 칸) · 대시보드 절 배경 · 인쇄 | 대시보드 데모(임의 값 화면)를 찍은 썸네일(800×450, 42KB — 2026-10 실측) | **데모 화면을 크게 바꾸면 다시 찍는다**: `dashboard-demo.html?video&explore` 를 1440×900 으로 열어 위 82px(데모 안내 띠)를 잘라 800×450 WebP. 실제 대시보드 화면을 찍지 않는다 |
+| 데모 본체 늦게 받기 | `app.js` `renderShowcase()` | 페이지 로드가 끝난 뒤, 대시보드 절이 200px 앞에 올 때만 데모(약 3MB)를 받는다. 그 전엔 썸네일이 대신 보인다. **폭 600px 이하 · 데이터 절약 모드에서는 저절로 받지 않고**(2026-10-11) 「크게 보기」 · 「축소판」 · 「영상으로 보기」를 누를 때 받는다 | 여유를 늘리면 첫 로드에 3MB 가 다시 끼어든다(1280×800 에서 700px 여유일 때 그랬다). 휴대폰(390px)에서 끝까지 내려도 Network 에 `dashboard-demo.html` 이 없어야 한다. 축소판(`tourSrc`)과 크게 보기(`demo`)는 같은 주소 `dashboard-demo.html?video&explore` 로 둔다 — 주소가 다르면 3MB 를 두 번 받는다(2026-10-17) |
 | `.mast.tight` | `app.js` `setMastH()` | 넓은 화면인데 상단 바가 두 줄로 접히면(맑은 고딕 등 폭 넓은 글꼴) 꼬리표 · 테마 글자를 숨겨 한 줄로 | 메뉴를 늘리면 1101px 에서 한 줄인지 본다 |
 | 인쇄 전 이미지 받기 | `app.js` `printAll()` · `beforeprint` | 「요약 PDF」 · 「전체 PDF」를 누르면 지연 로딩 이미지를 먼저 받고(최대 2.5초) 인쇄 창을 연다 | 없으면 맨 위에서 바로 누를 때 참고 자료 이미지가 빈 칸으로 찍혔다 |
 | 인쇄 1쪽 표지 | `style.css` 「PDF · 인쇄 2차」 블록 | 소개를 두 단으로 접고 핵심 성과 + 대시보드 · 차트 4칸까지 1쪽에. 인쇄 때는 차트를 84px 높이로 다시 그린다 | 첫 화면 문구를 늘리면 1쪽을 넘기지 않는지 「전체 PDF」 미리보기로 본다. 인쇄에서 대시보드는 실시간 데모 대신 썸네일 |
@@ -138,7 +139,7 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 ## 7. 배포 (GitHub Pages)
 
 - 이 폴더 전체가 저장소 루트다. `index.html` 이 루트에 있어야 하고, `.nojekyll` 은 지우지 않는다.
-- 검색엔진 차단: `index.html` 과 `dashboard-demo.html` 의 `<meta name="robots" content="noindex, nofollow">` 를 지우지 않는다.
+- 검색엔진 차단: `index.html` · `en.html` · `dashboard-demo.html` · `briefing-demo.html` · `stock-demo.html` 다섯 파일의 `<meta name="robots" content="noindex, nofollow">` 를 지우지 않는다.
 - 파일 이름 대소문자는 서버에서 구분된다. 새 이미지를 넣을 때 `data.js` 의 경로와 대소문자까지 똑같이 맞춘다.
 
 ## 8. PDF 용량 — 이미지 형식 (2026-09-27)
@@ -147,5 +148,5 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 - 그래서 인쇄에 찍히는 사진은 JPEG 를 쓴다: `assets/profile.jpg`(450×600, 33KB — `data.js` `photo` · `en.html`). `profile.webp` 는 복구킷 `점검.ps1` 이 찾는 파일이라 지우지 않고 둔다.
 - 참고 자료는 목록 칸만 같은 이름의 JPEG 사본(`archive/*.jpg`, q80)을 쓰고, 크게 보기는 원본 WebP 그대로다(`app.js` `renderArchive`). 새 이미지를 넣으면 JPEG 사본도 같이 만든다(없으면 원본 WebP 로 되돌아가 PDF 가 커진다).
 - 크롬은 인쇄할 때 `<picture>` 의 `media="print"` 소스를 쓰지 않는다(실측) — 인쇄 전용 이미지로 우회할 수 없다.
-- `dash-poster.webp`(36KB)는 PDF 에서 약 0.3MB 로 풀리지만, JPEG 로 바꾸면 첫 화면 로드가 약 28KB 늘어 그대로 뒀다.
+- `dash-poster.webp`(42KB)는 PDF 에서 약 0.3MB 로 풀리지만, JPEG 로 바꾸면 첫 화면 로드가 약 28KB 늘어 그대로 뒀다.
 - 남은 용량의 대부분은 글꼴이다 — Noto Sans KR · Bahnschrift 가 가변 글꼴이라 글자가 그림(Type3)으로 들어간다. 인쇄 글꼴을 맑은 고딕으로 바꾸면 요약 PDF 가 약 0.7MB 더 준다(모양이 달라져 적용 안 함).

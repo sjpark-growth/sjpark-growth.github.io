@@ -481,7 +481,7 @@
     const bar = $('.dash-bar', frame), cap = $('.cap', bar), pbtn = $('.pbtn', bar), fil = $('.fil', bar), time = $('.time', bar), track = $('.bar', bar);
     const T = p.tour; const st = { mode: 'mini', t: 0, playing: false, last: 0, raf: 0, ready: false, visible: false, userPaused: false };
     const post = m => { try { ifr.contentWindow.postMessage(m, '*'); } catch (e) {} };
-    /* (2026-09-20) 축소판 데모는 약 870KB — 첫 화면에 필요 없으므로 이 구역이 가까워졌을 때 불러온다.
+    /* (2026-09-20) 축소판 데모는 약 3.3MB(2026-10 실측) — 첫 화면에 필요 없으므로 이 구역이 가까워졌을 때 불러온다.
        버튼을 먼저 누르는 경우를 대비해 조작 지점마다 loadFrame() 을 한 번 더 부른다(두 번째부터는 아무 일도 안 한다) */
     /* (2026-09-26) 데모가 뜨기 전(약 3MB)에는 첫 화면과 같은 썸네일을 뒤에 깔아 빈 칸으로 보이지 않게 한다.
        인쇄 직전까지 데모가 안 떴으면 썸네일이 대신 찍힌다 */
@@ -518,7 +518,9 @@
     const howEnd = () => how.classList.toggle('at-end', how.scrollTop + how.clientHeight >= how.scrollHeight - 4);
     how.addEventListener('scroll', howEnd, { passive: true }); howEnd();
     if ('ResizeObserver' in window) new ResizeObserver(howEnd).observe(how);
-    window.addEventListener('message', e => { if (e.source === ifr.contentWindow && e.data && e.data.type === 'dash-ready') { st.ready = true; st.mode === 'mini' ? post({ type: 'explore' }) : post({ type: 'tour', t: st.t }); } });
+    /* (2026-10-17) 축소판 주소에 explore 가 붙어(크게 보기와 같은 주소 — 한 번만 받기) 데모가 스스로 첫 장면(t=0) 위치로 가지 않는다.
+       예전 축소판과 같은 화면이 되게 t=0 으로 한 번 맞춘 뒤 explore 로 돌린다 */
+    window.addEventListener('message', e => { if (e.source === ifr.contentWindow && e.data && e.data.type === 'dash-ready') { st.ready = true; if (st.mode === 'mini') { post({ type: 'tour', t: 0 }); post({ type: 'explore' }); } else post({ type: 'tour', t: st.t }); } });
     const mmss = v => `${Math.floor(v / 60)}:${String(Math.floor(v % 60)).padStart(2, '0')}`;
     function ui() {
       fil.style.width = (clamp(st.t / T.duration, 0, 1) * 100) + '%';
@@ -937,7 +939,9 @@
   /* ------------------------------------------------------------ career */
   function ym(v) { const [y, mo] = v.split('.').map(Number); return y + (mo - 1) / 12; }
   function renderCareer() {
-    const now = ym(R.config.asOf.slice(0, 7).replace('-', '.'));
+    /* (2026-10-17) 현 직장 막대 끝 = 오늘이 속한 달 — 머리말 「N년 N개월」(paintPeriods, 오늘 기준)과 같은 셈.
+       예전엔 데이터 기준일(asOf)까지만 그려 막대 합이 머리말보다 한 달 짧았다 */
+    const td = new Date(), now = td.getFullYear() + td.getMonth() / 12;
     const jobs = R.jobs, exp = R.experience || [];
     const all = [...jobs.map(j => ({ ...j, kind: 'job' })), ...exp.map(e => ({ ...e, kind: 'exp' }))];
     const t0 = 2016, t1 = Math.ceil(now + 0.1);
