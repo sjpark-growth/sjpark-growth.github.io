@@ -454,7 +454,7 @@
       });
       const B = seg(t, 7, 10), aB = E.out(seg(t, 7, 7.5)) * (1 - seg(t, 9.6, 10.1));
       g.alpha(aB, () => {
-        [['광고비', 100, 84.1, C.ink3, '−15.9%'], ['매출', 100, 120.0, C.c1p, '+20.0%']].forEach(([lb, a, b, col, d], k) => {
+        [['광고비', 100, 84.6, C.ink3, '−15.4%'], ['매출', 100, 120.4, C.c1p, '+20.4%']].forEach(([lb, a, b, col, d], k) => {
           const y = 210 + k * 150, cur = lerp(a, b, E.inOut(seg(t, 7.4 + k * .3, 9 + k * .3)));
           g.text(lb, 140, y - 18, { size: 22, weight: 700 });
           g.box(140, y, 820 * a / 130, 56, { stroke: C.before, dash: [6, 5], lw: 1.5, r: 8 });
