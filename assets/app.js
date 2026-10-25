@@ -242,7 +242,7 @@
       a._draw = draw;
       a.addEventListener('mouseenter', () => { if (!a._busy) { a._busy = true; draw(true); setTimeout(() => a._busy = false, 1600); } });
     });
-    // 처음 한 번 + 보이는 동안 12초마다 다시 그린다
+    // 처음 한 번 + 보이는 동안 12초마다 다시 그린다(휴대폰 넘겨 보기에서는 넘어온 칸만 rollBoard 가 다시 그린다)
     const cards = $$('.mp', host).filter(c => c._draw);
     let rt = 0; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => cards.forEach(c => c._draw(false)), 120); });
     addEventListener('load', () => setTimeout(() => cards.forEach(c => c._draw(false)), 60)); // 창 높이가 확정된 뒤 한 번 더
@@ -251,13 +251,90 @@
     let visible = false;
     if ('IntersectionObserver' in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { threshold: 0.2 }).observe(host);
     setTimeout(() => { cards.forEach((c, i) => setTimeout(() => c._draw(true), i * 180)); rollNumbers(host); }, reduceMotion ? 0 : 500);
-    if (!reduceMotion) setInterval(() => { if (visible && document.visibilityState === 'visible') cards.forEach((c, i) => setTimeout(() => c._draw(true), i * 220)); }, 12000);
+    if (!reduceMotion) setInterval(() => { if (visible && document.visibilityState === 'visible' && !ROLL.matches) cards.forEach((c, i) => setTimeout(() => c._draw(true), i * 220)); }, 12000);
   }
   function animateBoard(svg, id) {
     if (id === 'mix') { growBars(svg, 'rect.gcol', 0, 45); $$('path.mixline', svg).forEach(p => { const len = p.getTotalLength(); p.animate?.([{ strokeDasharray: `${len}`, strokeDashoffset: `${len}` }, { strokeDasharray: `${len}`, strokeDashoffset: '0' }], { duration: 900, delay: 950, easing: 'cubic-bezier(.4,.1,.2,1)', fill: 'backwards' }); }); }
     if (id === 'brand') growBars(svg, 'rect.gb', 0, 45);
     if (id === 'roas') { animateSegs(svg, 150); $$('path.ar', svg).forEach(p => p.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 900, delay: 300, fill: 'backwards' })); }
     if (id === 'multi') growBars(svg, 'rect.gm', 0, 160, false);
+  }
+  /* ------------------------------------------------------------ 휴대폰 성과 리포트 넘겨 보기 (2026-10-25)
+     620px 이하 화면에서만 네 칸을 가로로 한 장씩(style.css 맨 아래 블록). 아래 점으로 칸을 고르고, ⏸ 로 자동 넘김을 끈다.
+     4초마다 다음 칸 · 손으로 넘기거나 점을 누르면 8초 쉼. 칸이 화면 밖 · 다른 탭 · 데모 창 · 「동작 줄이기」이거나
+     키보드 초점 · 마우스가 칸 위에 있으면 넘기지 않고, 칸이 화면에 막 들어오면 4초를 처음부터 센다. PC · 인쇄는 2×2 그대로 */
+  function rollBoard() {
+    const host = $('#mboard'), cards = $$('.mp', host), RM = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const EVERY = 4000, PAUSE = 8000;
+    if (cards.length < 2) return;
+    let dots = null, play = null, timer = 0, pt = 0, idx = 0, visible = true, stopped = false, resumed = false, jumpUntil = 0;
+    const step = () => (cards[1].offsetLeft - cards[0].offsetLeft) || host.clientWidth || 1;
+    const mark = () => {
+      $$('.mb-dot', dots).forEach((b, i) => b.setAttribute('aria-current', String(i === idx)));
+      // 넘어온 차트 칸은 그래프를 다시 그린다(대시보드 칸은 _draw 가 없다)
+      clearTimeout(pt); pt = setTimeout(() => { if (cards[idx]._draw && !RM.matches) cards[idx]._draw(true); }, 380);
+    };
+    // 코드로 부드럽게 넘기는 동안엔 지나가는 칸으로 점을 바꾸지 않는다(손이 닿으면 바로 손을 따라간다)
+    const sync = () => { if (Date.now() < jumpUntil) return; const i = Math.min(cards.length - 1, Math.round(host.scrollLeft / step())); if (i !== idx) { idx = i; mark(); } };
+    const go = i => {
+      idx = (i + cards.length) % cards.length;
+      jumpUntil = RM.matches ? 0 : Date.now() + 900;
+      host.scrollTo({ left: idx * step(), behavior: RM.matches ? 'auto' : 'smooth' });
+      mark();
+    };
+    // 키보드 초점(마우스 · 손가락으로 누른 초점은 빼고)이나 마우스가 칸 · 점 위에 있으면 붙잡고 있는 것으로 본다.
+    // 단 ⏵ 로 막 다시 켰으면 그 버튼에 남은 초점 · 마우스는 빼고 바로 돈다(버튼을 떠나면 풀림)
+    const keyFocus = a => { try { return a.matches(':focus-visible'); } catch (e) { return true; } };
+    const held = () => {
+      if (resumed) return false;
+      const a = document.activeElement;
+      return (a && (host.contains(a) || dots.contains(a)) && keyFocus(a)) || (window.matchMedia('(hover: hover)').matches && (host.matches(':hover') || dots.matches(':hover')));
+    };
+    const demoOpen = () => { const m = $('#demoModal'); return !!m && !m.hidden; };
+    const plan = ms => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { if (!RM.matches && !document.hidden && visible && !held() && !demoOpen()) go(idx + 1); plan(EVERY); }, ms);
+    };
+    const hold = () => { if (!stopped && ROLL.matches) plan(PAUSE); };
+    const start = () => {
+      if (!ROLL.matches) { clearTimeout(timer); return; }
+      if (!dots) {
+        dots = el('div', { class: 'mb-dots', role: 'group', 'aria-label': '성과 리포트 넘기기' });
+        play = el('button', { type: 'button', class: 'mb-play', 'aria-label': '자동 넘김 멈추기' }, ICON.pause);
+        play.addEventListener('click', () => {
+          stopped = !stopped;
+          play.innerHTML = stopped ? ICON.play : ICON.pause;
+          play.setAttribute('aria-label', stopped ? '자동 넘김 켜기' : '자동 넘김 멈추기');
+          if (stopped) { clearTimeout(timer); resumed = false; } else { resumed = true; plan(EVERY); }
+        });
+        play.addEventListener('blur', () => { resumed = false; });
+        dots.appendChild(play);
+        cards.forEach((c, i) => {
+          const b = el('button', { type: 'button', class: 'mb-dot', 'aria-label': `${i + 1}번째 칸 보기 — ${$('h3', c)?.textContent || ''}` });
+          b.addEventListener('click', () => { go(i); hold(); });
+          dots.appendChild(b);
+        });
+        host.after(dots);
+        host.addEventListener('scroll', sync, { passive: true });
+        if ('onscrollend' in window) host.addEventListener('scrollend', () => { jumpUntil = 0; sync(); });
+        ['touchstart', 'pointerdown', 'wheel'].forEach(ev => host.addEventListener(ev, () => { jumpUntil = 0; hold(); }, { passive: true }));
+        [host, dots].forEach(n => ['focusin', 'focusout', 'mouseleave'].forEach(ev => n.addEventListener(ev, hold)));
+        dots.addEventListener('mouseleave', () => { resumed = false; });
+        if ('IntersectionObserver' in window) new IntersectionObserver(es => {
+          const was = visible; visible = es[0].isIntersecting;
+          if (visible && !was && !stopped && ROLL.matches) plan(EVERY);
+        }, { threshold: 0.3 }).observe(host);
+        // 다른 탭 · 앱에 다녀오면 4초를 처음부터(숨은 동안은 타이머도 멈춤), 데모 창을 닫으면 8초 쉼 — iOS 는 닫을 때 칸에 초점이 돌아오지 않는다
+        document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else if (!stopped && ROLL.matches) plan(EVERY); });
+        const dm = $('#demoModal');
+        if (dm) new MutationObserver(() => { if (dm.hidden) hold(); }).observe(dm, { attributes: true, attributeFilter: ['hidden'] });
+      }
+      sync(); mark();
+      if (!stopped) plan(EVERY);
+    };
+    start();
+    // PC 폭 ↔ 휴대폰 폭을 오가면 그때 켜고 끈다(PC 에서는 칸이 2×2 라 점 · 넘김이 없다)
+    if (ROLL.addEventListener) ROLL.addEventListener('change', start); else ROLL.addListener(start);
   }
   const ymTitle = i => `${S.months[i].replace('-', '년 ')}월${i === lastIdx && S.partialLast ? ` (1~${S.days[lastIdx]}일)` : ''}${i < tenureIdx ? ' · 입사 전' : ''}`;
   // 첫 화면 차트 호버 — 해당 달만 또렷하고 살짝 커지며, 값 라벨과 전분기·전년 동월 점선이 뜬다
@@ -293,8 +370,10 @@
     });
   }
   // 첫 화면이 한 화면에 들어오도록 — 넓은 화면(2열 배치)에서는 차트 칸(.mp-chart)의 남은 높이를 그대로 쓴다.
-  // 좁은 화면 · 인쇄에서는 칸 높이가 차트에서 정해지므로 고정 110px
-  const FILL = window.matchMedia('(min-width: 1101px)');
+  // 휴대폰 넘겨 보기(ROLL)도 칸이 가장 긴 칸(대시보드)에 맞춰 늘어나므로 남은 높이를 쓴다(최소 110px — style.css).
+  // 그 사이 폭 · 인쇄에서는 칸 높이가 차트에서 정해지므로 고정 110px
+  const ROLL = window.matchMedia('screen and (max-width: 620px)');
+  const FILL = window.matchMedia('(min-width: 1101px), screen and (max-width: 620px)');
   let PRINTING = false;   // 인쇄할 때는 차트를 낮게 다시 그려 1쪽(표지)에 차트 네 칸까지 들어가게 한다
   const boardH = box => {
     if (PRINTING) return 84;
@@ -1224,6 +1303,7 @@
   renderTicker();
   renderHero();
   renderBoard();
+  rollBoard();
   renderGrowth();
   renderShowcase();
   renderPerf();

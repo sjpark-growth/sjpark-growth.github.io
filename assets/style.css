@@ -1761,3 +1761,43 @@ body { overflow-x: clip; }
   #dash .sec-h .aside { display: none; }
   #dash .dash-wrap { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 }
+
+/* =========================================================================
+   (2026-10-25) 휴대폰 성과 리포트 넘겨 보기 — 620px 이하에서 네 칸을 쌓지 않고 가로로 한 장씩(app.js rollBoard)
+   · PC(2×2 한 화면) · 인쇄는 그대로 — screen 에만 건다
+   · 점 줄(.mb-dots = ⏸ + 칸 수만큼 점)은 리포트 칸 바로 뒤 DOM 이라 같은 order 를 주면 칸 아래에 붙는다(600px 이하는 첫 화면을 한 줄로 풀어 order 8)
+   · 누르는 칸은 24px(WCAG 2.5.8), 보이는 점은 8px(::before) — 꺼진 점은 --ink-3(바탕 대비 3:1 이상, 1.4.11)
+   ========================================================================= */
+.mb-dots { display: none; }
+@media screen and (max-width: 620px) {
+  .mboard {
+    display: flex; gap: 10px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scrollbar-width: none;
+  }
+  .mboard::-webkit-scrollbar { display: none; }
+  .mboard > .mp { flex: 0 0 100%; min-width: 0; scroll-snap-align: center; }
+  /* 칸들이 가장 긴 칸(대시보드) 높이로 늘어나므로, 차트가 남는 높이를 채운다(app.js boardH 가 이 높이를 읽어 다시 그린다) */
+  .mboard > .mp .mp-chart { flex: 1 1 auto; min-height: 110px; position: relative; }
+  .mboard > .mp .mp-chart svg { position: absolute; left: 0; top: 0; width: 100%; height: auto; }
+  .mb-dots { display: flex; justify-content: center; align-items: center; }
+  .mb-dots button {
+    position: relative; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px;
+    background: none; color: var(--ink-3); cursor: pointer; transition: width .25s ease;
+  }
+  .mb-dots button:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+  .mb-dot::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%;
+    transform: translate(-50%, -50%); background: var(--ink-3); transition: width .25s ease, background-color .25s ease;
+  }
+  .mb-dot[aria-current="true"] { width: 30px; }
+  .mb-dot[aria-current="true"]::before { width: 22px; border-radius: 4px; background: var(--accent); }
+  .mb-play { display: grid; place-items: center; margin-right: 4px; }
+  .mb-play svg { width: 11px; height: 11px; }
+  .hero-r .mb-dots { order: 2; }
+}
+@media screen and (max-width: 600px) { .hero-r > .mb-dots { order: 8; } }
+/* 「동작 줄이기」면 저절로 넘기지 않으므로 ⏸ 도 숨긴다(점으로 고르기는 그대로) */
+@media screen and (max-width: 620px) and (prefers-reduced-motion: reduce) { .mb-play { display: none; } }
+/* 601~620px 은 첫 화면을 풀지 않아 .hero-r 칸 사이(12px)가 더해진다 — 600px 이하와 같은 간격으로 */
+@media screen and (min-width: 601px) and (max-width: 620px) { .hero-r .mb-dots { margin-top: -12px; } }
