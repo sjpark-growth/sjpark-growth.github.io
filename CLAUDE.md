@@ -59,6 +59,7 @@
 | 연속 기록 — 통합 ROAS 13개월 연속 입사 전 평균 위(25.9–26.9) · 쿠팡 1P 10개월 연속 입사 전 최고치(1,635%) 위(25.12–26.9) | app.js VIEWS(roas · channel 캡션) · projects.cp1 · motion.js(cp1) · en.html. 새 달을 넣을 때 끊기지 않았는지 본다 |
 | 대시보드 광고 채널 24개(외부몰 14 · 자사몰 10) — 대시보드 **게시본** `NETWORKS` 채널 수(2026-10-24 글 V304: 토스쇼핑 · 자사몰 GFA 추가. 이전 22 = 데모 기준). 데모는 주간 동기화 때 따라온다 | ticker · board.dash · projects.dashboard(title · headline · facts · tour) · angles.performance · jobs · (화면에 안 나오는 motion.js dashboard 장면은 옛 「9종」 그대로) |
 | 쿠팡 1P 26.7–8 매출 +20.4% · 광고비 −15.4% (YoY) | projects.cp1 · motion.js(cp1 막대 84.6 · 120.4) · profile.highlights(「+20%」) |
+| 백데이터 통합 → 기준 단일화 → 몰 · 키워드 효율 비교 → 전략 제품 제안(2026-10-25 본인 요청 — 카드 projects.insight) · 확장 후보 18개 · 교차 자료원 7곳 · 검증에서 바로잡은 근거 74곳 | projects.insight(facts · how) · moreWins(화면에는 안 나옴) · en.html(Data & automation). 숫자 출처: 쇼핑 인사이트 「카테고리 · 품목 확장 권장」 탭(인계 폴더 쇼핑인사이트\작업\expand\design\spec.final.json 후보 수 · 읽어보기.md 1차 검증 74건). 후보 수가 바뀌면 같이 고친다 |
 | 재고 신호판 · 쇼핑 인사이트(2026-10-24 추가 — 숫자 없이 구축 내용만) | projects.dashboard(how 2줄) · projects.keywords(how 「확장 후보 점수화」) · jobs(현 직장) · pillars(AUTOMATION) · scores · en.html(Data & automation). 쇼핑 인사이트 · 재고 신호판의 금액 · 품목명 · 수수료는 넣지 않는다 |
 
 - `motion.js` 의 모션 영상 속 숫자와 `app.js` 의 VIEWS 캡션도 같은 기준이다. 숫자를 바꾸면 함께 검색해서 맞춘다.
