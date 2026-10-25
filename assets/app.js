@@ -742,6 +742,7 @@
     const box = $('#perfChart');
     const W = Math.max(320, box.clientWidth || 800);
     const narrow = W < 560;
+    const small = narrow && window.matchMedia('(max-width: 600px)').matches;   // 휴대폰 — 라벨이 막대 · 선에 덮이지 않게 옮긴다(2026-10-26)
     const H = narrow ? 320 : 400;
     /* 오른쪽 여백 = 끝 라벨 자리. duo 는 끝 라벨이 짧아(값 · 「9월 월 환산」) 168 이면 오른쪽이 비어 보인다 (2026-09-19) */
     const m = { l: 48, r: narrow ? 56 : (v.type === 'stack' ? 110 : v.type === 'duo' ? 96 : v.series.length > 1 ? 168 : 76), t: 62, b: 30 };
@@ -752,6 +753,7 @@
     phaseBands(svg, m, step, plotB, narrow);
     const grid = s('g', {}, svg), marks = s('g', {}, svg);
     const dots = [];
+    let refLab = null;
     const xLabels = () => S.months.forEach((mo, i) => {
       const show = narrow ? (i === 0 || i === tenureIdx || i === lastIdx || mo.endsWith('-01')) : (mo.endsWith('-01') || i === tenureIdx || i === lastIdx || (+mo.slice(5)) % 3 === 1);
       if (!show) return;
@@ -768,7 +770,8 @@
       rT.forEach(t => { s('line', { x1: m.l, x2: W - m.r, y1: Yr(t), y2: Yr(t), style: 'stroke:var(--grid)' }, grid); txt(grid, m.l - 8, Yr(t) + 4, nf(t), 'tick', 'end'); });
       sT.forEach(t => { s('line', { x1: m.l, x2: W - m.r, y1: Ys(t), y2: Ys(t), style: 'stroke:var(--grid)' }, grid); txt(grid, m.l - 8, Ys(t) + 4, nf(t, t % 1 ? 1 : 0), 'tick', 'end'); });
       txt(grid, m.l + 6, m.t + 12, '월 전환매출 (지수)', 'tick strong', 'start');
-      txt(grid, m.l + 6, botT + 12, '월 광고비 (지수)', 'tick strong', 'start');
+      // 휴대폰에서는 입사 뒤 막대가 라벨 자리까지 올라오므로 위아래 칸 사이 빈 틈에 둔다
+      txt(grid, m.l + 6, small ? botT - 14 : botT + 12, '월 광고비 (지수)', 'tick strong', 'start');
       s('line', { x1: m.l, x2: W - m.r, y1: plotB, y2: plotB, style: 'stroke:var(--axis)' }, grid);
       xLabels();
       // 광고비 막대
@@ -816,7 +819,7 @@
         s('line', { x1: m.l, x2: W - m.r, y1: ry, y2: ry, style: 'stroke:var(--ink-3);stroke-width:1;stroke-dasharray:4 4' }, grid);
         // 세부 수치를 켜면 왼쪽은 값 라벨로 붐비므로 기준선 이름을 오른쪽 끝으로
         if (showLabels) txt(grid, W - m.r - 4, ry + 14, v.ref.label, 'tick strong', 'end');
-        else txt(grid, m.l + 6, ry - 6, v.ref.label, 'tick strong', 'start');
+        else refLab = txt(grid, m.l + 6, ry - 6, v.ref.label, 'tick strong', 'start');
       }
       s('line', { x1: m.l, x2: W - m.r, y1: plotB, y2: plotB, style: 'stroke:var(--axis)' }, grid);
       xLabels();
@@ -885,6 +888,8 @@
       const r = svg.getBoundingClientRect(); tipAt(ki, r.left + (X(ki) / W) * r.width, r.top + r.height * 0.3);
     };
     box.onblur = clear;
+    // 휴대폰에서는 기준선 이름(「입사 전 …」)을 선 위로 올리고 바탕색 테두리를 두른다 — 툴팁 칸은 가리지 않는다(style.css .lbl-top)
+    if (small && refLab) { refLab.classList.add('lbl-top'); svg.appendChild(refLab); }
     box.replaceChildren(svg);
     if (animate !== false && !reduceMotion) {
       $$('path.draw', svg).forEach(p => { const len = p.getTotalLength(); p.animate?.([{ strokeDasharray: `${len}`, strokeDashoffset: `${len}` }, { strokeDasharray: `${len}`, strokeDashoffset: '0' }], { duration: 1100, easing: 'cubic-bezier(.3,.7,.2,1)', fill: 'backwards' }); });
@@ -1287,12 +1292,19 @@
       e.preventDefault(); scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
       try { history.replaceState(null, '', '#top'); } catch (err) {}
     });
+    let lastC = -2;
     const spy = () => {
       const max = document.documentElement.scrollHeight - innerHeight;
       mast.style.setProperty('--p', max > 0 ? (scrollY / max).toFixed(4) : 0);
       const y = scrollY + 120; let c = -1;
       secs.forEach((sec, i) => { if (sec && sec.offsetTop <= y) c = i; });
       links.forEach((a, i) => a.setAttribute('aria-current', String(i === c)));
+      // 휴대폰 메뉴는 옆으로 넘치므로, 지금 구간의 탭이 메뉴 가운데에 보이게 밀어 준다(2026-10-26 · PC 는 넘치지 않아 그대로)
+      if (c !== lastC) {
+        lastC = c;
+        const a = links[c], nav = a && a.parentElement;
+        if (a && innerWidth <= 620 && nav.scrollWidth > nav.clientWidth + 1) nav.scrollTo({ left: nav.scrollLeft + a.getBoundingClientRect().left - nav.getBoundingClientRect().left - (nav.clientWidth - a.offsetWidth) / 2, behavior: reduceMotion ? 'auto' : 'smooth' });
+      }
     };
     addEventListener('scroll', spy, { passive: true }); spy();
   }

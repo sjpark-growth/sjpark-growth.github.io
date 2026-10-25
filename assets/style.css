@@ -1799,5 +1799,51 @@ body { overflow-x: clip; }
 @media screen and (max-width: 600px) { .hero-r > .mb-dots { order: 8; } }
 /* 「동작 줄이기」면 저절로 넘기지 않으므로 ⏸ 도 숨긴다(점으로 고르기는 그대로) */
 @media screen and (max-width: 620px) and (prefers-reduced-motion: reduce) { .mb-play { display: none; } }
+
+/* =========================================================================
+   (2026-10-26) 휴대폰 다듬기 — 「한 화면에 깔끔하게」 점검(폭 360~430 · 아이폰 사파리 보이는 높이 553~664)에서 나온 것
+   · PC(601px 이상) · 인쇄는 그대로. 가로로 든 휴대폰(터치 · 높이 500px 이하)만 아래 따로
+   ========================================================================= */
+@media screen and (max-width: 600px) {
+  /* 첫 화면 — 지역 칩은 혼자 둘째 줄로 떨어져 핵심 성과를 밀어내므로 뺀다(인쇄 표지와 같음 · 연락처 절에 그대로 있다).
+     문장 · 연락처 · 핵심 성과 사이도 조금 좁혀 아이폰 사파리 첫 화면(390×664)에 핵심 성과 숫자 네 개가 다 보이게 */
+  .hero .contact .chip:nth-child(3) { display: none; }
+  .hero .thesis { margin-top: 12px; }
+  .hero .contact { margin-top: 14px; }
+  .hero-r > .hkey { margin-top: 14px; }
+  /* 마지막 줄에 한두 글자만 남는 줄바꿈을 줄인다(제목의 balance 는 그대로) */
+  body { text-wrap: pretty; }
+  /* 「그 밖의 개선」 긴 칩 — inline-flex 라 글자 덩어리마다 따로 꺾여 「18 / 개」처럼 갈라지던 것 → 보통 문장처럼 흐르게(✓ 뒤로 걸침 들여쓰기) */
+  .more li { display: block; border-radius: 16px; padding-left: 24px; text-indent: -15px; }
+  .more li::before { margin-right: 6px; }
+  /* 성과 리포트 대시보드 칸 「영상으로 보기 ↓」 — 보이는 모양은 그대로, 누르는 높이만 넓힌다 */
+  .mp-dash .mp-span a { padding-block: 8px; margin-block: -8px; }
+  /* 성과 차트 — 선 위로 올린 기준선 이름(app.js small)에 바탕색 테두리. 툴팁 칸을 가리지 않게 포인터는 통과 */
+  #perfChart text.lbl-top { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+  /* 모션 영상 배지 — 무대(약 356×200)의 40%를 덮어 장면 글자를 가리던 것 → 작게, 모든 장면에서 비어 있는 오른쪽 아래로 */
+  .player .badge { top: auto; bottom: 6px; right: 6px; font-size: 9.5px; letter-spacing: .06em; padding: 2px 6px; }
+  /* 「사례」 · 「관련 사례」 링크로 카드에 갈 때 상단 바(약 92px) 밑에 카드 윗부분이 숨던 것 */
+  .proj[id] { scroll-margin-top: calc(var(--mast-h, 92px) + 8px); }
+  /* 데모 창 — 휴대폰 주소창 높이를 빼고, 둘레를 좁힌다 */
+  .modal { padding: 10px; }
+  .modal .box { height: min(92vh, 1000px); height: min(92svh, 1000px); }
+}
+/* 데모 창 머리 줄 — 좁은 폭에서 제목이 「퍼포 / 먼스 / 대시 / 보드」로 꺾이던 것 → 제목 · 버튼 한 줄, 안내는 둘째 줄. 휴대폰엔 Esc 키가 없어 표시를 뺀다 */
+@media screen and (max-width: 560px) {
+  .modal header { flex-wrap: wrap; gap: 4px 8px; padding: 8px 10px 8px 14px; }
+  .modal header b { white-space: nowrap; }
+  .modal header span { order: 9; flex: 1 0 100%; }
+  .modal header kbd { display: none; }
+}
+/* 가로로 든 휴대폰 — 상단 바가 세 줄(약 140px, 화면의 36%)로 늘 붙어 있던 것 → 한 줄(메뉴는 휴대폰처럼 옆으로 넘김) */
+@media screen and (max-height: 500px) and (orientation: landscape) and (pointer: coarse) {
+  .mast .shell { flex-wrap: nowrap; min-height: 0; padding-block: 6px; gap: 10px; }
+  .mast .id small, .mast #themeLabel { display: none; }
+  .mast nav {
+    order: 0; flex: 1 1 auto; width: auto; min-width: 0; margin-left: 0; padding-right: 18px;
+    -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent); mask-image: linear-gradient(90deg, #000 86%, transparent);
+  }
+  .mast .tools { flex: none; margin-left: 0; }
+}
 /* 601~620px 은 첫 화면을 풀지 않아 .hero-r 칸 사이(12px)가 더해진다 — 600px 이하와 같은 간격으로 */
 @media screen and (min-width: 601px) and (max-width: 620px) { .hero-r .mb-dots { margin-top: -12px; } }
