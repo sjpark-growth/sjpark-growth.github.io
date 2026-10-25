@@ -261,11 +261,11 @@
   }
   /* ------------------------------------------------------------ 휴대폰 성과 리포트 넘겨 보기 (2026-10-25)
      620px 이하 화면에서만 네 칸을 가로로 한 장씩(style.css 맨 아래 블록). 아래 점으로 칸을 고르고, ⏸ 로 자동 넘김을 끈다.
-     4초마다 다음 칸 · 손으로 넘기거나 점을 누르면 8초 쉼. 칸이 화면 밖 · 다른 탭 · 데모 창 · 「동작 줄이기」이거나
-     키보드 초점 · 마우스가 칸 위에 있으면 넘기지 않고, 칸이 화면에 막 들어오면 4초를 처음부터 센다. PC · 인쇄는 2×2 그대로 */
+     4.5초마다 다음 칸 · 손으로 넘기거나 점을 누르면 8초 쉼. 칸이 화면 밖 · 다른 탭 · 데모 창 · 「동작 줄이기」이거나
+     키보드 초점 · 마우스가 칸 위에 있으면 넘기지 않고, 칸이 화면에 막 들어오면 4.5초를 처음부터 센다. PC · 인쇄는 2×2 그대로 */
   function rollBoard() {
     const host = $('#mboard'), cards = $$('.mp', host), RM = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const EVERY = 4000, PAUSE = 8000;
+    const EVERY = 4500, PAUSE = 8000;   // 넘김 간격 4.5초(2026-10-25 본인 「4~5초 사이」)
     if (cards.length < 2) return;
     let dots = null, play = null, timer = 0, pt = 0, idx = 0, visible = true, stopped = false, resumed = false, jumpUntil = 0;
     const step = () => (cards[1].offsetLeft - cards[0].offsetLeft) || host.clientWidth || 1;
@@ -324,7 +324,7 @@
           const was = visible; visible = es[0].isIntersecting;
           if (visible && !was && !stopped && ROLL.matches) plan(EVERY);
         }, { threshold: 0.3 }).observe(host);
-        // 다른 탭 · 앱에 다녀오면 4초를 처음부터(숨은 동안은 타이머도 멈춤), 데모 창을 닫으면 8초 쉼 — iOS 는 닫을 때 칸에 초점이 돌아오지 않는다
+        // 다른 탭 · 앱에 다녀오면 4.5초를 처음부터(숨은 동안은 타이머도 멈춤), 데모 창을 닫으면 8초 쉼 — iOS 는 닫을 때 칸에 초점이 돌아오지 않는다
         document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else if (!stopped && ROLL.matches) plan(EVERY); });
         const dm = $('#demoModal');
         if (dm) new MutationObserver(() => { if (dm.hidden) hold(); }).observe(dm, { attributes: true, attributeFilter: ['hidden'] });
