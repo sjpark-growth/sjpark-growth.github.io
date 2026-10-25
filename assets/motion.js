@@ -633,6 +633,45 @@
     },
   };
 
+  /* 7-2 · 흩어진 백데이터 → 한 기준 → 확장 후보 제안 (2026-10-25) — 품목명 없이 점과 숫자만(후보 18 · 확장 · 진입 14 · 보류 3 · 지킬 곳 1 · 설계안 8) */
+  SCENES.insight = {
+    duration: 12, poster: 10.8,
+    chapters: [[0, '쿠팡 · 네이버 · 이지웰 · 컬리 · 재고 — 몰마다 다른 리포트 기준을 순수 · 수익 ROAS 두 잣대로'], [6.4, '확장 후보 18개를 6가지 요인으로 점수화 — 확장 · 진입 14 · 보류 3 · 지킬 곳 1, 상위 8개는 제품 설계안까지']],
+    draw(g, t) {
+      g.kicker(t < 6.4 ? 'ONE STANDARD · 백데이터 통합' : 'STRATEGY · 확장 후보 제안');
+      g.alpha(1 - seg(t, 6, 6.5), () => {
+        ['쿠팡 광고', '쿠팡 프리미엄', '네이버 키워드', '이지웰', '컬리 전체 광고주', '재고 신호판', '몰별 판매'].forEach((s, i) => {
+          const q = E.back(clamp(seg(t, 0.2 + i * 0.25, 0.8 + i * 0.25)));
+          if (q <= 0) return;
+          const y = 130 + i * 62;
+          g.pop(q, 230, y, () => g.pill(s, 230, y - 16, { size: 16, align: 'center', fill: 'rgba(139,155,255,.16)', color: C.ink2 }));
+        });
+        g.alpha(E.inOut(seg(t, 2.4, 4.2)), () => {
+          g.box(560, 250, 360, 130, { fill: 'rgba(74,147,234,.22)', r: 18, stroke: C.accent, lw: 2 });
+          g.text('한 기준', 740, 300, { size: 30, weight: 600, align: 'center' });
+          g.text('순수 ROAS · 수익 ROAS', 740, 346, { size: 20, color: C.ink2, align: 'center' });
+        });
+        g.text('교차한 자료원', 1180, 150, { size: 20, color: C.ink2, align: 'right', alpha: seg(t, 3.6, 4.2) });
+        g.text('7곳', 1180, 226, { size: 78, weight: 600, font: 'num', align: 'right', alpha: seg(t, 3.6, 4.2) });
+      });
+      g.alpha(E.out(seg(t, 6.4, 6.9)), () => {
+        const p = seg(t, 6.8, 9.6);
+        for (let k = 0; k < 18; k++) {
+          const c = k % 6, r = Math.floor(k / 6), x = 120 + c * 104, y = 160 + r * 104, on = clamp(p * 18 - k);
+          const kd = k < 14 ? 'go' : k < 17 ? 'hold' : 'keep';
+          const fill = kd === 'go' ? `rgba(74,147,234,${0.15 + 0.5 * on})` : kd === 'hold' ? `rgba(255,255,255,${0.06 + 0.1 * on})` : `rgba(72,227,155,${0.15 + 0.45 * on})`;
+          g.box(x, y, 88, 88, { fill, r: 44, stroke: kd === 'go' && on > 0.9 ? C.accent : null, lw: 1.5 });
+          if (k < 8 && t > 10) g.check(x + 44, y + 44, 26, C.ink, clamp((t - 10) * 2 - k * 0.15));
+        }
+        g.text('확장 후보', 1180, 150, { size: 20, color: C.ink2, align: 'right' });
+        g.text(String(Math.round(clamp(p) * 18)), 1180, 226, { size: 78, weight: 600, font: 'num', align: 'right' });
+        g.text('확장 · 진입 14 · 보류 3 · 지킬 곳 1', 1180, 270, { size: 20, color: C.ink2, align: 'right', alpha: seg(t, 9.4, 9.9) });
+        g.text('상위 8개 → 제품 설계안', 1180, 330, { size: 24, weight: 600, align: 'right', color: C.good, alpha: seg(t, 10, 10.5) });
+        g.text('6가지 요인 점수 · 검증에서 근거 74곳 수정', 120, 520, { size: 17, color: C.ink3 });
+      });
+    },
+  };
+
   /* 8 · 버티컬몰 */
   SCENES.vertical = {
     duration: 12, poster: 10.8,
