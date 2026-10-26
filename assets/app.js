@@ -1307,6 +1307,31 @@
       }
     };
     addEventListener('scroll', spy, { passive: true }); spy();
+    // 휴대폰 메뉴 줄 양 끝 흐림 — 왼쪽으로 넘겼으면 왼쪽 끝도, 끝까지 넘겼으면 오른쪽은 흐리지 않는다(style.css .nav-l · .nav-end, 2026-10-26)
+    const nav = $('.mast nav');
+    const edge = () => { const max = nav.scrollWidth - nav.clientWidth; nav.classList.toggle('nav-l', nav.scrollLeft > 4); nav.classList.toggle('nav-end', nav.scrollLeft >= max - 4); };
+    nav.addEventListener('scroll', edge, { passive: true }); addEventListener('resize', edge); edge();
+  }
+
+  /* ------------------------------------------------------------ 카드 머리 줄 구분점 (2026-10-26)
+     좁은 화면에서 proj-meta 가 꺾이면 줄 끝이나 줄 머리에 「·」 만 남던 것 — 그 점만 숨긴다.
+     창 폭 · 글꼴이 바뀌면 다시 보고, 인쇄할 때는 모두 되살린다(인쇄 폭은 화면과 달라서) */
+  function tidyMeta() {
+    const seps = $$('.proj-meta > span[aria-hidden="true"]');
+    seps.forEach(s => { s.style.display = ''; s.style.visibility = ''; });
+    seps.forEach(s => {
+      const p = s.previousElementSibling, n = s.nextElementSibling;
+      if (p && s.offsetTop > p.offsetTop + 6) s.style.display = 'none';
+      else if (n && n.offsetTop > s.offsetTop + 6) s.style.visibility = 'hidden';
+    });
+  }
+  function wireMeta() {
+    let raf = 0;
+    const again = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(tidyMeta); };
+    tidyMeta(); addEventListener('resize', again);
+    document.fonts?.ready.then(again);
+    addEventListener('beforeprint', () => $$('.proj-meta > span[aria-hidden="true"]').forEach(s => { s.style.display = ''; s.style.visibility = ''; }));
+    addEventListener('afterprint', again);
   }
 
   /* ------------------------------------------------------------ boot */
@@ -1327,6 +1352,7 @@
   renderScores();
   wireChrome();
   wireAnimBudget();
+  wireMeta();
   onFirstView($('#kpis'), () => setTimeout(() => rollNumbers($('#kpis')), reduceMotion ? 0 : 200), 0.2);
   onFirstView($('#perfChart'), () => drawPerf(true), 0.2);
 })();

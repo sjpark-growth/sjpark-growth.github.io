@@ -1847,3 +1847,22 @@ body { overflow-x: clip; }
 }
 /* 601~620px 은 첫 화면을 풀지 않아 .hero-r 칸 사이(12px)가 더해진다 — 600px 이하와 같은 간격으로 */
 @media screen and (min-width: 601px) and (max-width: 620px) { .hero-r .mb-dots { margin-top: -12px; } }
+
+/* =========================================================================
+   (2026-10-26) 시각 다듬기 — 휴대폰에서 들쭉날쭉하던 곳 정리. PC 배치 · 인쇄는 그대로
+   ========================================================================= */
+/* 절 머리표 「CAREER · 8년 11개월」 — inline-flex 라 안쪽 자동 기간 앞 띄어쓰기가 사라져 「·8년」으로 붙던 것 */
+.sec-h .tag > [data-auto]::before { content: " "; white-space: pre; }
+/* 휴대폰 메뉴 줄 — 왼쪽으로 넘긴 뒤엔 왼쪽 끝도 흐리게(잘린 탭이 칼로 자른 듯 보이던 것), 끝까지 넘기면 오른쪽 흐림을 뺀다.
+   app.js wireChrome 이 .nav-l(왼쪽에 가려진 탭 있음) · .nav-end(오른쪽 끝) 를 단다 */
+@media screen and (max-width: 600px), screen and (max-height: 500px) and (orientation: landscape) and (pointer: coarse) {
+  .mast nav.nav-l { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 86%, transparent); mask-image: linear-gradient(90deg, transparent, #000 28px, #000 86%, transparent); }
+  .mast nav.nav-end { -webkit-mask-image: none; mask-image: none; }
+  .mast nav.nav-l.nav-end { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px); mask-image: linear-gradient(90deg, transparent, #000 28px); }
+}
+/* 휴대폰 연락처 절 버튼 — 글자 길이대로 흘러 오른쪽 끝이 들쭉날쭉하던 것 → 2열 격자(이메일 한 줄 · 전화 | 지역 · 이메일 복사 한 줄), 아주 좁으면 한 줄씩 */
+@media screen and (max-width: 600px) {
+  #contact2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); }
+  #contact2 > .chip { justify-content: center; min-width: 0; padding-inline: 12px; white-space: nowrap; }
+  #contact2 > .chip:first-child, #contact2 > .chip.copy { grid-column: 1 / -1; }
+}
