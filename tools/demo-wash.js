@@ -257,7 +257,7 @@ function washFile(name, src) {
     if (f.remap && conf.remap[v]) return '"' + conf.remap[v] + '"';
     const c = conf.cats[hash(v)]; return c ? '"' + c + '"' : m;
   });
-  if (f.catAlias) out = out.replace(/var CAT_ALIAS = \[[\s\S]*?\]\];[^\n]*/, conf.catAlias);
+  if (f.catAlias) out = out.replace(/var CAT_ALIAS = \[[\s\S]*?\]\];[^\r\n]*/, conf.catAlias);   // 줄 끝 \r 은 남긴다(Windows 체크아웃은 CRLF — 먹으면 검사가 「가리지 않은 실명」으로 잘못 실패)
   return out;
 }
 
