@@ -164,6 +164,7 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 - 이 폴더 전체가 저장소 루트다. `index.html` 이 루트에 있어야 하고, `.nojekyll` 은 지우지 않는다.
 - 검색엔진 차단: `index.html` · `en.html` · `dashboard-demo.html` · `briefing-demo.html` · `stock-demo.html` · `guide-demo.html`(2026-10-31) 여섯 파일의 `<meta name="robots" content="noindex, nofollow">` 를 지우지 않는다.
 - 파일 이름 대소문자는 서버에서 구분된다. 새 이미지를 넣을 때 `data.js` 의 경로와 대소문자까지 똑같이 맞춘다.
+- 올리는 순서(2026-10-31)는 전역 스킬 `resume-publish`(`~\.claude\skills\resume-publish`)에 명령째 있다 — 점검 3종(`node tools/demo-wash.js --check` · 작업 폴더 `check-numbers.js` · 화면 `site-gate.js`) → 파일 이름으로 커밋 → push 직전 `git fetch` + `git rebase origin/main`(다른 세션 · 봇 커밋 「데모 자동 가림」이 수시로 들어온다) → `git push origin HEAD:main`(force 금지 · 원격은 origin 만, mirror 는 올리지 않음) → `live-match.js` 로 공개본이 origin/main 과 바이트까지 같은지. push 는 사용자가 그 대화에서 올리라고 했을 때만.
 
 ## 8. PDF 용량 — 이미지 형식 (2026-09-27)
 
