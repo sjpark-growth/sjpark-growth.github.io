@@ -35,6 +35,7 @@
 - 기준일: 대시보드 월별 데이터 **2026-09-30(9월 전체)** — 대시보드 백업 v141(2026-10-09). 10월 일부 데이터는 쓰지 않는다(완전한 마지막 달까지만).
   - 2026-10-17 갱신 때 대시보드가 고쳐 둔 과거 월값(네이버 쇼핑검색 25.1 · 26.3–8, 파워링크 26.4 · 26.8)도 함께 반영됐다 — 그래서 고정 기간 숫자(입사 전 6개월 · 26 상반기 · 26.7)도 조금 바뀌었다(964% → 962% 등).
   - 2026-10-24 대시보드 게시본 글 V304(10-23 데이터)로 다시 계산 — 기준일은 그대로 26.9. 쿠팡 1P 25.7 · 25.8 정정만 들어와 7월 광고비 −4.5% → **−4.4%**(−4.454 → −4.433), 1P 26.7–8 매출 +20.0% → **+20.4%** · 광고비 −15.9% → **−15.4%**, 25.8 통합 ROAS 924 → 923% · 광고비 1.74억 → 1.73억(phases). 나머지 대표 수치는 그대로.
+  - 2026-10-31 대시보드 게시본 글 V309(10-29 데이터 · 백업 v144)로 다시 계산 — 기준일 26.9 그대로, 월별 수치가 v143 과 같아 바뀐 숫자 없음(이지웰 26.2 소액 정정으로 소액 4채널 26 상반기 3,709.6 → 3,710.0 — 화면 「3,710」 그대로). 채널 수도 24 그대로. series.js 는 머리 주석(대시보드 v144)만 바뀐다.
   - 정의는 그대로: 10개 키(9개 매체 + 메타/기타) — 대시보드에 새로 생긴 자사몰 · 토스 채널은 넣지 않는다. 전환매출 = 대시보드 내부 매출 × 1.1 ÷ (1 − 수수료).
   - `assets/series.js` 와 계산표는 작업 폴더의 `_work/data/build_series_site.js <대시보드 백업> <YYYY-MM> <series.js>` 로 만든다(손으로 고치지 않는다). 세일즈 시트 · PMC 원천 숫자(동일 몰 30.8억 → 41억, 전체 매출 +36.6%, PMC −95%)는 이 도구 밖이다.
 - 같은 숫자가 여러 곳에 나온다. 하나를 바꾸면 아래 목록을 모두 맞춘다.
@@ -51,7 +52,7 @@
 | 전체 매출 +36.6% | kpis · growth.main · projects.nonad · jobs · scores |
 | 쿠팡 PMC 최대 −95% (25.9 → 26.2) | moreWins · growth.coupon · projects.nonad · jobs · motion.js(nonad) |
 | 모니터링 시간 30%+ 단축 · 자동화 8건 | ticker · moreWins · profile.highlights(종합) · pillars · projects.automation · beliefs · motion.js(automation) |
-| 경력 8년 11개월 (2026-10 기준 · 자동 계산 — jobs 구간 합. 「입사 후 N개월」은 2026-10 에 15개월) | profile.career · index.html(경력 제목 · data-auto 기본값 5곳) · en.html(data-career 기본값) · 경력 막대(app.js renderCareer — 현 직장 끝 = 오늘이 속한 달, 2026-10-17 부터) · en.html 머리 줄(같은 구간을 인라인 스크립트로 계산 — jobs 를 바꾸면 en.html 의 구간 목록도 고친다). **이화에스엠피 끝 달은 채용 사이트 경력 인증(건강보험 상실일) 기준 2023.11** — 마지막 근무일 기준(2023.10)과 한 달 다르지만 사이트 인증 표시와 맞춘 확정 기준이다(`이력서_사이트입력용.md`). 앞당기지 않는다 |
+| 경력 9년 (2026-11 기준 · 자동 계산 — jobs 구간 합, 0개월이면 「9년」만. 「입사 후 N개월」은 2026-11 에 16개월. 2026-10-31 에 기본값 · og:image:alt · 공유 카드를 11월 값으로 미리 맞춤 — 10월 안에 공개하면 하루 동안 그림 · 기본값이 화면보다 한 달 앞선다) | profile.career · index.html(경력 제목 · data-auto 기본값 5곳) · en.html(data-career 기본값) · 경력 막대(app.js renderCareer — 현 직장 끝 = 오늘이 속한 달, 2026-10-17 부터) · en.html 머리 줄(같은 구간을 인라인 스크립트로 계산 — jobs 를 바꾸면 en.html 의 구간 목록도 고친다). **이화에스엠피 끝 달은 채용 사이트 경력 인증(건강보험 상실일) 기준 2023.11** — 마지막 근무일 기준(2023.10)과 한 달 다르지만 사이트 인증 표시와 맞춘 확정 기준이다(`이력서_사이트입력용.md`). 앞당기지 않는다 |
 | 26.9 단월 통합 ROAS 1,130% (+168%p, 입사 전 6개월 962% 대비) — 기간을 꼭 붙인다(「26.9 단월」) | motion.js(brand 장면) |
 | 네이버 GFA ROAS 304% → 623% (+319%p) · 입사 전 6개월 → 최근 3개월(26.7–9) | ticker · profile.highlights · boardMulti · board.multi(꺼 둠) · projects.naver · jobs · en.html · motion.js(naver) |
 | 네이버 합계 ROAS 592% → 668% (+76%p) · 입사 전 6개월 → 26.9 단월, 네이버 상반기 매출 +65.1%(광고비 +58.2%) | projects.naver · app.js VIEWS(channel 캡션) · motion.js(naver) |
@@ -60,7 +61,7 @@
 | 대시보드 광고 채널 24개(외부몰 14 · 자사몰 10) — 대시보드 **게시본** `NETWORKS` 채널 수(2026-10-24 글 V304: 토스쇼핑 · 자사몰 GFA 추가. 이전 22 = 데모 기준). 데모는 주간 동기화 때 따라온다 | ticker · board.dash · projects.dashboard(title · headline · facts · tour) · angles.performance · jobs · (화면에 안 나오는 motion.js dashboard 장면은 옛 「9종」 그대로) |
 | 쿠팡 1P 26.7–8 매출 +20.4% · 광고비 −15.4% (YoY) | projects.cp1 · motion.js(cp1 막대 84.6 · 120.4) · profile.highlights(「+20%」) |
 | 백데이터 통합 → 기준 단일화 → 몰 · 키워드 효율 비교 → 전략 제품 제안(2026-10-25 본인 요청 — 카드 projects.insight) · 확장 후보 18개 · 교차 자료원 7곳 · 검증에서 바로잡은 근거 74곳 | projects.insight(facts · how) · moreWins(화면에는 안 나옴) · en.html(Data & automation). 숫자 출처: 쇼핑 인사이트 「카테고리 · 품목 확장 권장」 탭(인계 폴더 쇼핑인사이트\작업\expand\design\spec.final.json 후보 수 · 읽어보기.md 1차 검증 74건). 후보 수가 바뀌면 같이 고친다 |
-| 재고 신호판 · 쇼핑 인사이트(2026-10-24 추가 — 숫자 없이 구축 내용만) | projects.dashboard(how 2줄) · projects.keywords(how 「확장 후보 점수화」) · jobs(현 직장) · pillars(AUTOMATION) · scores · en.html(Data & automation). 쇼핑 인사이트 · 재고 신호판의 금액 · 품목명 · 수수료는 넣지 않는다 |
+| 재고 신호판 · 쇼핑 인사이트(2026-10-24 추가 — 숫자 없이 구축 내용만) | projects.dashboard(how 2줄) · projects.keywords(how 「확장 후보 점수화」) · jobs(현 직장) · pillars(AUTOMATION) · scores · en.html(Data & automation). 쇼핑 인사이트 · 재고 신호판의 금액 · 품목명 · 수수료는 넣지 않는다. (2026-10-31) 대시보드 V306 · V307 의 **PMC 트래커**(원인 상품 · 몰 노출가 · 판매가 변동) · **설명서**(연계 화면 5개 읽는 법)는 projects.dashboard how 두 줄(PMC 모니터링 · 쓰는 사람 기준 개선)에 이름만 — 상품코드 · 가격은 넣지 않는다 |
 
 - `motion.js` 의 모션 영상 속 숫자와 `app.js` 의 VIEWS 캡션도 같은 기준이다. 숫자를 바꾸면 함께 검색해서 맞춘다.
 - 첫 화면 차트의 「입사 전 평균」 기준선(통합 ROAS · 브랜드 의존도)과 VIEWS 의 ROAS 기준선은 `series.js` 의 `periods.B` 값을 읽는다(2026-10-17 — 손으로 적지 않는다).
