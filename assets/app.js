@@ -972,9 +972,16 @@
           <h3 id="pt-${p.id}">${p.title}</h3>
           <p class="hook">${p.hook}</p>
           <ul class="facts">${facts}</ul>
-          <ul class="how">${p.how.map(x => `<li>${x}</li>`).join('')}</ul>
+          <button type="button" class="how-tg" aria-expanded="false" aria-controls="how-${p.id}">어떻게 했는지 <b>${p.how.length}가지</b></button>
+          <ul class="how" id="how-${p.id}">${p.how.map(x => `<li>${x}</li>`).join('')}</ul>
         </div>`;
       host.appendChild(card);
+    });
+    /* (2026-10-31) 휴대폰에서는 「어떻게」 목록을 접어 둔다(카드 열 개가 약 15화면 — 목록만 약 1,900px). 단추는 style.css 가 600px 이하에서만 보인다. PC · 인쇄는 늘 펼침 */
+    host.addEventListener('click', e => {
+      const b = e.target.closest('.how-tg'); if (!b) return;
+      const open = b.closest('.proj').classList.toggle('how-open');
+      b.setAttribute('aria-expanded', String(open));
     });
     $$('.player', host).forEach(pl => window.MOTION && window.MOTION.mount(pl, { scene: pl.dataset.scene, video: pl.dataset.video }));
     $$('.proj', host).forEach(c => onFirstView(c, () => rollNumbers(c), 0.3));
@@ -1280,11 +1287,28 @@
       document.documentElement.style.setProperty('--mast-h', mast.offsetHeight + 'px');
     };
     setMastH(); addEventListener('resize', setMastH);
-    links.forEach(a => a.addEventListener('click', e => {
+    /* (2026-10-31) 상단 바 접기 · 오른쪽 목차 레일 — 본인 「GNB 를 화면을 내리면 우측으로」
+       · 아래로 내리면 상단 바를 위로 접고(휴대폰 두 줄 약 92px = 390×664 화면의 14%), 위로 조금 올리면 다시 내린다. 접혀도 아래 진행 막대(2px)는 남는다
+       · PC(861px 이상 · 높이 501px 이상)는 첫 화면을 지나면 오른쪽 끝에 세로 목차(섹션 점 · 지금 섹션 이름)가 나온다(style.css .rail)
+       · 첫 화면 근처 · 상단 바에 키보드 초점이 있을 때는 접지 않는다 */
+    const hideMQ = matchMedia('(max-width: 860px), (max-height: 500px) and (orientation: landscape) and (pointer: coarse)');
+    const railMQ = matchMedia('(min-width: 861px) and (min-height: 501px)');
+    const th = () => innerHeight * (railMQ.matches ? 0.8 : 0.6);   // 이보다 위(첫 화면)에서는 접지 않고 레일도 숨긴다
+    const rail = el('nav', { class: 'rail', 'aria-label': '섹션 목차' },
+      links.map(a => `<a href="${a.getAttribute('href')}"><span class="rl">${a.textContent.trim()}</span><i aria-hidden="true"></i></a>`).join(''));
+    document.body.appendChild(rail);
+    const rlinks = $$('a', rail);
+    // 섹션으로 갈 때 — 아래로 가면 상단 바가 접히므로 그 높이를 빼지 않는다(빼면 섹션 위에 빈 띠가 남는다). 위로 가면 바가 다시 내려오므로 뺀다
+    const goY = t => {
+      const raw = t.getBoundingClientRect().top + scrollY - 8;
+      const hides = (hideMQ.matches || railMQ.matches) && raw > scrollY && raw >= th();
+      return Math.max(0, hides ? raw : raw - mast.offsetHeight);
+    };
+    links.concat(rlinks).forEach(a => a.addEventListener('click', e => {
       const t = $(a.getAttribute('href')); if (!t) return;
       e.preventDefault();
-      const y = a.getAttribute('href') === '#top' ? 0 : t.getBoundingClientRect().top + scrollY - mast.offsetHeight - 8;
-      scrollTo({ top: Math.max(0, y), behavior: reduceMotion ? 'auto' : 'smooth' });
+      const y = a.getAttribute('href') === '#top' ? 0 : goY(t);
+      scrollTo({ top: y, behavior: reduceMotion ? 'auto' : 'smooth' });
       try { history.replaceState(null, '', a.getAttribute('href')); } catch (err) {}
     }));
     // 왼쪽 위 이름(박성준 · 그로스 마케터)을 누르면 맨 위로
@@ -1292,21 +1316,38 @@
       e.preventDefault(); scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
       try { history.replaceState(null, '', '#top'); } catch (err) {}
     });
-    let lastC = -2;
+    let lastC = -2, flashT = 0;
     const spy = () => {
       const max = document.documentElement.scrollHeight - innerHeight;
       mast.style.setProperty('--p', max > 0 ? (scrollY / max).toFixed(4) : 0);
       const y = scrollY + 120; let c = -1;
       secs.forEach((sec, i) => { if (sec && sec.offsetTop <= y) c = i; });
       links.forEach((a, i) => a.setAttribute('aria-current', String(i === c)));
+      rlinks.forEach((a, i) => { a.setAttribute('aria-current', String(i === c)); a.classList.toggle('past', i < c); });
+      rail.style.setProperty('--rp', c > 0 ? (c / (rlinks.length - 1)).toFixed(3) : 0);
       // 휴대폰 메뉴는 옆으로 넘치므로, 지금 구간의 탭이 메뉴 가운데에 보이게 밀어 준다(2026-10-26 · PC 는 넘치지 않아 그대로)
       if (c !== lastC) {
         lastC = c;
+        // 레일 — 섹션이 바뀌면 그 이름을 1.6초 보여 준다(평소엔 점만, 마우스를 올리면 전체 이름)
+        rail.classList.add('flash'); clearTimeout(flashT); flashT = setTimeout(() => rail.classList.remove('flash'), 1600);
         const a = links[c], nav = a && a.parentElement;
         if (a && innerWidth <= 620 && nav.scrollWidth > nav.clientWidth + 1) nav.scrollTo({ left: nav.scrollLeft + a.getBoundingClientRect().left - nav.getBoundingClientRect().left - (nav.clientWidth - a.offsetWidth) / 2, behavior: reduceMotion ? 'auto' : 'smooth' });
       }
     };
     addEventListener('scroll', spy, { passive: true }); spy();
+    // 상단 바 접기 · 레일 보이기(위 「상단 바 접기 · 오른쪽 목차 레일」). 마우스로 메뉴를 누른 뒤 남는 초점으로는 접기를 막지 않는다(키보드 초점만)
+    const kb = n => { try { return n.matches(':focus-visible'); } catch (err) { return true; } };
+    let lastY = scrollY, acc = 0;
+    const hideBar = () => {
+      const y = scrollY, dy = y - lastY; lastY = y;
+      const past = y >= th(), f = document.activeElement;
+      root.classList.toggle('rail-on', railMQ.matches && past);
+      if (!(hideMQ.matches || railMQ.matches) || !past || (mast.contains(f) && kb(f))) { root.classList.remove('mast-off'); acc = 0; return; }
+      acc = (dy > 0) === (acc > 0) ? acc + dy : dy;   // 방향이 바뀌면 처음부터 센다 — 손가락 떨림(몇 px)으로 깜빡이지 않게
+      if (acc > 24) root.classList.add('mast-off'); else if (acc < -24) root.classList.remove('mast-off');
+    };
+    addEventListener('scroll', hideBar, { passive: true }); addEventListener('resize', hideBar); hideBar();
+    mast.addEventListener('focusin', e => { if (kb(e.target)) root.classList.remove('mast-off'); });
     // 휴대폰 메뉴 줄 양 끝 흐림 — 왼쪽으로 넘겼으면 왼쪽 끝도, 끝까지 넘겼으면 오른쪽은 흐리지 않는다(style.css .nav-l · .nav-end, 2026-10-26)
     const nav = $('.mast nav');
     const edge = () => { const max = nav.scrollWidth - nav.clientWidth; nav.classList.toggle('nav-l', nav.scrollLeft > 4); nav.classList.toggle('nav-end', nav.scrollLeft >= max - 4); };

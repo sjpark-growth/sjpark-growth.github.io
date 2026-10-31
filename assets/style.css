@@ -1904,3 +1904,89 @@ body { overflow-x: clip; }
 .mb-h > span, .hk-h > span { font-family: var(--f-sans); letter-spacing: 0; color: var(--ink-2); }
 .mb-h > span [data-auto], .hk-h > span [data-auto] { font-family: inherit; font-size: inherit; letter-spacing: inherit; color: var(--ink); font-weight: 700; }
 @media screen { .mb-h > span { font-size: 12.5px; } .hk-h > span { font-size: 12px; } }
+
+/* =========================================================================
+   (2026-10-31) 휴대폰 최적화 2차 — 점검(390×664 · 360×640 · 320×568 · 가로 844×390)에서 나온 것. PC 배치 · 인쇄는 그대로
+   ========================================================================= */
+/* 상단 바 접기 — app.js wireChrome 의 hideBar 가 <html> 에 .mast-off 를 단다(첫 화면을 지나 아래로 내릴 때만). 접혀도 맨 아래 진행 막대(.mast::after)는 화면 맨 위에 남는다 */
+@media screen {
+  .mast { transition: transform .25s ease; }
+  .mast-off .mast { transform: translateY(calc(-100% + 2px)); }
+}
+@media (prefers-reduced-motion: reduce) { .mast { transition: none; } }
+
+/* 오른쪽 목차 레일 — PC(861px 이상 · 높이 501px 이상)에서 첫 화면을 지나면 나온다(app.js wireChrome 이 .rail 을 만들고 <html> 에 .rail-on).
+   평소엔 점만(지나온 섹션은 채운 점 · 지금 섹션은 큰 점), 섹션이 바뀔 때 1.6초 · 마우스를 올리거나 키보드로 들어오면 이름이 나온다.
+   본문 최대 폭 1320px 이라 1280~1440px 노트북은 오른쪽 여백이 좁다 — 이름을 늘 펼치면 카드를 가려서 점만 둔다 */
+.rail { display: none; }
+@media screen and (min-width: 861px) and (min-height: 501px) {
+  .rail {
+    display: flex; flex-direction: column; gap: 2px; position: fixed; right: 10px; top: 50%; z-index: 40; padding: 6px 0;
+    opacity: 0; visibility: hidden; transform: translate(14px, -50%);
+    transition: opacity .25s, transform .25s, visibility 0s .25s;
+  }
+  .rail-on .rail { opacity: 1; visibility: visible; transform: translate(0, -50%); transition: opacity .25s, transform .25s; }
+  /* 세로 줄 · 지나온 만큼 채운 줄(--rp = 지금 섹션 순번 ÷ (섹션 수 − 1)) — 점 가운데(오른쪽에서 14px)에 맞춘다 */
+  .rail::before, .rail::after { content: ""; position: absolute; right: 13px; top: 20px; width: 2px; border-radius: 2px; }
+  .rail::before { bottom: 20px; background: var(--rule); }
+  .rail::after { height: calc((100% - 40px) * var(--rp, 0)); background: var(--accent); transition: height .3s ease; }
+  .rail a {
+    position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-height: 28px; padding: 0 6px 0 8px;
+    text-decoration: none; color: var(--ink-2); font: 600 12.5px/1 var(--f-sans); letter-spacing: -0.01em;
+  }
+  .rail a i {
+    position: relative; z-index: 1; flex: none; width: 10px; height: 10px; margin-right: 3px; border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--ink) 28%, var(--paper)); background: var(--paper);
+    transition: transform .2s, background-color .2s, border-color .2s, box-shadow .2s;
+  }
+  .rail a.past i { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 30%, var(--paper)); }
+  .rail a[aria-current="true"] i { border-color: var(--accent); background: var(--accent); transform: scale(1.3); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .rail a:hover i, .rail a:focus-visible i { border-color: var(--accent); }
+  .rail .rl {
+    padding: 5px 10px; border-radius: 99px; background: var(--surface); border: 1px solid var(--rule); box-shadow: var(--shadow); white-space: nowrap;
+    opacity: 0; transform: translateX(6px); transition: opacity .2s, transform .2s; pointer-events: none;
+  }
+  .rail a[aria-current="true"] .rl { color: var(--accent-ink); font-weight: 700; }
+  .rail:hover .rl, .rail:focus-within .rl, .rail.flash a[aria-current="true"] .rl { opacity: 1; transform: none; }
+  .rail:hover a:hover .rl { color: var(--ink); }
+  .rail a:focus-visible { outline: none; }
+  .rail a:focus-visible .rl { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+/* 아주 넓은 화면(본문 밖 여백 190px 이상) — 이름을 늘 연하게 둔다(지금 섹션만 진하게) */
+@media screen and (min-width: 1700px) and (min-height: 501px) {
+  .rail .rl { opacity: 1; transform: none; background: transparent; border-color: transparent; box-shadow: none; color: var(--ink-3); }
+}
+@media print { .rail { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { .rail, .rail::after, .rail a i, .rail .rl { transition: none !important; } }
+@media screen and (max-width: 600px) {
+  /* 첫 화면 — 10-28 메타 강조 뒤 「경력 N년 N개월」 알약이 둘째 줄로 내려가 핵심 성과 아래 줄이 390×664 밖으로 21px 밀렸다.
+     직무 줄(<p>)의 기본 여백 1em · 이름 위아래 여백을 좁히고 사진을 조금 줄여 되찾는다 */
+  .hero { padding-top: 10px; }
+  .hero .eyebrow { margin: 0 0 4px; }
+  .idrow h1 { margin-top: 4px; }
+  .hero h1 .en { margin-top: 6px; }
+  .portrait { width: 80px; }
+  .hero .thesis { margin-top: 10px; }
+  .hero .contact { margin-top: 12px; }
+  .hero-r > .hkey { margin-top: 12px; }
+  /* 작은 글자 — 12px 아래(9.5~11.5px)로 내려가던 보조 글자를 12px 로. 큰 숫자 옆 단위(건 · 점) · 차트 · 영상 속 글자는 그대로 */
+  .proj .facts .fs, .hero .hs-k, .mp-span, .mp-dash .mp-span, .mp-badge, .mp-group, #phaseList .pp, .toolgrp h4, .toolmore h4, .summary dt, #perf th, .gwhere,
+  .arc figcaption span, .job-side .now, .cnote .cq, .sec-h .tag, #dash .sec-h .tag, .growth-h .tag, .ticker .tk-live, #enBtn, .hero .hk .kpi .s { font-size: 12px; }
+  .arc .kind { font-size: 11px; }
+  /* 주요 업무 카드 — 「어떻게」 목록은 접어 두고 단추로 편다(app.js renderProjects) */
+  #projects .how-tg {
+    display: flex; align-items: center; gap: 6px; width: 100%; min-height: 40px; margin-top: 14px; padding: 8px 14px;
+    border: 1px solid var(--rule); border-radius: 10px; background: var(--sunk); color: var(--ink-2);
+    font: 600 13.5px/1.3 var(--f-sans); text-align: left; cursor: pointer;
+  }
+  #projects .how-tg b { color: var(--ink); }
+  #projects .how-tg::after { content: ""; margin-left: auto; width: 7px; height: 7px; border: solid currentColor; border-width: 0 1.6px 1.6px 0; transform: translateY(-2px) rotate(45deg); transition: transform .2s; }
+  #projects .proj.how-open .how-tg::after { transform: translateY(2px) rotate(-135deg); }
+  #projects .proj:not(.how-open) .how { display: none; }
+  #projects .proj.how-open .how { margin-top: 12px; }
+}
+.how-tg { display: none; }
+/* 누르는 칸 — 역량 「사례」 · 경력 「관련 사례」 링크가 20~21px → 24px 이상(WCAG 2.5.8). 휴대폰 · 터치 화면만 */
+@media screen and (max-width: 860px), screen and (pointer: coarse) {
+  .pillar .ev a, .job-main .see a { display: inline-flex; align-items: center; min-height: 24px; }
+}
