@@ -149,6 +149,9 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
   - **GitHub Actions 「데모 가림」**(`.github/workflows/demo-wash.yml`): main 에 데모 · 본문 파일이 올라오면 가려서 다시 올린다(봇 커밋 「데모 자동 가림」). 1~2분 사이는 가리기 전 판이 보일 수 있다. 가린 뒤에도 의심이 남으면 빨간 X(메일 알림).
   - **pre-commit 훅**(`.githooks/pre-commit` → `node tools/demo-wash.js --staged`): 데모 · 본문 파일을 커밋하기 전에 가린다(못 고친 것이 있으면 커밋을 멈춘다) → 공개 사이트에 실명이 한순간도 안 나간다. PC 저장소에서 한 번 `git config core.hooksPath .githooks` 로 켠다. 켜 두면 Actions 는 「가릴 것 없음」으로 끝나고 봇 커밋도 생기지 않는다.
 - 동기화 스크립트를 고칠 때: 커밋 전에 `node tools/demo-wash.js` 를 부르거나 훅을 켠다. 봇 커밋이 생긴 뒤에는 `git pull` 하고 다음 데모를 만든다(같은 줄을 고쳐 rebase 가 부딪힌다).
+- **관문 파이프라인**(2026-10-31, 작업 폴더 `_work/sync/gate-loop/gate-loop.js` — 이 저장소 밖): 동기화 시험 → 이 저장소 사본(LF)에서 `demo-wash.js` → `--check` → 누출 검사 → 헤드리스 화면(모바일 390 · PC 1440 · 인쇄, 공개본 HEAD 와 비교)을 한 번에 돌려 걸린 것을 모두 JSON(`{gate, file, line, match, verdict_needed}`)으로 낸다.
+  아는 종류(새 채널 계수 · KWT 새 칸 · 코드 상수 오탐 · 코드 속 조직명 낱말)는 스스로 판정해 비공개 규칙 파일(`_work/sync/auto-rules.json`)에 가림 규칙 · 좁은 허용과 시험을 더하고 다시 돈다(최대 10회). 모르는 종류는 멈추고 사람이 판정한다. 복사 · 커밋 · push 는 하지 않는다 — 통과한 뒤 push 는 사용자 승인을 받는다.
+  재현 시험은 `node _work/sync/gate-loop/fixtures.js past`(지난 실패 4종) · `normal`(정상 데모 1회 통과)이다. 일요일 20:30~24:00 에는 실제 도구로 돌지 않는다(주간 동기화와 겹침).
 - 데이터 구조가 바뀌어 새 칸에 실명이 생기면 `--check` 가 「실명 의심 N곳」으로 알려 준다 → `washBlocks()` 에 칸을 더한다.
 
 ## 6. 확인 방법
