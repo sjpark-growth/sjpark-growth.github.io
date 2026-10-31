@@ -10,7 +10,8 @@
    "remap": true,
    "catAlias": true
   },
-  "stock-demo.html": {}
+  "stock-demo.html": {},
+  "guide-demo.html": {}
  },
  "allow": [
   "냉동",

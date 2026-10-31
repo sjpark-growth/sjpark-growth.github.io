@@ -223,6 +223,8 @@ window.RESUME = {
       demo2: [
         { href: 'briefing-demo.html', label: '브리핑룸 데모' },
         { href: 'stock-demo.html', label: '재고 신호판 데모' },
+        /* (2026-10-31) 연계 화면 다섯 개를 읽는 법 — 숫자 없는 사내 설명서의 사본(_work\data\wash-guide.js) */
+        { href: 'guide-demo.html', label: '설명서' },
       ],
       /* 축소판도 크게 보기(demo)와 같은 주소 — 주소가 다르면 같은 3MB 를 두 번 받는다(2026-10-17).
          explore 로 열려도 축소판은 dash-ready 뒤 explore · 영상 모드는 tour 메시지를 보내 그대로 동작한다 */
