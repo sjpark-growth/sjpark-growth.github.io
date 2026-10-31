@@ -161,7 +161,7 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 ## 7. 배포 (GitHub Pages)
 
 - 이 폴더 전체가 저장소 루트다. `index.html` 이 루트에 있어야 하고, `.nojekyll` 은 지우지 않는다.
-- 검색엔진 차단: `index.html` · `en.html` · `dashboard-demo.html` · `briefing-demo.html` · `stock-demo.html` 다섯 파일의 `<meta name="robots" content="noindex, nofollow">` 를 지우지 않는다.
+- 검색엔진 차단: `index.html` · `en.html` · `dashboard-demo.html` · `briefing-demo.html` · `stock-demo.html` · `guide-demo.html`(2026-10-31) 여섯 파일의 `<meta name="robots" content="noindex, nofollow">` 를 지우지 않는다.
 - 파일 이름 대소문자는 서버에서 구분된다. 새 이미지를 넣을 때 `data.js` 의 경로와 대소문자까지 똑같이 맞춘다.
 
 ## 8. PDF 용량 — 이미지 형식 (2026-09-27)
