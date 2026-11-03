@@ -153,6 +153,9 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 - **관문 파이프라인**(2026-10-31, 작업 폴더 `_work/sync/gate-loop/gate-loop.js` — 이 저장소 밖): 동기화 시험 → 이 저장소 사본(LF)에서 `demo-wash.js` → `--check` → 누출 검사 → 헤드리스 화면(모바일 390 · PC 1440 · 인쇄, 공개본 HEAD 와 비교)을 한 번에 돌려 걸린 것을 모두 JSON(`{gate, file, line, match, verdict_needed}`)으로 낸다.
   아는 종류(새 채널 계수 · KWT 새 칸 · 코드 상수 오탐 · 코드 속 조직명 낱말)는 스스로 판정해 비공개 규칙 파일(`_work/sync/auto-rules.json`)에 가림 규칙 · 좁은 허용과 시험을 더하고 다시 돈다(최대 10회). 모르는 종류는 멈추고 사람이 판정한다. 복사 · 커밋 · push 는 하지 않는다 — 통과한 뒤 push 는 사용자 승인을 받는다.
   재현 시험은 `node _work/sync/gate-loop/fixtures.js past`(지난 실패 4종) · `normal`(정상 데모 1회 통과)이다. 일요일 20:30~24:00 에는 실제 도구로 돌지 않는다(주간 동기화와 겹침).
+- **전수 검사 · 잠금**(2026-11-03, 작업 폴더 `_work/sync` — 이 저장소 밖): `sync-demo.js` 관문 ③-4 = `gate-loop/copy-scan.js` — 조직명 정리 뒤 올릴 판 전체에서 A 실명 · C 주소(`http://www.w3.org/` 만 예외)가 1개라도 나오거나 목록을 못 읽으면 복사 · 커밋 · push 하지 않는다. B(원본과 같은 자리 값)는 `마지막_결과.txt` · `동기화_기록.txt` 에 기록만. `gate-loop.js` 도 같은 판정을 돈다.
+  잠금 `sync.lock` 은 'wx' · PID · 단계마다 시각 갱신 — 잠금 속 PID 가 끝났으면 바로, 살아 있어도 70분 넘게 갱신이 없으면 버린다(버리기는 `sync.lock.steal` 을 쥔 한 실행만). 지금 상태는 `node sync-demo.js --status` 의 「잠금」.
+  대시보드 데모 왼쪽 메뉴 「연계 대시보드」에는 데모에서 감춘 단추(재고 신호판 · 쇼핑 인사이트 · PMC)를 넣지 않는다(`_work/data/wash.js`, 11-03 — 그 전엔 `href="#"` 죽은 링크로 나왔다).
 - 데이터 구조가 바뀌어 새 칸에 실명이 생기면 `--check` 가 「실명 의심 N곳」으로 알려 준다 → `washBlocks()` 에 칸을 더한다.
 
 ## 6. 확인 방법
