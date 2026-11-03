@@ -1990,3 +1990,14 @@ body { overflow-x: clip; }
 @media screen and (max-width: 860px), screen and (pointer: coarse) {
   .pillar .ev a, .job-main .see a { display: inline-flex; align-items: center; min-height: 24px; }
 }
+/* =========================================================================
+   (2026-11-03) 보조 글자 대비 2차 — --ink-3 를 실제 바탕마다 재서(헤드리스, 글자 120곳) 4.5:1 미만을 없앴다
+   다크: #707f94 는 종이(#0a1019)에서만 4.68:1, 카드(--surface #111a26) 4.30 · 강조 칸 4.04 → 120곳 중 109곳 미달.
+         #8593a8 → 카드 5.62 · 회색 칸(--sunk) 5.14 · 가장 진한 칸(#1f2b3c) 4.59. 본문 --ink-2 와 차이(1.5배)는 남긴다.
+   라이트: #5f6d82 는 색 띠 절(#perf · #work · #career, #e9edf4) 위 .sec-h .aside 3곳이 4.48 → #5d6b80 으로 4.61.
+   더 연하게 되돌리지 않는다(CLAUDE.md 5-1 색 대비).
+   ========================================================================= */
+:root { --ink-3: #5d6b80; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink-3: #8593a8; } }
+:root[data-theme="dark"] { --ink-3: #8593a8; }
+:root[data-theme="light"] { --ink-3: #5d6b80; }
