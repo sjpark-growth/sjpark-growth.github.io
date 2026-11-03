@@ -13687,11 +13687,11 @@ header.masthead ~ .topgrid { margin-top: -4px; }
   if (br || stk || ins || pmc || gd) {
     html += '<div class="erp-grp g4"><b>연계 대시보드</b>';
     if (br)  html += '<a href="' + br.getAttribute("href")  + '" target="_blank" rel="noopener">브리핑룸 ↗</a>';
-    if (stk) html += '<a href="' + stk.getAttribute("href") + '" target="_blank" rel="noopener">재고 신호판 ↗</a>';
+    if (stk && !stk.hidden) html += '<a href="' + stk.getAttribute("href") + '" target="_blank" rel="noopener">재고 신호판 ↗</a>';
 
-    if (ins) html += '<a href="' + ins.getAttribute("href") + '" target="_blank" rel="noopener" title="몰별 백데이터 11개 탭(키워드 인사이트 · 확장 권장 · 쿠팡 · 컬리 · 이지웰 · 네이버) — 데모">쇼핑 인사이트 ↗</a>';
+    if (ins && !ins.hidden) html += '<a href="' + ins.getAttribute("href") + '" target="_blank" rel="noopener" title="몰별 백데이터 11개 탭(키워드 인사이트 · 확장 권장 · 쿠팡 · 컬리 · 이지웰 · 네이버) — 데모">쇼핑 인사이트 ↗</a>';
 
-    if (pmc) html += '<a href="' + pmc.getAttribute("href") + '" target="_blank" rel="noopener" title="쿠팡 1P PMC 원인 상품코드 · 몰 노출가 · 판매가 변동 — 데모">PMC 트래커 ↗</a>';
+    if (pmc && !pmc.hidden) html += '<a href="' + pmc.getAttribute("href") + '" target="_blank" rel="noopener" title="쿠팡 1P PMC 원인 상품코드 · 몰 노출가 · 판매가 변동 — 데모">PMC 트래커 ↗</a>';
 
     if (gd) html += '<a href="' + gd.getAttribute("href") + '" target="_blank" rel="noopener" title="다섯 화면을 언제 열고 · 무엇을 보고 · 어떻게 읽는지 쉬운 말로 정리한 한 장(숫자 없음)">대시보드 설명서 ↗</a>';
     html += "</div>";
