@@ -2001,3 +2001,6 @@ body { overflow-x: clip; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink-3: #8593a8; } }
 :root[data-theme="dark"] { --ink-3: #8593a8; }
 :root[data-theme="light"] { --ink-3: #5d6b80; }
+/* 인쇄도 같은 값 — 인쇄 블록의 #6b7a90 은 흰 종이 4.36 · 회색 칸(#eef1f6) 3.85 라 AA 미만이었다.
+   인쇄 블록과 같은 :not(#p) 특이도로 뒤에서 덮는다 → 흰 종이 5.41 · 회색 칸 4.78 */
+@media print { :root:not(#p), :root[data-theme]:not(#p) { --ink-3: #5d6b80; } }
