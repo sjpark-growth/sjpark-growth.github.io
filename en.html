@@ -62,6 +62,14 @@
   .en-foot { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); }
   @media (max-width: 640px) { .en-job { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
   @media print { .en { padding: 0; max-width: none; } h2.en-h { break-after: avoid; } }
+  /* (2026-11-05) 인쇄 4쪽째에 꼬리말 한 단락만 넘어가던 것(10-24 이후 문구가 늘어 3 → 4장) — 제목 · 꼬리말 위 여백만 줄여 A4 3장.
+     카드는 쪽 중간에서 자르지 않는다 */
+  @media print {
+    h2.en-h { margin-top: 24px; }
+    .en-foot { margin-top: 16px; padding-top: 8px; font-size: 11.5px; break-before: avoid; }
+    .en-kpis li, .en-do li { break-inside: avoid; }
+    .en-do { align-items: start; }   /* 쪽이 갈린 줄에서 짧은 카드(Leadership)가 옆 카드 높이로 늘어나 안이 비던 것 */
+  }
   /* 상단 바 — 본판과 같은 .mast · .iconbtn 스타일을 쓴다. 섹션 제목은 바 높이만큼 띄워 가리지 않게 */
   .en [id] { scroll-margin-top: 72px; }
   .mast .iconbtn.go { text-decoration: none; gap: 0; }

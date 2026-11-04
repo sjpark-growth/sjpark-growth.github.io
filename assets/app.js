@@ -375,6 +375,10 @@
   const ROLL = window.matchMedia('screen and (max-width: 620px)');
   const FILL = window.matchMedia('(min-width: 1101px), screen and (max-width: 620px)');
   let PRINTING = false;   // 인쇄할 때는 차트를 낮게 다시 그려 1쪽(표지)에 차트 네 칸까지 들어가게 한다
+  /* (2026-11-05) 인쇄(A4 본문 폭 약 718px)에서 차지하는 폭 — 성과 차트 · 경력 타임라인은 창 폭으로 그린 SVG 가 종이 폭에 맞춰
+     늘거나 줄어, 넓은 창에서 인쇄하면 글자가 약 57%(6pt 안팎)로 작아지고 휴대폰에서 인쇄하면 약 1.8배로 커져 쪽이 늘었다.
+     인쇄 직전(beforeprint)에 이 폭으로 다시 그리고, 끝나면(afterprint) 화면 폭으로 되돌린다. 값은 인쇄 배치(style.css)에서 잰 폭 */
+  const PRINT_W = { perf: 627, gantt: 655 };
   const boardH = box => {
     if (PRINTING) return 84;
     if (!FILL.matches || !box) return 110;
@@ -699,6 +703,8 @@
     $('#phaseList').innerHTML = R.phases.map(p => `<li><span class="pn">${p.n}</span><div><b>${p.t}</b><span class="pp">${mLabel(p.from)}–${mLabel(p.to)} · ${p.s}</span><p>${p.d}</p></div></li>`).join('');
     setView(curView, true);
     observeWidth($('#perfChart'), () => drawPerf(false));
+    addEventListener('beforeprint', () => { PRINTING = true; drawPerf(false); });
+    addEventListener('afterprint', () => { PRINTING = false; drawPerf(false); });
   }
 
   function setView(id, first) {
@@ -740,10 +746,10 @@
   function drawPerf(animate) {
     const v = VIEWS.find(x => x.id === curView);
     const box = $('#perfChart');
-    const W = Math.max(320, box.clientWidth || 800);
+    const W = PRINTING ? PRINT_W.perf : Math.max(320, box.clientWidth || 800);
     const narrow = W < 560;
     const small = narrow && window.matchMedia('(max-width: 600px)').matches;   // 휴대폰 — 라벨이 막대 · 선에 덮이지 않게 옮긴다(2026-10-26)
-    const H = narrow ? 320 : 400;
+    const H = PRINTING ? 300 : narrow ? 320 : 400;   // 인쇄는 1:1 폭이라 400 이면 차트가 종이에서 너무 길다
     /* 오른쪽 여백 = 끝 라벨 자리. duo 는 끝 라벨이 짧아(값 · 「9월 월 환산」) 168 이면 오른쪽이 비어 보인다 (2026-09-19) */
     const m = { l: 48, r: narrow ? 56 : (v.type === 'stack' ? 110 : v.type === 'duo' ? 96 : v.series.length > 1 ? 168 : 76), t: 62, b: 30 };
     const step = (W - m.l - m.r) / N;
@@ -1039,8 +1045,9 @@
     const host = $('#gantt');
     const draw = () => {
       // 좁은 화면(휴대폰)은 가로 스크롤 없이 한 화면에 — 회사 이름 칸과 오른쪽 여백을 줄이고 연도는 2년 간격
-      const narrow = host.clientWidth < 600;
-      const W = narrow ? Math.max(300, host.clientWidth - 20) : Math.max(640, host.clientWidth - 36), rowH = 30, m = narrow ? { l: 92, r: 66, t: 22, b: 8 } : { l: 150, r: 84, t: 22, b: 8 };
+      const cw = PRINTING ? PRINT_W.gantt : host.clientWidth;   // 인쇄는 종이 폭으로(PRINT_W)
+      const narrow = cw < 600;
+      const W = narrow ? Math.max(300, cw - 20) : Math.max(640, cw - 36), rowH = 30, m = narrow ? { l: 92, r: 66, t: 22, b: 8 } : { l: 150, r: 84, t: 22, b: 8 };
       const rows = [...all].sort((a, b) => ym(b.from) - ym(a.from));
       const H = m.t + rows.length * rowH + m.b;
       const X = t => m.l + (t - t0) / (t1 - t0) * (W - m.l - m.r);
@@ -1088,6 +1095,8 @@
       });
     };
     draw(); observeWidth(host, draw);
+    addEventListener('beforeprint', () => { PRINTING = true; draw(); });
+    addEventListener('afterprint', () => { PRINTING = false; draw(); });
     function linkCareer(co, on) {
       $$('#gantt .grow-row').forEach(g => { g.classList.toggle('dim', on && g.dataset.co !== co); g.classList.toggle('on', on && g.dataset.co === co); });
       $$('#jobs .job').forEach(j => { j.classList.toggle('linked', on && j.dataset.co === co); j.classList.toggle('dimmed', on && j.dataset.co !== co); });
