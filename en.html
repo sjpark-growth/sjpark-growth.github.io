@@ -229,7 +229,12 @@
       try { next === 'system' ? localStorage.removeItem('psj-theme') : localStorage.setItem('psj-theme', next); } catch (e) {}
       label.textContent = names[next];
     });
-    document.getElementById('printBtn').addEventListener('click', function () { window.print(); });
+    /* (2026-11-05) 저장되는 PDF 파일 이름 — 크롬은 문서 제목을 기본 파일 이름으로 쓴다. 인쇄하는 동안만 「Seongjoon_Park_Resume_EN_YYYYMM」 */
+    var baseTitle = document.title;
+    var printTitle = function () { var d = new Date(); document.title = 'Seongjoon_Park_Resume_EN_' + d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2); };
+    addEventListener('beforeprint', printTitle);
+    addEventListener('afterprint', function () { document.title = baseTitle; });
+    document.getElementById('printBtn').addEventListener('click', function () { printTitle(); window.print(); });
     /* 경력 기간 — 한국어판 paintPeriods() 와 같은 계산(경력 구간 합, 현 직장은 이번 달까지 · 양 끝 달 포함).
        고정 글자로 두면 매달 한국어판과 어긋나서 넣었다. 구간을 바꾸면 data.js 의 jobs 와 같이 고친다 */
     var cs = document.querySelector('[data-career]');
@@ -241,6 +246,77 @@
       var y = Math.floor(n / 12), m = n % 12;
       cs.textContent = y + ' yrs' + (m ? ' ' + m + (m === 1 ? ' mo' : ' mos') : '');
     }
+  })();
+  /* (2026-11-05) 본판(app.js wireChrome)과 같은 상단 바 접기 · 오른쪽 목차 레일 · 맨 위로 단추 — 모양은 style.css(.mast-off · .rail · .totop).
+     본인 「웹 이력서처럼 페이지를 내리면 우측 이동 메뉴 · 최상단 이동 버튼 · 모바일 최적화」
+     · PC(861px 이상 · 높이 501px 이상): 첫 화면을 지나면 오른쪽 끝에 섹션 점 레일, 오른쪽 아래에 맨 위로 단추
+     · 휴대폰: 아래로 내리면 상단 바를 접고 위로 올리면 내린다. 맨 위로 단추는 위로 올릴 때 · 페이지 끝에서만(읽는 동안 본문을 가리지 않게) */
+  (function () {
+    var root = document.documentElement, mast = document.querySelector('.mast'), id = document.querySelector('.mast .id');
+    var links = [].slice.call(document.querySelectorAll('.mast nav a'));
+    var secs = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+    var rm = matchMedia('(prefers-reduced-motion: reduce)');
+    var hideMQ = matchMedia('(max-width: 860px), (max-height: 500px) and (orientation: landscape) and (pointer: coarse)');
+    var railMQ = matchMedia('(min-width: 861px) and (min-height: 501px)');
+    var th = function () { return innerHeight * (railMQ.matches ? 0.8 : 0.6); };
+    var beh = function () { return rm.matches ? 'auto' : 'smooth'; };
+    var rail = document.createElement('nav');
+    rail.className = 'rail'; rail.setAttribute('aria-label', 'Section index');
+    rail.innerHTML = links.map(function (a) { return '<a href="' + a.getAttribute('href') + '"><span class="rl">' + a.textContent.trim() + '</span><i aria-hidden="true"></i></a>'; }).join('');
+    document.body.appendChild(rail);
+    var rlinks = [].slice.call(rail.querySelectorAll('a'));
+    var toTop = document.createElement('button');
+    toTop.className = 'totop'; toTop.type = 'button'; toTop.title = 'Back to top'; toTop.setAttribute('aria-label', 'Back to top');
+    toTop.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 2.5h9"/><path d="M8 13.5V6"/><path d="M4.5 9.5 8 6l3.5 3.5"/></svg>';
+    document.body.appendChild(toTop);
+    // 섹션으로 갈 때 — 아래로 가면 상단 바가 접히므로 그 높이를 빼지 않고, 위로 가면 바가 다시 내려오므로 뺀다(본판 goY 와 같다)
+    var goY = function (t) {
+      var raw = t.getBoundingClientRect().top + scrollY - 8;
+      var hides = (hideMQ.matches || railMQ.matches) && raw > scrollY && raw >= th();
+      return Math.max(0, hides ? raw : raw - mast.offsetHeight);
+    };
+    links.concat(rlinks).forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var t = document.querySelector(a.getAttribute('href')); if (!t) return;
+        e.preventDefault(); scrollTo({ top: goY(t), behavior: beh() });
+        try { history.replaceState(null, '', a.getAttribute('href')); } catch (err) {}
+      });
+    });
+    var goTop = function (e) { e.preventDefault(); scrollTo({ top: 0, behavior: beh() }); try { history.replaceState(null, '', '#top'); } catch (err) {} };
+    id.addEventListener('click', goTop);
+    toTop.addEventListener('click', function (e) { goTop(e); if (!e.detail) id.focus({ preventScroll: true }); });   // 키보드로 눌렀으면 초점도 맨 위로
+    var lastC = -2, flashT = 0;
+    var spy = function () {
+      var max = document.documentElement.scrollHeight - innerHeight, y = scrollY + 120, c = -1;
+      mast.style.setProperty('--p', max > 0 ? (scrollY / max).toFixed(4) : 0);
+      secs.forEach(function (s, i) { if (s && s.getBoundingClientRect().top + scrollY <= y) c = i; });
+      if (max > 0 && scrollY >= max - 4) c = secs.length - 1;   // 맨 끝 — 마지막 절(Contact)은 짧아 위까지 못 올라온다
+      links.forEach(function (a, i) { a.setAttribute('aria-current', String(i === c)); });
+      rlinks.forEach(function (a, i) { a.setAttribute('aria-current', String(i === c)); a.classList.toggle('past', i < c); });
+      rail.style.setProperty('--rp', c > 0 ? (c / (rlinks.length - 1)).toFixed(3) : 0);
+      if (c !== lastC) { lastC = c; rail.classList.add('flash'); clearTimeout(flashT); flashT = setTimeout(function () { rail.classList.remove('flash'); }, 1600); }
+    };
+    var kb = function (n) { try { return n.matches(':focus-visible'); } catch (err) { return true; } };
+    var lastY = scrollY, acc = 0;
+    var hideBar = function () {
+      var y = scrollY, dy = y - lastY; lastY = y;
+      var past = y >= th(), f = document.activeElement;
+      root.classList.toggle('rail-on', railMQ.matches && past);
+      if (!(hideMQ.matches || railMQ.matches) || !past || (mast.contains(f) && kb(f))) { root.classList.remove('mast-off'); acc = 0; }
+      else {
+        acc = (dy > 0) === (acc > 0) ? acc + dy : dy;   // 방향이 바뀌면 처음부터 센다 — 손가락 떨림으로 깜빡이지 않게
+        if (acc > 24) root.classList.add('mast-off'); else if (acc < -24) root.classList.remove('mast-off');
+      }
+      var atEnd = y + innerHeight >= document.documentElement.scrollHeight - 120;
+      toTop.classList.toggle('on', past && (railMQ.matches || atEnd || !root.classList.contains('mast-off') || f === toTop));
+    };
+    addEventListener('scroll', function () { spy(); hideBar(); }, { passive: true });
+    addEventListener('resize', hideBar); spy(); hideBar();
+    mast.addEventListener('focusin', function (e) { if (kb(e.target)) root.classList.remove('mast-off'); });
+    // 휴대폰 메뉴 줄 양 끝 흐림(style.css .nav-l · .nav-end) — 본판과 같다
+    var nav = document.querySelector('.mast nav');
+    var edge = function () { var max = nav.scrollWidth - nav.clientWidth; nav.classList.toggle('nav-l', nav.scrollLeft > 4); nav.classList.toggle('nav-end', nav.scrollLeft >= max - 4); };
+    nav.addEventListener('scroll', edge, { passive: true }); addEventListener('resize', edge); edge();
   })();
 </script>
 </body>

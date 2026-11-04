@@ -25,6 +25,7 @@
     grid: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>',
     expand: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg>',
     ext: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 2.5h4.5V7"/><path d="M13.5 2.5 7 9"/><path d="M11.5 9.5v3a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3"/></svg>',
+    top: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 2.5h9"/><path d="M8 13.5V6"/><path d="M4.5 9.5 8 6l3.5 3.5"/></svg>',
   };
 
   /* ------------------------------------------------------------ helpers */
@@ -1257,8 +1258,17 @@
       imgs.forEach(i => { i.loading = 'eager'; });
       return Promise.all(imgs.filter(i => !i.complete).map(i => new Promise(r => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); })));
     };
+    /* (2026-11-05) 저장되는 PDF 파일 이름 — 크롬은 문서 제목을 기본 파일 이름으로 쓴다. 「전체 PDF」 · 「요약 PDF」가 같은 이름(「박성준 · Growth Report 2026」)으로
+       저장돼 받는 쪽에서 구분이 안 되던 것 → 인쇄하는 동안만 「박성준_웹이력서_전체(요약)_YYYYMM」으로 바꾸고 끝나면 되돌린다(Ctrl+P 도 beforeprint 로 같다) */
+    const baseTitle = document.title;
+    const printTitle = () => {
+      const d = new Date(), ymd = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0');
+      document.title = `박성준_웹이력서_${document.body.classList.contains('print-short') ? '요약' : '전체'}_${ymd}`;
+    };
+    addEventListener('beforeprint', printTitle);
+    addEventListener('afterprint', () => { document.title = baseTitle; });
     const printAll = done => {
-      const go = () => { window.print(); if (done) setTimeout(done, 1500); };   // done: afterprint 가 오지 않는 브라우저 대비
+      const go = () => { printTitle(); window.print(); if (done) setTimeout(done, 1500); };   // done: afterprint 가 오지 않는 브라우저 대비
       const pend = loadLazy();
       if (!$$('img').some(i => !i.complete)) return go();
       document.documentElement.classList.add('is-preparing');
@@ -1307,6 +1317,15 @@
       links.map(a => `<a href="${a.getAttribute('href')}"><span class="rl">${a.textContent.trim()}</span><i aria-hidden="true"></i></a>`).join(''));
     document.body.appendChild(rail);
     const rlinks = $$('a', rail);
+    /* (2026-11-05) 맨 위로 단추 — 본인 「최상단 이동 버튼을 우측 하단에 작고 톤앤매너 맞게 · 모바일 최적화도」(style.css .totop).
+       PC 는 첫 화면을 지나면 계속 보이고, 상단 바가 접히는 폭(휴대폰)은 읽는 동안 본문을 가리지 않게 위로 올릴 때 · 페이지 끝에서만(아래 hideBar) */
+    const toTop = el('button', { class: 'totop', type: 'button', 'aria-label': '맨 위로', title: '맨 위로' }, ICON.top);
+    document.body.appendChild(toTop);
+    toTop.addEventListener('click', e => {
+      scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+      try { history.replaceState(null, '', '#top'); } catch (err) {}
+      if (!e.detail) $('.mast .id').focus({ preventScroll: true });   // 키보드로 눌렀으면 초점도 맨 위(이름)로
+    });
     // 섹션으로 갈 때 — 아래로 가면 상단 바가 접히므로 그 높이를 빼지 않는다(빼면 섹션 위에 빈 띠가 남는다). 위로 가면 바가 다시 내려오므로 뺀다
     const goY = t => {
       const raw = t.getBoundingClientRect().top + scrollY - 8;
@@ -1351,9 +1370,13 @@
       const y = scrollY, dy = y - lastY; lastY = y;
       const past = y >= th(), f = document.activeElement;
       root.classList.toggle('rail-on', railMQ.matches && past);
-      if (!(hideMQ.matches || railMQ.matches) || !past || (mast.contains(f) && kb(f))) { root.classList.remove('mast-off'); acc = 0; return; }
-      acc = (dy > 0) === (acc > 0) ? acc + dy : dy;   // 방향이 바뀌면 처음부터 센다 — 손가락 떨림(몇 px)으로 깜빡이지 않게
-      if (acc > 24) root.classList.add('mast-off'); else if (acc < -24) root.classList.remove('mast-off');
+      if (!(hideMQ.matches || railMQ.matches) || !past || (mast.contains(f) && kb(f))) { root.classList.remove('mast-off'); acc = 0; }
+      else {
+        acc = (dy > 0) === (acc > 0) ? acc + dy : dy;   // 방향이 바뀌면 처음부터 센다 — 손가락 떨림(몇 px)으로 깜빡이지 않게
+        if (acc > 24) root.classList.add('mast-off'); else if (acc < -24) root.classList.remove('mast-off');
+      }
+      const atEnd = y + innerHeight >= document.documentElement.scrollHeight - 120;
+      toTop.classList.toggle('on', past && (railMQ.matches || atEnd || !root.classList.contains('mast-off') || f === toTop));
     };
     addEventListener('scroll', hideBar, { passive: true }); addEventListener('resize', hideBar); hideBar();
     mast.addEventListener('focusin', e => { if (kb(e.target)) root.classList.remove('mast-off'); });
