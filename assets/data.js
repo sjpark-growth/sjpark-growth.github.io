@@ -224,6 +224,8 @@ window.RESUME = {
       demo2: [
         { href: 'briefing-demo.html', label: '브리핑룸 데모' },
         { href: 'stock-demo.html', label: '재고 신호판 데모' },
+        /* (2026-11-14) 쇼핑 인사이트 — 우리 광고 · 매출 숫자는 합성 값, 상품 · 브랜드 · 광고주 이름은 코드(몰 탭 시장 값은 원본, 본인 「내부 매출만 없도록 · 내용만 워싱」)(_work\data\insight-demo) */
+        { href: 'insight-demo.html', label: '쇼핑 인사이트 데모' },
         /* (2026-10-31) 연계 화면 다섯 개를 읽는 법 — 숫자 없는 사내 설명서의 사본(_work\data\wash-guide.js) */
         { href: 'guide-demo.html', label: '설명서' },
       ],
