@@ -531,7 +531,7 @@
       if (Math.abs(rx) < 10 && Math.abs(dy) < 10) return;
       if (Math.abs(dy) >= Math.abs(rx)) { drag = null; return; }
       // 시작 문턱(10px)만큼은 빼고 따라간다 — 끌기가 시작되는 순간 화면이 10px 툭 튀던 것
-      drag.on = true; drag.sx = rx; settle();
+      drag.on = true; drag.sx = Math.sign(rx) * 10; settle();   // 문턱만큼만 뺀다(첫 움직임 전체를 빼면 한 번에 크게 끈 마우스 드래그가 제자리로 돌아왔다)
       main.classList.add('tm-dragging'); track.classList.add('tm-instant'); main.classList.remove('near-l', 'near-r');
       try { stage.setPointerCapture(e.pointerId); } catch (err) {}
       try { getSelection().removeAllRanges(); } catch (err) {}
