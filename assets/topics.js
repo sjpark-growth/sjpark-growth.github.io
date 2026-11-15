@@ -101,11 +101,12 @@
     if (dropFor !== (all ? 'all' : i)) { fillDrop(i, all); dropFor = all ? 'all' : i; }
     drop.hidden = false; requestAnimationFrame(() => drop.classList.add('on'));
     root.classList.toggle('tm-sheet', !!all);
+    const mb = $('.tm-menu'); if (mb) mb.setAttribute('aria-expanded', String(!!all));
     if (kbd) { const b = $('button', drop); b && b.focus(); }
   };
   const closeDrop = (now) => {
     clearTimeout(dropT);
-    const off = () => { drop.classList.remove('on'); root.classList.remove('tm-sheet'); setTimeout(() => { if (!drop.classList.contains('on')) { drop.hidden = true; dropFor = -1; } }, reduce ? 0 : 220); };
+    const off = () => { drop.classList.remove('on'); root.classList.remove('tm-sheet'); const mb = $('.tm-menu'); if (mb) mb.setAttribute('aria-expanded', 'false'); setTimeout(() => { if (!drop.classList.contains('on')) { drop.hidden = true; dropFor = -1; } }, reduce ? 0 : 220); };
     if (now) off(); else dropT = setTimeout(off, 160);
   };
   tabs.forEach((a, i) => {
@@ -148,10 +149,10 @@
   $('.tm-next', dock).addEventListener('click', () => go(cur + 1));
   dots.forEach(b => b.addEventListener('click', () => go(+b.dataset.i)));
   const menu = $('.tm-menu', dock);
-  menu.addEventListener('click', () => { if (!drop.hidden && root.classList.contains('tm-sheet')) { closeDrop(true); menu.setAttribute('aria-expanded', 'false'); } else { openDrop(cur, true, !menu.matches(':hover')); menu.setAttribute('aria-expanded', 'true'); } });
+  menu.addEventListener('click', () => { if (!drop.hidden && root.classList.contains('tm-sheet')) closeDrop(true); else openDrop(cur, true, !menu.matches(':hover')); });
 
   /* ---------- 넘기기 */
-  let cur = -1, hintOff = false;
+  let cur = -1, hintOff = false, lastPush = 0;
   const killHint = () => { if (hintOff) return; hintOff = true; hint.classList.add('off'); setTimeout(() => hint.remove(), 600); };
   setTimeout(killHint, 7000);
   const place = (off = 0) => { track.style.transform = `translate3d(calc(${-cur * 100}% + ${off}px), 0, 0)`; };
@@ -167,6 +168,9 @@
   function go(i, o = {}) {
     i = clamp(i, 0, N - 1);
     const prev = cur, changed = i !== cur; cur = i;
+    // 다른 판의 카드로 갈 때 — 위치는 차례 등장(.tm-in 시작 상태 translateY 30px)이 붙기 전에 잰다(붙은 뒤 재면 약 30px 위로 어긋났다)
+    let ty = null;
+    if (o.target) { const p = panels[i]; ty = o.target.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 14; }
     track.classList.toggle('tm-instant', !!o.instant || reduce);
     place();
     panels.forEach((p, k) => { const on = k === i; p.inert = !on; p.setAttribute('aria-hidden', String(!on)); p.classList.toggle('on', on); });
@@ -176,18 +180,21 @@
     $('.tm-pl', dock).textContent = i > 0 ? TOPICS[i - 1].label : '';
     $('.tm-nl', dock).textContent = i < N - 1 ? TOPICS[i + 1].label : '';
     $('.tm-prev', dock).disabled = i === 0; $('.tm-next', dock).disabled = i === N - 1;
+    $('.tm-prev', dock).setAttribute('aria-label', '이전 주제' + (i > 0 ? ': ' + TOPICS[i - 1].label : ''));
+    $('.tm-next', dock).setAttribute('aria-label', '다음 주제' + (i < N - 1 ? ': ' + TOPICS[i + 1].label : ''));
     root.style.setProperty('--tm-p', (i / (N - 1)).toFixed(4));
     moveInd();
     if (changed || o.first) {
       if (!o.target) panels[i].scrollTop = 0;
       enter(panels[i]);
-      try { history[o.push === false || o.first ? 'replaceState' : 'pushState'](null, '', '#/' + TOPICS[i].id); } catch (e) {}
+      // 빠르게 이어 넘기면(600ms 안) 방문 기록을 하나로 — 뒤로 가기를 여러 번 눌러야 하던 것
+      const now = performance.now(), quick = now - lastPush < 600; lastPush = now;
+      try { history[o.push === false || o.first || quick ? 'replaceState' : 'pushState'](null, '', '#/' + TOPICS[i].id); } catch (e) {}
       document.title = `${TOPICS[i].label} · 박성준 · Growth Report 2026`;
       if (prev >= 0) killHint();
     }
     if (o.target) {
-      const t = o.target, p = panels[i];
-      const y = t.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 14;
+      const t = o.target, p = panels[i], y = ty;
       setTimeout(() => {
         p.scrollTo({ top: Math.max(0, y), behavior: reduce || !changed ? (reduce ? 'auto' : 'smooth') : 'auto' });
         t.classList.remove('tm-flash'); void t.offsetWidth; t.classList.add('tm-flash'); setTimeout(() => t.classList.remove('tm-flash'), 1600);
@@ -272,7 +279,7 @@
 
   // #/주제 가 없으면 본판식 주소(#perf · #p-cp1)도 받아 그 판 · 그 자리로
   let k0 = fromHash(), t0 = null;
-  if (k0 < 0 && /^#[\w-]+$/.test(location.hash)) { t0 = $(location.hash); k0 = t0 ? panels.findIndex(p => p.contains(t0)) : -1; }
+  if (k0 < 0 && /^#[\w-]+$/.test(location.hash)) { try { t0 = $(location.hash); } catch (e) { t0 = null; } k0 = t0 ? panels.findIndex(p => p.contains(t0)) : -1; }   // #1abc 처럼 선택자가 안 되는 주소면 첫 판
   go(k0 >= 0 ? k0 : 0, { instant: true, first: true, target: t0 && t0.closest('.tm-inner > *') !== t0 ? t0 : null });
   root.classList.add('tm-ready');
 })();

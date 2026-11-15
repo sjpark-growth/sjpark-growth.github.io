@@ -1415,7 +1415,7 @@
      · 빛 번짐: 마우스(정밀 포인터 · hover 가능)일 때만 카드 위에 커서를 따라 강조색 빛(style.css .spot-on) */
   const REVEAL = ['.sec-h > *', '.growth-h > *', '.summary .sum-l', '.summary .sum-r', '.dash-wrap', '.perf > .panel', '.phases > li',
     '.gcards > *', '.gextra', '.projects > .proj', '.pillars > *', '.toolrow', '.gantt', '.cnote', '.jobs > *', '.archive > *', '.arc-note',
-    '.beliefs > *', '.contact.big', '.scorebox', '.factgrid > *', '.foot .shell > *'];
+    '.beliefs > *', '.contact.big', '.scorebox', '.factgrid > *'];   // 꼬리말(.foot)은 빼 둔다 — 큰 창에서 관찰 영역에 못 들어와 투명하게 남았다
   function wireReveal() {
     const root = document.documentElement;
     if (reduceMotion || root.classList.contains('tabmode') || !('IntersectionObserver' in window)) return;
@@ -1437,8 +1437,13 @@
         n.style.setProperty('--reveal-d', d + 'ms'); n.classList.add('reveal-in');
         setTimeout(() => finish(n), d + (n.classList.contains('arc') ? 1500 : 1150));
       });
-    }, { rootMargin: '0px 0px -7% 0px', threshold: 0.06 });
+    }, { rootMargin: '0px 0px -40px 0px', threshold: 0.06 });   // 아래 여백은 px — % 면 창이 높을수록 커져 페이지 맨 끝 칸이 영역에 못 들어왔다
     nodes.forEach(n => io.observe(n));
+    // 문서 끝에 닿았는데 화면 안에 아직 안 뜬 것이 있으면 바로 띄운다(마지막 안전장치)
+    addEventListener('scroll', () => {
+      if (innerHeight + scrollY < document.documentElement.scrollHeight - 4) return;
+      $$('.reveal:not(.reveal-in)').forEach(n => { const r = n.getBoundingClientRect(); if (r.top < innerHeight && r.bottom > 0 && !n._reveal) { n._reveal = 1; n.classList.add('reveal-in'); setTimeout(() => finish(n), 1150); } });
+    }, { passive: true });
     addEventListener('beforeprint', () => $$('.reveal').forEach(finish));
   }
   function wireSpot() {
