@@ -1,7 +1,8 @@
 /* =========================================================================
    주제별 보기 (topics.html · 2026-11-15 시험 페이지) — html.tabmode 일 때만. 색 · 글꼴 토큰은 style.css 그대로
-   · 화면 = 상단 바(주제 탭) + 띠배너 + 판 한 장(세로 스크롤) + 아래 진행 막대. 창은 스크롤하지 않고 판 안만 스크롤한다
-   · 판은 가로로 늘어선 트랙을 미끄러뜨려 바꾼다(transform 만 — 다시 그리지 않음). 들어올 때마다 덩어리가 차례로 떠오른다(.tm-in .tm-anim)
+   · 좁은 화면 = 상단 바(주제 탭) + 띠배너 + 판 한 장(세로 스크롤) + 아래 진행 막대. 창은 스크롤하지 않고 판 안만 스크롤한다
+   · 넓은 화면(html.tm-wide, 2026-11-16) = 왼쪽 GNB + 한 화면짜리 장 — 맨 아래 블록
+   · 판(장)은 가로로 늘어선 트랙을 미끄러뜨려 바꾼다(transform 만 — 다시 그리지 않음). 들어올 때마다 덩어리가 차례로 떠오른다(.tm-anim.tm-play)
    · 동작 줄이기: 미끄러짐 · 차례 등장 · 손짓 안내 움직임을 끈다. 인쇄: 판을 세로로 다시 쌓는다
    ========================================================================= */
 html.tabmode, html.tabmode body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -32,9 +33,9 @@ html.tabmode .mast::after { transform: scaleX(var(--tm-p, 0)); transition: trans
 @keyframes tmUp { from { opacity: 0; transform: translate3d(0, 30px, 0); } to { opacity: 1; transform: none; } }
 @keyframes tmUpBlur { from { opacity: 0; transform: translate3d(0, 16px, 0); filter: blur(7px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes tmIdx { from { opacity: 0; transform: translate3d(40px, 0, 0); } to { opacity: .055; transform: none; } }
-.tm-panel.tm-in .tm-anim { animation: tmUp .9s cubic-bezier(.16,1,.3,1) backwards; animation-delay: calc(var(--k, 0) * 70ms + 240ms); }
-.tm-panel.tm-in :is(.sec-h, .growth-h) > .tm-anim { animation-name: tmUpBlur; }
-.tm-panel.tm-in .tm-idx.tm-anim { animation: tmIdx 1.1s cubic-bezier(.16,1,.3,1) backwards .15s; }
+.tm-anim.tm-play { animation: tmUp .9s cubic-bezier(.16,1,.3,1) backwards; animation-delay: calc(var(--k, 0) * 70ms + 240ms); }
+:is(.sec-h, .growth-h) > .tm-anim.tm-play { animation-name: tmUpBlur; }
+.tm-idx.tm-anim.tm-play { animation: tmIdx 1.1s cubic-bezier(.16,1,.3,1) backwards .15s; }
 @keyframes tmFlash { 0%, 20% { box-shadow: 0 0 0 3px var(--accent), 0 14px 40px color-mix(in srgb, var(--accent) 22%, transparent); } 100% { box-shadow: 0 0 0 3px transparent, 0 0 0 transparent; } }
 .tm-panel .tm-flash.tm-flash { animation: tmFlash 1.6s ease-out; border-radius: 14px; }
 
@@ -48,8 +49,11 @@ html.tabmode .mast .shell { min-height: 60px; }
   transition: color .3s, transform .2s; }
 .mast .tm-nav .tm-tab .n { font-family: var(--f-num); font-stretch: 85%; font-size: 11.5px; font-weight: 600; color: var(--ink-3); letter-spacing: .02em; transition: color .3s; }
 .mast .tm-nav .tm-tab:hover { color: var(--ink); background: transparent; transform: none; }
-.mast .tm-nav .tm-tab[aria-selected="true"] { color: var(--paper); }
-.mast .tm-nav .tm-tab[aria-selected="true"] .n { color: color-mix(in srgb, var(--paper) 72%, transparent); }
+.mast .tm-nav .tm-tab[aria-current="page"] { color: var(--paper); }
+.mast .tm-nav .tm-tab[aria-current="page"] .n { color: color-mix(in srgb, var(--paper) 72%, transparent); }
+/* 좁은 화면(위 가로 탭) — 목록 틀은 풀고 탭만 늘어놓는다. 항목 · 장 넘기기 · 가장자리 화살표는 넓은 화면 전용 */
+.tm-list, .tm-item { display: contents; }
+.tm-sub, .tm-pager, .tm-copy, .tm-edge, .tm-pdots, .tm-tab .pc { display: none; }
 .mast .tm-nav .tm-tab:focus-visible { outline-offset: -2px; }
 .tm-ind { position: absolute; z-index: 0; left: 0; top: 3px; bottom: 3px; width: 0; border-radius: 9px; background: var(--ink);
   box-shadow: 0 6px 18px rgba(12, 26, 43, .2); transition: transform .55s cubic-bezier(.65,0,.35,1), width .55s cubic-bezier(.65,0,.35,1); }
@@ -152,9 +156,150 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   .tm-drop.all .tm-drop-in { grid-template-columns: minmax(0, 1fr); max-height: calc(100svh - 170px); padding: 14px; }
 }
 
+/* =========================================================================
+   (2026-11-16) 넓은 화면 — 왼쪽 GNB + 한 화면짜리 장을 옆으로 넘기는 덱
+   본인 「드래그로 화면 좌우 이동 · 한 화면 안에 인터페이스가 들어가도록 · 상단 바를 좌측 GNB 로(화면이 와이드)」
+   · html.tm-wide = 1180px 이상 · 높이 560px 이상(topics.js wideMQ 와 같은 조건). 그 아래는 위 블록(위 탭 · 판 안 세로 스크롤) 그대로
+   · 장 폭 --tm-pw = 화면 폭 − GNB, 장 높이 --tm-ph = 화면 높이(topics.js 가 잰다). 판 안은 여러 단(multi-column)으로 흘러 장을 넘으면 오른쪽 장으로 간다
+   · 절마다 새 장에서 시작한다. 카드 · 표 칸은 장 사이에서 자르지 않는다. 띠배너 · 꼬리말 · 아래 진행 막대는 넓은 화면에서 뺀다(저작권 줄은 GNB 아래)
+   ========================================================================= */
+@media screen {
+  html.tm-wide { --gnb-w: clamp(208px, 15vw, 248px); }
+  html.tm-wide body { display: block; }
+  html.tm-wide :is(.ticker, .tm-dock, .foot, .tm-ind) { display: none !important; }
+
+  /* ---- 왼쪽 GNB */
+  html.tm-wide .mast { position: fixed; z-index: 60; inset: 0 auto 0 0; width: var(--gnb-w); border-bottom: 0; border-right: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--surface) 90%, transparent); }
+  html.tm-wide .mast::after { left: auto; right: -1px; top: 0; bottom: auto; width: 2px; height: 100%; transform-origin: top; transform: scaleY(var(--tm-p, 0)); }
+  html.tm-wide .mast .shell { box-sizing: border-box; height: 100%; max-width: none; min-height: 0; margin: 0; padding: clamp(16px, 3.2vh, 30px) 12px clamp(10px, 1.8vh, 16px);
+    display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: clamp(8px, 1.8vh, 16px); }
+  html.tm-wide .mast .id { flex: none; flex-direction: column; align-items: flex-start; gap: 3px; padding: 0 10px; font-size: 23px; line-height: 1.15; }
+  html.tm-wide .mast .id small, html.tm-wide .mast.tight .id small { display: block; font-size: 10.5px; letter-spacing: .12em; color: var(--ink-3); }
+  html.tm-wide .mast nav.tm-nav { flex: 1 1 auto; min-height: 0; width: auto; margin: 0 -4px; padding: 2px 4px; display: block; overflow-x: hidden; overflow-y: auto;
+    background: none; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
+  html.tm-wide .tm-list { display: flex; flex-direction: column; gap: 2px; list-style: none; margin: 0; padding: 0; }
+  html.tm-wide .tm-item { display: block; }
+  html.tm-wide .mast .tm-nav .tm-tab { display: flex; align-items: baseline; gap: 10px; width: 100%; box-sizing: border-box; padding: clamp(3px, calc(1.6vh - 6px), 8px) 10px;
+    border-radius: 10px; font-size: 14.5px; color: var(--ink-2); transition: background-color .35s, color .35s, box-shadow .35s; }
+  html.tm-wide .mast .tm-nav .tm-tab .n { min-width: 1.6em; }
+  html.tm-wide .mast .tm-nav .tm-tab:hover { background: var(--sunk); color: var(--ink); }
+  html.tm-wide .mast .tm-nav .tm-tab[aria-current="page"] { background: var(--ink); color: var(--paper); box-shadow: 0 8px 22px rgba(12, 26, 43, .18); }
+  html.tm-wide .tm-tab .pc { display: inline; margin-left: auto; font-family: var(--f-num); font-stretch: 85%; font-size: 12px; font-weight: 600; letter-spacing: .02em;
+    color: color-mix(in srgb, var(--paper) 72%, transparent); font-variant-numeric: tabular-nums; }
+  /* 지금 주제의 항목 — 펼침(지금 장에 있는 항목은 강조색 · 점) */
+  html.tm-wide .tm-sub { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .45s cubic-bezier(.2,.8,.2,1), visibility 0s .45s; }
+  html.tm-wide .tm-item.on .tm-sub { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows .45s cubic-bezier(.2,.8,.2,1), visibility 0s; }
+  html.tm-wide .tm-sub > ul { position: relative; min-height: 0; overflow: hidden; list-style: none; margin: 0; padding: 0 0 0 26px; }   /* 위아래 여백은 li 에 — ul 에 두면 접힌 목록도 12px 씩 남았다 */
+  html.tm-wide .tm-sub li:first-child { margin-top: 3px; } html.tm-wide .tm-sub li:last-child { margin-bottom: 7px; }
+  html.tm-wide .tm-sub > ul::before { content: ""; position: absolute; left: 19px; top: 8px; bottom: 12px; width: 1px; background: var(--rule-2); }
+  html.tm-wide .tm-sub button { all: unset; box-sizing: border-box; position: relative; display: block; width: 100%; cursor: pointer; padding: clamp(1px, calc(.55vh - 1.5px), 4px) 8px;
+    border-radius: 7px; font-size: 12.5px; line-height: 1.4; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color .25s, background-color .2s; }
+  html.tm-wide .tm-sub button span { overflow: hidden; text-overflow: ellipsis; }
+  html.tm-wide .tm-sub button:hover { color: var(--ink); background: var(--sunk); }
+  html.tm-wide .tm-sub button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  html.tm-wide .tm-sub li.here button { color: var(--accent-ink); font-weight: 700; }
+  html.tm-wide .tm-sub li { position: relative; }
+  html.tm-wide .tm-sub li.here::before { content: ""; position: absolute; left: -9px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+  /* 장 넘기기 · 도구 · 저작권 */
+  html.tm-wide .tm-pager { flex: none; display: flex; align-items: center; gap: 4px; padding-top: clamp(6px, 1.2vh, 10px); border-top: 1px solid var(--rule); }
+  html.tm-wide .tm-pager button { flex: none; display: grid; place-items: center; width: 34px; height: 32px; padding: 0; border: 1px solid var(--rule-2); border-radius: 10px;
+    background: var(--surface); color: var(--ink); cursor: pointer; transition: background-color .18s, border-color .18s, transform .15s, opacity .18s; }
+  html.tm-wide .tm-pager button svg { width: 15px; height: 15px; }
+  html.tm-wide .tm-pager button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-ink); }
+  html.tm-wide .tm-pager button:active:not(:disabled) { transform: scale(.94); }
+  html.tm-wide .tm-pager button:disabled { opacity: .32; cursor: default; }
+  html.tm-wide .tm-pcount { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: auto auto; justify-content: center; align-items: baseline; column-gap: 4px;
+    font-family: var(--f-num); font-stretch: 85%; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  html.tm-wide .tm-pcount b { font-size: 19px; font-weight: 600; color: var(--ink); }
+  html.tm-wide .tm-pcount span { font-size: 13px; }
+  html.tm-wide .tm-pcount small { display: none; grid-column: 1 / -1; justify-self: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-family: var(--f-sans); font-stretch: normal; font-size: 11px; font-weight: 600; color: var(--ink-3); }
+  html.tm-wide .mast .tools { flex: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(28px, 1fr)); gap: 4px; }
+  html.tm-wide .mast .tools .iconbtn { width: 100%; min-width: 0; height: 32px; padding: 0; justify-content: center; }
+  html.tm-wide .tm-copy { display: block; flex: none; margin: -4px 0 0; padding: 0 4px; font-size: 11px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* 다른 주제에 마우스 — GNB 옆에 항목 목록 */
+  html.tm-wide .tm-drop { left: 100%; right: auto; top: var(--dy, 80px); width: min(460px, calc(100vw - var(--gnb-w) - 32px)); padding: 0 0 0 10px; transform: translateX(-8px); }
+  html.tm-wide .tm-drop.on { transform: none; }
+  html.tm-wide .tm-drop-in { max-width: none; margin: 0; padding: 16px 16px 14px; }
+  html.tm-wide .tm-dg { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  html.tm-wide .tm-dg > ul { grid-column: 1; grid-row: auto; grid-template-columns: minmax(0, 1fr); margin-top: 6px; }
+  html.tm-wide .tm-dh .n { font-size: 22px; } html.tm-wide .tm-dh b { font-size: 18px; }
+  html.tm-wide .tm-dg li button { min-height: 34px; font-size: 13.5px; }
+
+  /* ---- 장(page) — 판 안을 여러 단으로 흘린다 */
+  html.tm-wide main { --py: clamp(16px, 3.4vh, 40px); --px: clamp(26px, 3vw, 60px); position: fixed; inset: 0 0 0 var(--gnb-w); }
+  /* 손가락 — 가로 밀기는 topics.js 가 받고, 세로는 판 안 스크롤 칸(대시보드 구축 내용 등) · 확대는 브라우저에 맡긴다 */
+  html.tm-wide .tm-stage { overflow: clip; cursor: grab; touch-action: pan-y pinch-zoom; -webkit-user-select: none; user-select: none; }
+  html.tm-wide .tm-stage :is(a, img) { -webkit-user-drag: none; }
+  html.tm-wide .tm-stage :is(.contact.big, #factGrid) { -webkit-user-select: text; user-select: text; }
+  html.tm-wide .tm-track { transition-duration: .78s; }
+  html.tm-wide .tm-panel { flex: 0 0 auto; width: var(--tm-pw, 100%); height: 100%; overflow: visible; touch-action: pan-y pinch-zoom; }
+  html.tm-wide .tm-inner { box-sizing: content-box; width: calc(var(--tm-pw, 1000px) - 2 * var(--px)); height: calc(var(--tm-ph, 700px) - 2 * var(--py)); padding: var(--py) var(--px);
+    column-count: 1; column-gap: calc(2 * var(--px)); column-fill: auto; }
+  html.tm-wide .tm-inner.tm-measure { column-count: auto; height: auto; }   /* 자연 높이를 잴 때만(topics.js layout) */
+  html.tm-wide .tm-idx { top: calc(var(--py) - 10px); right: calc(100% - var(--tm-pw, 100%) + var(--px)); font-size: clamp(64px, 8vw, 132px); }
+  /* 절 — 바탕 · 위아래 여백 · 구분선은 장이 맡는다. 절마다 새 장에서 시작 */
+  html.tm-wide .tm-inner > * { margin: 0; padding-block: 0 !important; border: 0 !important; background: none !important; box-shadow: none; }
+  html.tm-wide .tm-inner > * + * { break-before: column; }
+  html.tm-wide .tm-inner .shell { max-width: var(--maxw); padding-inline: 0; }
+  html.tm-wide .tm-inner :is(.proj, .job, .belief, .pillar, .gcard, .panel, .arc, .score, .phases > li, .factgrid > section, .scorebox, .gantt, .cnote, .toolgrp, .mp,
+    .sum-l, .sum-r, .more, .contact.big, .sec-h, .growth-h, .gextra, .hk, .kpis, .dash-wrap) { break-inside: avoid; }
+  html.tm-wide .tm-inner :is(.sec-h, .growth-h) { break-after: avoid; }
+  /* 첫 화면 · 대시보드 — 장 높이를 그대로 채운다 */
+  /* 절에 기준 배율(--tm-z0, topics.js)이 걸리면 px 도 함께 줄어드므로 나눠서 장 높이를 꼭 채운다 */
+  html.tm-wide .hero .shell { height: calc(var(--tm-avail, 640px) / var(--tm-z0, 1)); }
+  html.tm-wide .hero-r { min-height: 0; }
+  html.tm-wide #dash { height: calc(var(--tm-avail, 640px) / var(--tm-z0, 1)); }
+  /* 주요 업무 카드 — 한 장에 한 장씩: 영상 | 제목 · 설명 · 어떻게, 영상 아래 숫자 세 칸 */
+  html.tm-wide .projects { grid-template-columns: minmax(0, 1fr); }
+  html.tm-wide .proj, html.tm-wide .proj.wide { display: grid; grid-column: auto; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+    grid-template-areas: "pl meta" "pl ttl" "pl hook" "pl how" "facts how"; grid-template-rows: auto auto auto 1fr auto;
+    column-gap: clamp(18px, 2vw, 34px); row-gap: 10px; padding: clamp(14px, 1.5vw, 22px); align-items: start; }
+  html.tm-wide .proj > .player { grid-area: pl; border-radius: 12px; }
+  html.tm-wide .proj .proj-body { display: contents; }
+  html.tm-wide .proj .proj-meta { grid-area: meta; }
+  html.tm-wide .proj h3 { grid-area: ttl; }
+  html.tm-wide .proj .hook { grid-area: hook; }
+  html.tm-wide .proj .how { grid-area: how; }
+  html.tm-wide .proj .facts { grid-area: facts; }
+  html.tm-wide .proj .how-tg { display: none; }
+  /* 참고 자료 — 여섯 칸으로(머리 + 두 줄이 한 장에) */
+  html.tm-wide .archive { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+  /* ---- 화면 가장자리 화살표(마우스가 가장자리에 가까울 때) · 장 점 · 손짓 안내 */
+  html.tm-wide .tm-edge { position: absolute; z-index: 30; top: 50%; display: grid; place-items: center; width: 42px; height: 42px; margin-top: -21px; padding: 0;
+    border: 1px solid var(--rule-2); border-radius: 50%; background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--ink); cursor: pointer;
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 10px 28px rgba(12, 26, 43, .16);
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .3s cubic-bezier(.2,.8,.2,1), border-color .2s; }
+  html.tm-wide .tm-edge svg { width: 16px; height: 16px; }
+  html.tm-wide .tm-edge.prev { left: 8px; transform: translateX(-6px); }
+  html.tm-wide .tm-edge.next { right: 8px; transform: translateX(6px); }
+  html.tm-wide main.near-l .tm-edge.prev:not(:disabled), html.tm-wide main.near-r .tm-edge.next:not(:disabled), html.tm-wide .tm-edge:focus-visible { opacity: 1; pointer-events: auto; transform: none; }
+  html.tm-wide .tm-edge:hover { border-color: var(--accent); color: var(--accent-ink); }
+  html.tm-wide .tm-edge:active { transform: scale(.94); }
+  html.tm-wide .tm-edge .tm-el { position: absolute; top: 50%; transform: translateY(-50%); padding: 5px 10px; border-radius: 8px; background: var(--ink); color: var(--paper);
+    font-size: 12px; font-weight: 650; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  html.tm-wide .tm-edge.prev .tm-el { left: calc(100% + 8px); }
+  html.tm-wide .tm-edge.next .tm-el { right: calc(100% + 8px); }
+  html.tm-wide .tm-edge:hover .tm-el:not(:empty) { opacity: 1; }
+  html.tm-wide .tm-pdots { position: absolute; z-index: 20; left: 50%; bottom: max(5px, calc(var(--py) / 2 - 3px)); transform: translateX(-50%); display: flex; gap: 5px; pointer-events: none; }
+  html.tm-wide .tm-pdots i { display: block; width: 5px; height: 5px; border-radius: 99px; background: var(--rule-2); transition: width .45s cubic-bezier(.65,0,.35,1), background-color .3s; }
+  html.tm-wide .tm-pdots i.on { width: 16px; background: var(--accent); }
+  html.tm-wide .tm-hint { left: calc(50% + var(--gnb-w) / 2); bottom: 30px; }
+  html.tm-wide .tm-hint.off { transform: translate(-50%, 10px); }
+  html.tm-wide.tm-dragging .tm-edge { opacity: 0 !important; }
+}
+@media screen and (max-height: 760px) {   /* 낮은 창(1280×720 등) — 저작권 줄을 빼 GNB 목록이 스크롤 없이 들어오게 */
+  html.tm-wide .mast .id { font-size: 20px; }
+  html.tm-wide .mast .tm-nav .tm-tab { font-size: 14px; }
+  html.tm-wide .tm-copy { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tm-track, .tm-panel, .tm-ind, .tm-dots i, .tm-drop, html.tabmode .mast::after { transition: none !important; }
-  .tm-panel.tm-in .tm-anim, .tm-hint, .tm-hint .h-drag i { animation: none !important; }
+  .tm-track, .tm-panel, .tm-ind, .tm-dots i, .tm-drop, html.tabmode .mast::after, .tm-sub, .tm-pdots i, .tm-edge { transition: none !important; }
+  .tm-anim.tm-play, .tm-hint, .tm-hint .h-drag i { animation: none !important; }
 }
 @media print {
   html.tabmode, html.tabmode body { height: auto; overflow: visible; display: block; }
@@ -163,7 +308,7 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   .tm-track { display: block; transform: none !important; }
   .tm-panel { height: auto; overflow: visible; opacity: 1 !important; }
   .tm-inner { padding-bottom: 0; }
-  .tm-idx, .tm-dock, .tm-drop, .tm-hint, .tm-back, .tm-nav { display: none !important; }
+  .tm-idx, .tm-dock, .tm-drop, .tm-hint, .tm-back, .tm-nav, .tm-pager, .tm-copy, .tm-edge, .tm-pdots { display: none !important; }
   .tm-anim { animation: none !important; }
   html.tm-sheet main::after { display: none; }
 }

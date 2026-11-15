@@ -380,6 +380,7 @@
      늘거나 줄어, 넓은 창에서 인쇄하면 글자가 약 57%(6pt 안팎)로 작아지고 휴대폰에서 인쇄하면 약 1.8배로 커져 쪽이 늘었다.
      인쇄 직전(beforeprint)에 이 폭으로 다시 그리고, 끝나면(afterprint) 화면 폭으로 되돌린다. 값은 인쇄 배치(style.css)에서 잰 폭 */
   const PRINT_W = { perf: 627, gantt: 655 };
+  const TM_WIDE = () => document.documentElement.classList.contains('tabmode') && matchMedia('screen and (min-width: 1180px) and (min-height: 560px)').matches;   // 주제별 보기 넓은 화면(topics.js wideMQ)
   const boardH = box => {
     if (PRINTING) return 84;
     if (!FILL.matches || !box) return 110;
@@ -750,7 +751,9 @@
     const W = PRINTING ? PRINT_W.perf : Math.max(320, box.clientWidth || 800);
     const narrow = W < 560;
     const small = narrow && window.matchMedia('(max-width: 600px)').matches;   // 휴대폰 — 라벨이 막대 · 선에 덮이지 않게 옮긴다(2026-10-26)
-    const H = PRINTING ? 300 : narrow ? 320 : 400;   // 인쇄는 1:1 폭이라 400 이면 차트가 종이에서 너무 길다
+    // 인쇄는 1:1 폭이라 400 이면 차트가 종이에서 너무 길다. (2026-11-16) 주제별 보기 넓은 화면(topics.html · topics.js wideMQ 와 같은 조건 — 한 장 = 화면 높이)은
+    // 창 높이에 맞춰 낮춘다. 클래스(tm-wide)가 아니라 조건으로 본다 — 인쇄 뒤 app.js 가 먼저 다시 그릴 때는 클래스가 아직 빠져 있어 400 으로 그려져 「성과」가 두 장으로 갈렸다
+    const H = PRINTING ? 300 : narrow ? 320 : TM_WIDE() ? Math.round(Math.max(250, Math.min(400, innerHeight * 0.36))) : 400;
     /* 오른쪽 여백 = 끝 라벨 자리. duo 는 끝 라벨이 짧아(값 · 「9월 월 환산」) 168 이면 오른쪽이 비어 보인다 (2026-09-19) */
     const m = { l: 48, r: narrow ? 56 : (v.type === 'stack' ? 110 : v.type === 'duo' ? 96 : v.series.length > 1 ? 168 : 76), t: 62, b: 30 };
     const step = (W - m.l - m.r) / N;
