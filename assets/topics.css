@@ -265,6 +265,15 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   html.tm-wide .proj .how { grid-area: how; }
   html.tm-wide .proj .facts { grid-area: facts; }
   html.tm-wide .proj .how-tg { display: none; }
+  /* 줄바꿈 — 마지막 줄에 한두 낱말만 남지 않게(본문), 제목 · 카드 제목은 줄 길이를 고르게. 낱말 + 숫자 붙이기는 topics.js glue */
+  html.tm-wide .tm-stage :is(p, li, dd, blockquote, figcaption, .hook, .fk, .fs, .mp-sub, .tm-pin p) { text-wrap: pretty; }
+  html.tm-wide .tm-stage :is(h2, h3, h4, .cq) { text-wrap: balance; }
+  /* 「주요 업무」 고정 머리(topics.js setPin) — 판 위에 떠 있고, 같은 주제 안에서는 장을 넘겨도 제자리 */
+  html.tm-wide .tm-pin { position: absolute; z-index: 4; top: var(--py); left: var(--px); width: calc(var(--tm-pw, 1000px) - 2 * var(--px));
+    transition: transform .78s cubic-bezier(.77,0,.18,1); will-change: transform; }
+  html.tm-wide .tm-track.tm-instant .tm-pin { transition: none; }
+  html.tm-wide .tm-pin-in { max-width: var(--maxw); margin: 0 auto; }
+  html.tm-wide .tm-pin .sec-h { margin-bottom: 0; }
   /* 참고 자료 — 여섯 칸으로(머리 + 두 줄이 한 장에) */
   html.tm-wide .archive { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 

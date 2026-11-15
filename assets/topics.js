@@ -78,7 +78,7 @@
   const items = [], tabs = [];
   TOPICS.forEach((t, i) => {
     const li = el('li', { class: 'tm-item' });
-    const a = el('a', { class: 'tm-tab', id: 'tmt-' + t.id, href: '#/' + t.id, 'aria-controls': 'tm-' + t.id, 'data-i': i },
+    const a = el('a', { class: 'tm-tab', id: 'tmt-' + t.id, href: '#' + t.id, 'aria-controls': 'tm-' + t.id, 'data-i': i },
       `<span class="n">${pad(i + 1)}</span><span class="l">${t.label}</span><span class="pc" aria-hidden="true"></span>`);
     const sub = el('div', { class: 'tm-sub' }, `<ul>${subsOf[i].map(([name], j) => `<li><button type="button" data-go="${i}" data-j="${j}" title="${esc(name)}"><span>${esc(name)}</span></button></li>`).join('')}</ul>`);
     li.append(a, sub); list.appendChild(li); items.push(li); tabs.push(a);
@@ -216,7 +216,8 @@
   const FIT = '.proj, .job, .belief, .pillar, .gcard, .arc, .scorebox, .perf > .panel, .gantt, .cnote';   // 한 장보다 크면 그것만 줄인다
   const hOf = n => n.getBoundingClientRect().height;
   /* [lo, hi] 배율 안에서 avail 에 들어가는 가장 큰 배율을 찾는다. lo 로도 넘치면 strict 는 hi 로 되돌리고 0, 아니면 lo 로 둔다 */
-  const setZ = (n, z) => { if (z >= 0.999) { n.style.zoom = ''; delete n.dataset.tmZ; } else { n.style.zoom = z.toFixed(3); n.dataset.tmZ = '1'; } };
+  // 배율은 0.01 단위로 내림 — 차트가 새 폭으로 다시 그려져 높이가 조금 바뀌어도 배율이 오락가락하지 않게
+  const setZ = (n, z) => { z = Math.floor(z * 100 + 1e-6) / 100; if (z >= 0.999) { n.style.zoom = ''; delete n.dataset.tmZ; } else { n.style.zoom = z.toFixed(2); n.dataset.tmZ = '1'; } };
   function fitZoom(n, avail, strict, lo = ZMIN, hi = 1) {
     setZ(n, hi); if (hOf(n) <= avail + 0.5) return hi;
     setZ(n, lo);
@@ -226,6 +227,63 @@
     return lo;
   }
   function unzoom() { $$('[data-tm-z]', stage).forEach(n => { n.style.zoom = ''; delete n.dataset.tmZ; }); }
+
+  /* 넓은 화면 — 「주요 업무」 머리 문구를 모든 카드 장에 고정(본인 11-16 「헤드카피 소 주제에도 고정」).
+     절 머리(.sec-h)를 판 위 고정 칸(.tm-pin)으로 옮기고 판 안은 그 높이만큼 위를 비운다. 같은 주제 안에서 장을 넘길 때는
+     트랙과 반대로 같은 만큼 움직여 제자리에 있는 것처럼 보이고, 다른 주제로 갈 때는 판과 함께 미끄러진다. 좁은 화면에서는 제자리로 돌려놓는다 */
+  const PIN_K = TOPICS.findIndex(t => t.id === 'work');
+  let pin = null;
+  function setPin(on) {
+    if (on && !pin && PIN_K >= 0) {
+      const h = $('#work .sec-h'); if (!h) return;
+      pin = { el: h, parent: h.parentElement, next: h.nextElementSibling, box: el('div', { class: 'tm-pin' }), in: el('div', { class: 'tm-pin-in' }) };
+      pin.in.appendChild(h); pin.box.appendChild(pin.in); panels[PIN_K].insertBefore(pin.box, inners[PIN_K]);   // 배율은 안쪽(.tm-pin-in)에만 — 위치 · 폭은 바깥이 장 기준으로
+    } else if (!on && pin) {
+      pin.parent.insertBefore(pin.el, pin.next); pin.box.remove(); inners[PIN_K].style.paddingTop = ''; inners[PIN_K].style.height = ''; pin = null;
+    }
+  }
+  function placePin(off = 0) {
+    if (!pin) return;
+    const last = npg[PIN_K] - 1, q = cur === PIN_K ? pg : cur > PIN_K ? last : 0;
+    const inside = cur === PIN_K && off && !((pg === 0 && off > 0) || (pg === last && off < 0));   // 같은 주제 안에서 끄는 중이면 손가락을 따라가지 않는다
+    pin.box.style.transform = `translate3d(${q * pw - (inside ? off : 0)}px, 0, 0)`;
+  }
+
+  /* 넓은 화면 — 장마다 내용을 위아래 가운데로(본인 11-16 「주요 정보들 상단이 아닌 중앙에서 · 아래가 비어 보이지 않게」).
+     장 하나에 통째로 들어가는 가장 큰 덩어리들(한 장짜리 절 · 여러 장 절 안의 카드)을 찾아 그 장의 빈 높이 46% 만큼 아래로 민다.
+     position: relative + top 이라 단 나누기(장 수)는 바뀌지 않는다. 차례 등장 중인 transform 은 빼고 잰다 */
+  const zEff = n => { let z = 1; for (let a = n; a && a !== stage; a = a.parentElement) if (a.style && a.style.zoom) z *= parseFloat(a.style.zoom); return z; };
+  const tyOf = n => { const t = getComputedStyle(n).transform; if (!t || t === 'none') return 0; const m = t.match(/matrix(3d)?\(([^)]+)\)/); if (!m) return 0; const v = m[2].split(',').map(Number); return m[1] ? v[13] : v[5]; };
+  function uncenter() { $$('[data-tm-c]', stage).forEach(n => { n.style.top = ''; n.style.position = ''; delete n.dataset.tmC; }); }
+  function center(k) {
+    const inner = inners[k], ir = inner.getBoundingClientRect(), cs = getComputedStyle(inner);
+    const top0 = ir.top + parseFloat(cs.paddingTop), avail = ir.bottom - parseFloat(cs.paddingBottom) - top0;
+    const pages = new Map(), blocked = new Set();
+    const walk = n => {
+      const st = getComputedStyle(n);
+      if (st.display === 'none' || st.position === 'absolute' || st.position === 'fixed') return;
+      const rs = [...n.getClientRects()].filter(r => r.width || r.height); if (!rs.length) return;
+      const qs = rs.map(r => clamp(Math.floor((r.left - ir.left + 1) / pw), 0, npg[k] - 1)), a = Math.min(...qs), b = Math.max(...qs);
+      if (a === b) {
+        const d = tyOf(n) * zEff(n);
+        if (!pages.has(a)) pages.set(a, []);
+        pages.get(a).push({ n, top: Math.min(...rs.map(r => r.top)) - d, bottom: Math.max(...rs.map(r => r.bottom)) - d });
+        return;
+      }
+      const kids = [...n.children];
+      if (!kids.length) { for (let q = a; q <= b; q++) blocked.add(q); return; }   // 장 사이에서 잘린 글 덩어리 — 그 장들은 건드리지 않는다
+      kids.forEach(walk);
+    };
+    [...inner.children].forEach(walk);
+    pages.forEach((list, q) => {
+      if (blocked.has(q)) return;
+      const t = Math.min(...list.map(x => x.top)), b = Math.max(...list.map(x => x.bottom));
+      const shift = (avail - (b - t)) * 0.46 - (t - top0);
+      if (shift < 8) return;
+      list.forEach(({ n }) => { if (getComputedStyle(n).position === 'static') n.style.position = 'relative'; n.style.top = (shift / zEff(n)).toFixed(1) + 'px'; n.dataset.tmC = '1'; });
+    });
+  }
+
   function layout() {
     if (!wide) return;
     pw = stage.clientWidth; ph = stage.clientHeight;
@@ -235,7 +293,15 @@
     const z0 = clamp(ph / 800, 0.84, 1);
     root.style.setProperty('--tm-z0', z0.toFixed(3));
     { const c0 = getComputedStyle(inners[0]); root.style.setProperty('--tm-avail', (ph - parseFloat(c0.paddingTop) - parseFloat(c0.paddingBottom)) + 'px'); }
-    unzoom();
+    unzoom(); uncenter();
+    setPin(true);
+    if (pin) {   // 고정 머리 높이만큼 「주요 업무」 판 위를 비운다
+      const ip = inners[PIN_K]; ip.style.paddingTop = ''; ip.style.height = '';
+      setZ(pin.in, z0);
+      const ics = getComputedStyle(ip), pt = parseFloat(ics.paddingTop) + hOf(pin.box) + 16;
+      ip.style.paddingTop = pt + 'px';
+      ip.style.height = (ph - pt - parseFloat(ics.paddingBottom)) + 'px';   // 위를 비운 만큼 단 높이도 줄인다(안 줄이면 이 판만 화면보다 길어 카드 아래가 잘렸다)
+    }
     inners.forEach((inner, k) => {
       inner.classList.add('tm-measure');   // 한 단 · 높이 자유 — 자연 높이를 잰다
       const cs = getComputedStyle(inner), avail = ph - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
@@ -262,6 +328,7 @@
       const n = Math.max(1, Math.ceil((inner.scrollWidth - 4) / pw));
       npg[k] = n; p.style.width = n * pw + 'px';
     });
+    inners.forEach((x, k) => center(k));
     // 장마다 차례 등장 순번 · 항목이 놓인 장
     anims.forEach((list, k) => {
       const seen = new Map();
@@ -280,14 +347,33 @@
   let layT = 0;
   const relayout = (ms = 120) => { clearTimeout(layT); layT = setTimeout(() => { if (!drag) layout(); }, ms); };
 
+  /* 넓은 화면 줄바꿈 다듬기(본인 11-16 「전체적인 문단 역시 변경된 UI 에 맞게 줄 바꿈 등 개선」) — 장 폭이 본판과 달라 생긴 어색한 끊김을 줄인다.
+     · 「지킬 곳 1로」 「진입 14」처럼 낱말 뒤 숫자는 붙이고, 구분점 · 줄표 · 화살표 · 닫는 괄호가 줄 머리에, 화살표 · 여는 괄호가 줄 끝에 오지 않게
+       공백을 줄바꿈 없는 공백(U+00A0)으로 바꾼다. 좁은 화면으로 가면 원래 글자로 되돌린다(좁은 칸에서 긴 덩어리가 글자 단위로 쪼개지지 않게) */
+  const NB = ' ', glued = new Map();
+  function glue(on) {
+    if (!on) { glued.forEach((v, t) => { t.nodeValue = v; }); glued.clear(); return; }
+    const w = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest('svg, script, style, textarea, .player .stage') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
+    for (let t; (t = w.nextNode());) {
+      const s = t.nodeValue; if (s.indexOf(' ') < 0 || glued.has(t)) continue;
+      const v = s
+        .replace(/ (?=[·—→÷×)\]」』])/g, NB)              // 구분점 · 줄표 · 화살표 · 닫는 괄호 앞
+        .replace(/([→÷×(「『]) /g, '$1' + NB)              // 화살표 · 여는 괄호 뒤
+        .replace(/ (?=\([+\-−]?\d)/g, NB)                  // 「1,893% (+468%p)」
+        .replace(/([가-힣A-Za-z%]) (?=[+\-−]?\d)/g, '$1' + NB);   // 낱말 + 숫자
+      if (v !== s) { glued.set(t, s); t.nodeValue = v; }
+    }
+  }
+
   function setMode(w) {
     if (w === wide) return false;
     wide = w; root.classList.toggle('tm-wide', w);
+    glue(w);
     closeDrop(true); navFor = -1;
     main.classList.remove('near-l', 'near-r');
     if (!w) {
       savedPg = pg; savedCur = cur;   // 인쇄 · 창 크기로 잠깐 좁은 배치가 됐다가 돌아오면 보던 장으로(인쇄 뒤 한 장 앞으로 돌아가 있었다). 그사이 주제를 옮겼으면 첫 장
-      unzoom(); panels.forEach(p => { p.style.width = ''; });
+      unzoom(); uncenter(); setPin(false); panels.forEach(p => { p.style.width = ''; });
       root.style.removeProperty('--tm-pw'); root.style.removeProperty('--tm-ph');
       npg.fill(1); pg = 0; subPg = TOPICS.map(() => []);
     }
@@ -301,7 +387,7 @@
   const atStart = () => cur === 0 && pg === 0;
   const atEnd = () => cur === N - 1 && pg === npg[N - 1] - 1;
   function place(off = 0) {
-    if (wide) track.style.transform = `translate3d(${-(offOf(cur) + pg) * pw + off}px, 0, 0)`;
+    if (wide) { track.style.transform = `translate3d(${-(offOf(cur) + pg) * pw + off}px, 0, 0)`; placePin(off); }
     else track.style.transform = `translate3d(calc(${-cur * 100}% + ${off}px), 0, 0)`;
   }
   function moveInd() {
@@ -383,7 +469,8 @@
       if (!o.drag) replay(i, wide ? page : -1);
       // 주제가 바뀔 때만 방문 기록(빠르게 이어 넘기면 하나로) — 같은 주제 안 장 이동은 주소만 바꾼다
       const now = performance.now(), quick = now - lastPush < 600;
-      const url = '#/' + TOPICS[i].id + (wide && page > 0 ? '/' + (page + 1) : '');
+      // 주소는 #work · #work-3 처럼 평범한 이름만(아티팩트 게시본은 #/경로 를 주소창과 주고받지 못한다 — 11-16). 예전 #/work/3 도 읽는다
+      const url = '#' + TOPICS[i].id + (wide && page > 0 ? '-' + (page + 1) : '');
       const push = changedT && !(o.push === false || o.first || quick);
       if (changedT) lastPush = now;
       try { history[push ? 'pushState' : 'replaceState'](null, '', url); } catch (e) {}
@@ -502,10 +589,19 @@
     if (!wide || !e.target.closest('button, summary, [aria-expanded]')) return;
     setTimeout(() => { if (wide && !drag && sig() !== lastSig) layout(); }, 450);
   });
+  // 내용 높이가 늦게 바뀌는 것(장을 나눈 뒤 차트를 새 폭으로 다시 그림 · 그림 · 숫자 굴리기)도 장 수를 바꾼다 — 성과 네 단계가 옆 장(그로스) 위로
+  // 흐리게 겹쳐 보였다(11-16). 0.8초마다 판 폭만 보고 바뀌었으면 다시 나눈다(같으면 아무것도 안 함 · 5초에 3번까지)
+  let polls = [];
+  setInterval(() => {
+    if (!wide || drag || document.hidden || sig() === lastSig) return;
+    const now = performance.now(); polls = polls.filter(t => now - t < 5000); if (polls.length >= 3) return;
+    polls.push(now); layout();
+  }, 800);
 
   /* 주소 #/주제 · #/주제/장 — 뒤로 / 앞으로 */
-  const fromHash = () => { const m = location.hash.match(/^#\/([\w-]+)(?:\/(\d+))?/) || []; return [TOPICS.findIndex(t => t.id === m[1]), m[2] ? +m[2] - 1 : 0]; };
-  addEventListener('popstate', () => { const [k, q] = fromHash(); if (k >= 0 && (k !== cur || q !== pg)) go(k, { push: false, page: q }); });
+  const fromHash = () => { const m = location.hash.match(/^#\/?([a-z]+)(?:[-\/](\d+))?$/) || []; return [TOPICS.findIndex(t => t.id === m[1]), m[2] ? +m[2] - 1 : 0]; };
+  const onHash = () => { const [k, q] = fromHash(); if (k >= 0 && (k !== cur || (wide && q !== pg))) go(k, { push: false, page: q }); };
+  addEventListener('popstate', onHash); addEventListener('hashchange', onHash);
   let rzT = 0;
   addEventListener('resize', () => {
     const changed = setMode(wideMQ.matches);
