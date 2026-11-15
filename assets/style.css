@@ -2105,3 +2105,38 @@ body { overflow-x: clip; }
 :root[data-theme="dark"] .totop { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45); }
 @media (prefers-reduced-motion: reduce) { .totop, .totop.on { transition: none; } }
 @media print { .totop { display: none !important; } }
+/* =========================================================================
+   (2026-11-15) 어트랙션 보강 — 본인 「웹 이력서 어트랙션 · 애니메이션 전반적으로 더 보강 · 고급스러운 웹사이트 수준까지」(디자인은 그대로, 움직임만)
+   · .reveal / .reveal-in : 스크롤 등장(app.js wireReveal 이 첫 화면 밖 절 제목 · 카드에만 붙인다). 아래 26px 에서 떠오름 + 투명 → 선명,
+     절 머리(꼬리표 · 제목 · 설명)는 흐림(blur)에서 또렷하게. 늦춤(--reveal-d)은 같이 들어온 것끼리 80ms 씩. 끝나면 클래스가 떨어져 원래 hover 전환이 돈다
+   · 참고 자료 그림은 커튼처럼 아래에서 위로 걷히며(clip-path) 살짝 크게 시작해 제자리로
+   · .spot-on : 마우스를 따라가는 강조색 빛 번짐(app.js wireSpot — 마우스일 때만). 배경 그림 층만 쓰므로 카드 색 · 글자 대비는 그대로
+   · 누름 반응: 단추 · 칩을 누르는 순간 살짝 눌림
+   동작 줄이기 · 인쇄에서는 모두 끈다(.reveal 는 처음부터 보임)
+   ========================================================================= */
+.reveal { opacity: 0; transform: translate3d(0, 26px, 0); animation: none !important; }
+.reveal.reveal-in { opacity: 1; transform: none;
+  transition: opacity .85s cubic-bezier(.2,.8,.2,1) var(--reveal-d, 0ms), transform 1s cubic-bezier(.16,1,.3,1) var(--reveal-d, 0ms), filter .85s cubic-bezier(.2,.8,.2,1) var(--reveal-d, 0ms) !important; }
+:is(.sec-h, .growth-h) > .reveal { transform: translate3d(0, 14px, 0); filter: blur(6px); }
+:is(.sec-h, .growth-h) > .reveal.reveal-in { transform: none; filter: none; }
+.reveal-done { animation: none !important; }
+.arc.reveal button { clip-path: inset(0 0 100% 0); }
+.arc.reveal img { transform: scale(1.14); }
+.arc.reveal.reveal-in button { clip-path: inset(0); transition: clip-path 1.1s cubic-bezier(.77,0,.18,1) calc(var(--reveal-d, 0ms) + 120ms); }
+.arc.reveal.reveal-in img { transform: none; transition: transform 1.4s cubic-bezier(.16,1,.3,1) calc(var(--reveal-d, 0ms) + 120ms); }
+
+.spot-on { background-image: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 8%, transparent), transparent 62%) !important; }
+:is(.phases > li, .hk .kpi, .mp, .score).spot-on { background-image: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 9%, transparent), transparent 65%) !important; }
+
+.btn:active, .tbtn:active, .chip:active, .iconbtn:active, .mast nav a:active, .how-tg:active { transform: scale(.96); transition-duration: .08s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, :is(.sec-h, .growth-h) > .reveal { opacity: 1; transform: none; filter: none; }
+  .arc.reveal button { clip-path: none; } .arc.reveal img { transform: none; }
+  .btn:active, .tbtn:active, .chip:active, .iconbtn:active, .mast nav a:active, .how-tg:active { transform: none; }
+}
+@media print {
+  .reveal, :is(.sec-h, .growth-h) > .reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .arc.reveal button { clip-path: none !important; } .arc.reveal img { transform: none !important; }
+  .spot-on { background-image: none !important; }
+}

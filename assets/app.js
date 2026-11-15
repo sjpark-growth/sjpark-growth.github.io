@@ -1407,6 +1407,55 @@
     addEventListener('afterprint', again);
   }
 
+  /* ------------------------------------------------------------ 스크롤 등장 · 카드 빛 번짐 (2026-11-15 본인 「어트랙션 · 애니메이션 전반 보강 — 고급스러운 웹사이트 수준」)
+     · 첫 화면 아래의 절 제목 · 카드 · 패널이 화면에 들어올 때 아래에서 떠오른다. 함께 들어온 것끼리는 위 → 아래 · 왼쪽 → 오른쪽 차례로(80ms 씩, 최대 480ms)
+     · 시작할 때 이미 화면 안에 있는 것은 건드리지 않는다(깜빡임 없음). 클래스는 스크립트가 붙이므로 스크립트가 꺼지면 처음부터 다 보인다
+     · 등장이 끝나면 클래스를 뗀다 — 카드마다 있던 hover 전환(transition)이 원래대로 돈다. 처음 로드 때 돌던 등장 애니메이션(gcard boardin 등)은 .reveal-done 으로 다시 돌지 않게
+     · 동작 줄이기 · IntersectionObserver 없음 · 주제별 보기(topics.html — html.tabmode, 판마다 따로 등장)에서는 쓰지 않는다. 인쇄 직전엔 모두 보이게(style.css 인쇄 규칙도 같음)
+     · 빛 번짐: 마우스(정밀 포인터 · hover 가능)일 때만 카드 위에 커서를 따라 강조색 빛(style.css .spot-on) */
+  const REVEAL = ['.sec-h > *', '.growth-h > *', '.summary .sum-l', '.summary .sum-r', '.dash-wrap', '.perf > .panel', '.phases > li',
+    '.gcards > *', '.gextra', '.projects > .proj', '.pillars > *', '.toolrow', '.gantt', '.cnote', '.jobs > *', '.archive > *', '.arc-note',
+    '.beliefs > *', '.contact.big', '.scorebox', '.factgrid > *', '.foot .shell > *'];
+  function wireReveal() {
+    const root = document.documentElement;
+    if (reduceMotion || root.classList.contains('tabmode') || !('IntersectionObserver' in window)) return;
+    const vh = innerHeight, vw = innerWidth;
+    const nodes = $$(REVEAL.join(',')).filter(n => {
+      if (n.hidden || n.closest('[hidden]')) return false;
+      const r = n.getBoundingClientRect();
+      return r.width > 0 && (r.top >= vh - 8 || r.bottom <= 0 || r.left >= vw || r.right <= 0);
+    });
+    if (!nodes.length) return;
+    nodes.forEach(n => { if (getComputedStyle(n).animationName !== 'none') n.dataset.revealAnim = '1'; n.classList.add('reveal'); });
+    const finish = n => { n.classList.remove('reveal', 'reveal-in'); n.style.removeProperty('--reveal-d'); if (n.dataset.revealAnim) n.classList.add('reveal-done'); io.unobserve(n); };
+    const io = new IntersectionObserver(es => {
+      const ins = es.filter(e => e.isIntersecting).map(e => e.target);
+      ins.sort((a, b) => { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); return Math.abs(ra.top - rb.top) > 24 ? ra.top - rb.top : ra.left - rb.left; });
+      ins.forEach((n, i) => {
+        if (n._reveal) return; n._reveal = 1;
+        const d = Math.min(i, 6) * 80;
+        n.style.setProperty('--reveal-d', d + 'ms'); n.classList.add('reveal-in');
+        setTimeout(() => finish(n), d + (n.classList.contains('arc') ? 1500 : 1150));
+      });
+    }, { rootMargin: '0px 0px -7% 0px', threshold: 0.06 });
+    nodes.forEach(n => io.observe(n));
+    addEventListener('beforeprint', () => $$('.reveal').forEach(finish));
+  }
+  function wireSpot() {
+    if (reduceMotion || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    const SEL = '.proj, .gcard, .pillar, .belief, .job, .score, .phases > li, .arc, .mp, .hk .kpi, .factgrid > section, .dash-side';
+    let cur = null, raf = 0, px = 0, py = 0;
+    const paint = () => { raf = 0; if (!cur) return; const r = cur.getBoundingClientRect(); cur.style.setProperty('--mx', (px - r.left).toFixed(0) + 'px'); cur.style.setProperty('--my', (py - r.top).toFixed(0) + 'px'); };
+    const set = t => { if (t === cur) return; if (cur) cur.classList.remove('spot-on'); cur = t; if (cur) cur.classList.add('spot-on'); };
+    addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse') return;
+      px = e.clientX; py = e.clientY; set(e.target.closest ? e.target.closest(SEL) : null);
+      if (cur && !raf) raf = requestAnimationFrame(paint);
+    }, { passive: true });
+    document.addEventListener('pointerleave', () => set(null));
+    addEventListener('scroll', () => { if (cur && !raf) raf = requestAnimationFrame(paint); }, { passive: true });
+  }
+
   /* ------------------------------------------------------------ boot */
   applyAngle();
   paintPeriods();
@@ -1426,6 +1475,8 @@
   wireChrome();
   wireAnimBudget();
   wireMeta();
+  wireReveal();
+  wireSpot();
   onFirstView($('#kpis'), () => setTimeout(() => rollNumbers($('#kpis')), reduceMotion ? 0 : 200), 0.2);
   onFirstView($('#perfChart'), () => drawPerf(true), 0.2);
 })();
