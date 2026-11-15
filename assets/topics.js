@@ -193,7 +193,7 @@
   document.body.appendChild(hint);
 
   /* ---------- 상태 · 장 나누기(넓은 화면) */
-  let wide = false, cur = -1, pg = 0, pw = 0, ph = 0, hintOff = false, lastPush = 0, drag = null, savedPg = 0, savedCur = -1, lastSig = '';
+  let wide = false, cur = -1, pg = 0, pw = 0, ph = 0, hintOff = false, lastPush = 0, drag = null, savedPg = 0, savedCur = -1, lastSig = '', resetT = 0, sealT = 0;
   const restorePg = () => (savedCur === cur ? savedPg : 0);
   const npg = TOPICS.map(() => 1);
   let subPg = TOPICS.map(() => []);
@@ -460,12 +460,20 @@
     let ty = null;
     if (!wide && o.target) { const p = panels[i]; ty = o.target.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 14; }
     cur = i; pg = page;
+    if (!o.drag) settle();   // 손으로 놓은 뒤의 짧은 감속 곡선은 그 한 번만 — 키 · 탭 이동은 원래 곡선
     track.classList.toggle('tm-instant', !!o.instant || reduce);
     place();
-    panels.forEach((p, k) => { const on = k === i; p.inert = !on; p.setAttribute('aria-hidden', String(!on)); p.classList.toggle('on', on); });
+    panels.forEach((p, k) => p.classList.toggle('on', k === i));
+    // 안 보이는 판 inert · aria-hidden — 판 전체 스타일을 다시 계산하는 무거운 일이라, 손으로 놓은 뒤에는 미끄러짐이 끝난 다음에 한다
+    // (놓는 순간 함께 하면 휴대폰에서 첫 프레임이 약 0.06초 멈칫했다)
+    const seal = () => panels.forEach((p, k) => { const on = k === cur; if (p.inert !== !on) p.inert = !on; p.setAttribute('aria-hidden', String(!on)); });
+    clearTimeout(sealT);
+    if (o.drag && !reduce) sealT = setTimeout(seal, 500); else seal();
     paint();
     if (changed || o.first) {
-      if (!wide && changedT && !o.target) panels[i].scrollTop = 0;
+      if (!wide && changedT && !o.target && !o.drag) panels[i].scrollTop = 0;
+      // (좁은 화면) 떠난 판은 화면 밖으로 나간 뒤 맨 위로 — 끌 때 옆 판이 예전 스크롤 자리로 보였다가 도착 순간 맨 위로 튀던 것
+      if (!wide && changedT) { clearTimeout(resetT); resetT = setTimeout(() => panels.forEach((p, k) => { if (k !== cur && p.scrollTop) p.scrollTop = 0; }), 900); }
       if (!o.drag) replay(i, wide ? page : -1);
       // 주제가 바뀔 때만 방문 기록(빠르게 이어 넘기면 하나로) — 같은 주제 안 장 이동은 주소만 바꾼다
       const now = performance.now(), quick = now - lastPush < 600;
@@ -500,34 +508,62 @@
   const scrollsX = n => { for (; n && n !== stage; n = n.parentElement) { if (n.scrollWidth > n.clientWidth + 1) { const ox = getComputedStyle(n).overflowX; if (ox === 'auto' || ox === 'scroll') return true; } } return false; };
   stage.addEventListener('pointerdown', e => {
     if ((e.pointerType === 'mouse' && e.button !== 0) || e.target.closest(NODRAG) || scrollsX(e.target)) return;
-    drag = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false, w: wide ? pw : stage.clientWidth, dx: 0, hist: [] };
+    drag = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false, w: wide ? pw : stage.clientWidth, dx: 0, sx: 0, off: 0, hist: [] };
   });
   stage.addEventListener('dragstart', e => { if (wide) e.preventDefault(); });   // 링크 · 그림을 끌어 옮기는 브라우저 기본 동작 대신 장을 넘긴다
+  /* (2026-11-16 본인 「모바일로 좌우로 넘길 때 자연스럽게」) 손을 뗀 뒤의 움직임 — 예전에는 늘 0.8초짜리 「천천히 출발 → 가속 → 감속」 곡선이라
+     튕긴 속도가 끊기고 한 박자 쉬었다 가는 느낌이었다. 이제 놓는 순간의 손가락 속도로 이어 가다 부드럽게 서는(감속만 하는) 곡선을
+     남은 거리에 맞춘 길이(0.2~0.46초)로 쓴다. 다음 끌기 · 다른 이동이 오면 곧바로 풀린다(settle) */
+  let easeT = 0;
+  function settle() { clearTimeout(easeT); track.style.transition = ''; if (pin) pin.box.style.transition = ''; }
+  function ease(rem, v0) {
+    if (reduce) return;
+    const T = Math.round(clamp(160 + rem * 0.5, 200, 460));
+    const s = clamp(v0 * T / Math.max(1, rem), 0.8, 3);   // 곡선의 첫 기울기 = 놓는 순간 속도 ÷ 평균 속도
+    const tr = `transform ${T}ms cubic-bezier(.3,${(0.3 * s).toFixed(3)},.25,1)`;
+    track.style.transition = tr; if (pin) pin.box.style.transition = tr;
+    clearTimeout(easeT); easeT = setTimeout(settle, T + 80);
+  }
   addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
-    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    const rx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (!drag.on) {
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-      if (Math.abs(dy) >= Math.abs(dx)) { drag = null; return; }
-      drag.on = true; root.classList.add('tm-dragging'); track.classList.add('tm-instant'); main.classList.remove('near-l', 'near-r');
+      if (Math.abs(rx) < 10 && Math.abs(dy) < 10) return;
+      if (Math.abs(dy) >= Math.abs(rx)) { drag = null; return; }
+      // 시작 문턱(10px)만큼은 빼고 따라간다 — 끌기가 시작되는 순간 화면이 10px 툭 튀던 것
+      drag.on = true; drag.sx = rx; settle();
+      main.classList.add('tm-dragging'); track.classList.add('tm-instant'); main.classList.remove('near-l', 'near-r');
       try { stage.setPointerCapture(e.pointerId); } catch (err) {}
       try { getSelection().removeAllRanges(); } catch (err) {}
     }
+    const dx = rx - drag.sx;
     let off = dx;
-    if ((atStart() && dx > 0) || (atEnd() && dx < 0) || (!wide && ((cur === 0 && dx > 0) || (cur === N - 1 && dx < 0)))) off = dx * 0.28;
-    drag.dx = dx; drag.hist.push([performance.now(), dx]); if (drag.hist.length > 6) drag.hist.shift();
+    if ((atStart() && dx > 0) || (atEnd() && dx < 0) || (!wide && ((cur === 0 && dx > 0) || (cur === N - 1 && dx < 0)))) off = dx * 0.3;   // 양 끝 — 고무줄
+    const now = performance.now();
+    drag.dx = dx; drag.off = off; drag.hist.push([now, dx]);
+    while (drag.hist.length > 2 && now - drag.hist[0][0] > 120) drag.hist.shift();   // 속도는 마지막 0.12초만으로
     place(off);
   });
   const endDrag = e => {
     if (!drag || (e && e.pointerId !== drag.id)) return;
     const d = drag; drag = null;
     if (!d.on) return;
-    root.classList.remove('tm-dragging'); track.classList.remove('tm-instant');
-    const h = d.hist, v = h.length > 1 ? (h[h.length - 1][1] - h[0][1]) / Math.max(1, h[h.length - 1][0] - h[0][0]) : 0;
+    main.classList.remove('tm-dragging');   // 끄는 중 표시는 판 영역(main)에만 — <html> 에 달면 문서 전체 스타일을 다시 계산했다
+    // 놓는 순간 속도(px/ms) — 손을 멈췄다가 떼면 0(예전에는 멈추기 전 빠른 움직임까지 세어 「튕김」으로 잘못 읽을 수 있었다)
+    const now = performance.now(), h = d.hist.filter(p => now - p[0] < 110);
+    const v = h.length > 1 ? (h[h.length - 1][1] - h[0][1]) / Math.max(8, h[h.length - 1][0] - h[0][0]) : 0;
     const TH = wide ? 0.15 : 0.18;
-    if (d.dx < -d.w * TH || v < -0.5) step(1, { drag: true });
-    else if (d.dx > d.w * TH || v > 0.5) step(-1, { drag: true });
-    else place();
+    let dir = 0;
+    if (!e || e.type !== 'pointercancel') {   // 브라우저가 가로챈 경우(시스템 손짓 등)는 제자리로
+      if (Math.abs(v) > 0.35) {   // 튕김 — 끈 방향과 같을 때만(왼쪽으로 끌다 오른쪽으로 되돌려 놓으면 「취소」로 보고 제자리)
+        dir = (Math.sign(d.dx) === Math.sign(v) || Math.abs(d.dx) < 12) ? (v < 0 ? 1 : -1) : 0;
+      } else dir = d.dx < -d.w * TH ? 1 : d.dx > d.w * TH ? -1 : 0;
+    }
+    const can = dir > 0 ? (wide ? !atEnd() : cur < N - 1) : dir < 0 ? (wide ? !atStart() : cur > 0) : false;
+    const target = can ? -dir * d.w : 0;   // 지금 장 기준 도착 위치
+    ease(Math.abs(target - d.off), Math.abs(v));
+    track.classList.remove('tm-instant');
+    if (can) step(dir, { drag: true }); else place();
     const kill = ev => { ev.stopPropagation(); ev.preventDefault(); };
     addEventListener('click', kill, { capture: true, once: true }); setTimeout(() => removeEventListener('click', kill, true), 60);
   };
