@@ -291,7 +291,17 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   html.tm-wide .tm-inner .shell { max-width: var(--maxw); padding-inline: 0; }
   html.tm-wide .tm-inner :is(.proj, .xd, .job, .belief, .pillar, .gcard, .panel, .arc, .score, .phases > li, .factgrid > section, .scorebox, .gantt, .cnote, .toolgrp, .mp,
     .sum-l, .sum-r, .more, .contact.big, .sec-h, .growth-h, .gextra, .hk, .kpis, .dash-wrap) { break-inside: avoid; }
-  html.tm-wide .tm-inner :is(.sec-h, .growth-h) { break-after: avoid; }
+  html.tm-wide .tm-inner :is(.sec-h, .growth-h, .sub-h) { break-after: avoid; }
+  /* 프리랜서판 등 다른 틀의 칸(서비스 · 진행 단계 · 계약 형태 · 자주 묻는 질문)도 장 사이에서 자르지 않는다(2026-11-16) */
+  html.tm-wide .tm-inner :is(.svc, .proc > li, .onboard > li, .plan, .faq, details) { break-inside: avoid; }
+  /* 대시보드 절 한 화면 맞춤 — 본판 style.css(861px 이상)의 규칙을 덱 안에서도(그 규칙이 없는 틀 — 프리랜서판 — 에서 제목만 한 장에 남고 화면이 넘쳤다) */
+  html.tm-wide #dash { box-sizing: border-box; display: flex; flex-direction: column; }
+  html.tm-wide #dash > .shell { flex: 1 1 0; min-height: 0; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
+  html.tm-wide #dash .sec-h { flex: none; margin-bottom: clamp(6px, 1.4vh, 16px); row-gap: clamp(2px, .6vh, 8px); }
+  html.tm-wide #dash .dash-wrap { flex: 1 1 0; min-height: 0; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: stretch; gap: clamp(12px, 1.6vw, 22px); }
+  html.tm-wide #dash .dash-frame { display: flex; flex-direction: column; min-height: 0; }
+  html.tm-wide #dash .dash-view { flex: 1 1 auto; aspect-ratio: auto; min-height: 0; }
+  html.tm-wide #dash .dash-side { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
   /* 첫 화면 · 대시보드 — 장 높이를 그대로 채운다 */
   /* 절에 기준 배율(--tm-z0, topics.js)이 걸리면 px 도 함께 줄어드므로 나눠서 장 높이를 꼭 채운다 */
   html.tm-wide .hero .shell { height: calc(var(--tm-avail, 640px) / var(--tm-z0, 1)); }

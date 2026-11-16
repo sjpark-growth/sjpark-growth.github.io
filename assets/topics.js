@@ -58,7 +58,20 @@
     { id: 'contact', label: '원칙 · 연락처', en: 'Contact', desc: '일하는 원칙 네 가지와 연락처 · 직무 점수', secs: ['#beliefs', '#contact', '.foot'],
       sub: () => [['일하는 원칙', '#beliefs'], ['연락처', '#contact .sec-h'], ['직무 점수', '.scorebox'], ['인적 사항', '#factGrid']] },
   ];
-  const TOPICS = TOPICS0.filter(t => t.secs.some(sel => document.querySelector(sel)));
+  /* (2026-11-16) 다른 틀(프리랜서판 등)은 페이지에서 window.TOPICS_CONFIG = [{ id, secs: [절 선택자…], label?, en?, desc?, nav? }, …] 로 주제를 준다.
+     빈 칸은 채운다 — 이름 = 상단 메뉴(.mast nav a[href="#nav 또는 id"]) 글자 → 절 제목, 영문 = 절 꼬리표(.tag), 설명 = 절 제목, 항목 = 절 안 카드(제목 h3) */
+  const CFG = Array.isArray(window.TOPICS_CONFIG) ? window.TOPICS_CONFIG : null;
+  const CARD = '.proj, .xd, .job, .pillar, .gcard, .belief, .svc, .step, .card';
+  const fromCfg = c => {
+    const s0 = c.secs.map(sel => $(sel)).find(Boolean);
+    const navA = $(`.mast nav a[href="#${c.nav || c.id}"]`), h2 = s0 && $('h2', s0), tag = s0 && $('.tag', s0);
+    return Object.assign({}, c, {
+      label: c.label || txt(navA) || txt(h2).slice(0, 12) || c.id,
+      en: c.en || txt(tag), desc: c.desc || txt(h2),
+      sub: c.sub || (() => c.secs.map(sel => $(sel)).filter(Boolean).flatMap(sec => $$(CARD, sec).filter(n => !n.parentElement.closest(CARD))).map(n => [short(txt($('h3, h4', n))), n]).filter(x => x[0])),
+    });
+  };
+  const TOPICS = (CFG ? CFG.map(fromCfg) : TOPICS0).filter(t => t.secs.some(sel => document.querySelector(sel)));
   const N = TOPICS.length;
   const pad = n => String(n).padStart(2, '0');
 
