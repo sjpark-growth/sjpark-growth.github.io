@@ -45,16 +45,25 @@ main.tm-dragging .tm-panel:not(.on) { opacity: .6; }
 @keyframes tmIdx { from { opacity: 0; transform: translate3d(calc(var(--tm-dir, 1) * 40px), 0, 0); } to { opacity: .055; transform: none; } }
 /* 페이지네이션 숫자 굴림(본인 11-16 「페이지네이션 애니메이션」) — 넓은 화면 GNB 「3 / 10」 · 지금 주제 탭 「3/10」 · 좁은 화면 「01 / 09」.
    옛 숫자(i.out)는 넘기는 방향으로 빠지고 새 숫자(i.in)가 반대쪽에서 들어온다(다음 = 위로 굴러감). 숫자 칸 밖은 잘라 계수기처럼.
-   자르기는 clip-path — overflow(hidden · clip)로 자르면 칸의 글자 밑선이 칸 아래 끝으로 바뀌어 「2」 옆 「/ 10」이 3px 떠 보였다(11-16 실측) */
+   자르기는 clip-path — overflow(hidden · clip)로 자르면 칸의 글자 밑선이 칸 아래 끝으로 바뀌어 「2」 옆 「/ 10」이 3px 떠 보였다(11-16 실측).
    (11-16 둘째 「더 강화」) 글자 칸(.tm-sl)마다 따로 굴리고(바뀐 자리만 · 일의 자리부터 70ms 차례), 들어올 때 살짝 기울었다 서고(skew) 흐림이 걷힌다.
    공백도 칸이라 white-space: pre(안 하면 「/ 10」 의 빈칸이 접혀 「/10」) */
 .tm-roll { display: inline-flex; align-items: baseline; }
-.tm-sl { display: inline-grid; clip-path: inset(0 -2px); font-style: normal; white-space: pre; }
+.tm-sl { display: inline-grid; clip-path: inset(-1px -2px); font-style: normal; white-space: pre; }   /* 위아래 여유 1px — 둥근 숫자(0 · 3 · 6 · 8 · 9) 넘침만 */
+/* (11-16 「칸 맞춤」) 페이지 숫자 세로 맞춤 — 숫자 칸을 대문자 높이 ~ 글자 밑선(text-box)만큼으로 잡고 그 줄을 단추 가운데에.
+   예전엔 밑선 맞춤 줄이 단추 위쪽에 붙어 숫자가 화살표보다 휴대폰 6px · 태블릿 7px · 넓은 화면 2px 떠 있었다(잉크 실측).
+   서체(PC Bahnschrift · 아이폰 DIN Alternate)마다 높이가 달라 px 로 밀지 않는다. 「2」 와 「/ 10」 은 밑선을 그대로 맞춘다.
+   text-box 를 모르는 브라우저는 줄 상자 가운데(1~2px 위)로 남는다 */
+.tm-count, .tm-pcount { align-content: center; }
+.tm-dock .tm-count { flex-wrap: wrap; }
+:is(.tm-count, .tm-pcount) .tm-sl > i, .tm-count > span:not(.tm-cdots) { text-box: trim-both cap alphabetic; }
 .tm-sl > i { grid-area: 1 / 1; font-style: normal; }
 .tm-sl > i.in { animation: tmRollIn .62s cubic-bezier(.2,.9,.25,1.12) both; }
-.tm-sl > i.out { animation: tmRollOut .5s cubic-bezier(.4,0,.6,1) both; }
-@keyframes tmRollIn { from { opacity: 0; filter: blur(1.5px); transform: translate3d(0, calc(var(--tm-dir, 1) * 105%), 0) skewY(calc(var(--tm-dir, 1) * -8deg)); } 55% { filter: none; } to { opacity: 1; transform: none; } }
-@keyframes tmRollOut { from { opacity: 1; transform: none; } to { opacity: 0; filter: blur(1.5px); transform: translate3d(0, calc(var(--tm-dir, 1) * -105%), 0) skewY(calc(var(--tm-dir, 1) * 8deg)); } }
+.tm-sl > i.out { animation: tmRollOut .45s cubic-bezier(.25,.6,.35,1) both; }   /* 바로 출발 — 느리게 출발하면 처음 0.1초 들어오는 숫자와 겹쳐 굵게 보였다 */
+/* 움직이는 거리 = 칸 높이 + 4px — 칸이 글자 높이(text-box)로 줄어든 뒤 105% 만 움직이면 나가는 숫자 · 들어오는 숫자 조각이 칸 위아래에 함께 남아
+   지저분했다(휴대폰 0.09 · 0.33초 멈춘 화면). 나가는 숫자는 60% 에서 이미 다 사라진다 */
+@keyframes tmRollIn { from { opacity: 0; filter: blur(1.5px); transform: translate3d(0, calc(var(--tm-dir, 1) * (100% + 4px)), 0) skewY(calc(var(--tm-dir, 1) * -8deg)); } 55% { filter: none; } to { opacity: 1; transform: none; } }
+@keyframes tmRollOut { from { opacity: 1; transform: none; } 60% { opacity: 0; } to { opacity: 0; filter: blur(1.5px); transform: translate3d(0, calc(var(--tm-dir, 1) * -1 * (100% + 4px)), 0) skewY(calc(var(--tm-dir, 1) * 8deg)); } }
 /* 지렁이 알약 — 점 위에 하나(topics.js worm). 앞쪽 끝이 먼저, 뒤쪽 끝이 늦게(지연은 JS 가 방향 보고 transition-delay 로).
    곡선은 빨리 출발하는 쪽 — 느리게 출발하는 곡선은 키를 빠르게 이어 누를 때마다 처음부터 다시 느리게 출발해 알약이 제자리에 머물렀다(11-16 실측) */
 .tm-worm { position: absolute; z-index: 1; top: 50%; height: var(--wh, 6px); margin-top: calc(var(--wh, 6px) / -2); border-radius: 99px; background: var(--accent); pointer-events: none;
@@ -194,11 +203,13 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   .tm-dock .tm-pl, .tm-dock .tm-nl, .tm-dots { display: none; }
   .tm-dock button { height: 40px; padding: 0 12px; }
   /* 점이 빠지는 폭 — 「02 / 09」 아래에 작은 점 줄(누르지 않음 · 숫자 단추의 일부)과 지렁이 알약(11-16 「더 강화」) */
-  .tm-dock .tm-count { flex-wrap: wrap; justify-content: center; align-content: center; row-gap: 5px; }
-  .tm-cdots { position: relative; display: flex; flex-basis: 100%; justify-content: center; gap: 5px; --wh: 4px; }
+  /* 숫자는 화살표 · 「목차」 와 같은 줄 가운데, 점 줄은 단추 아래쪽에 따로(흐름 밖) — 예전엔 숫자 · 점을 두 줄로 쌓아 가운데에 둬서 숫자가 위로 떴다.
+     점 간격 5 → 7px · 쉬는 알약 13px · 테두리 빛 뺌(알약이 옆 점에 닿아 붙어 보였다) */
+  .tm-dock .tm-count { position: relative; min-width: 104px; justify-content: center; }
+  .tm-cdots { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: center; gap: 7px; --wh: 4px; }
   .tm-cdots > i { display: block; width: 4px; height: 4px; border-radius: 99px; background: var(--rule-2); }
-  .tm-cdots .tm-worm { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent); }
-  .tm-hint { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); font-size: 12px; }
+  .tm-cdots .tm-worm { box-shadow: none; }
+  .tm-hint { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); font-size: 12px; }   /* 아래 막대와 4px → 12px 띄움 */
   .tm-inner { padding-bottom: 92px; }
   .tm-drop { padding: 0 8px; }
   .tm-drop.all .tm-drop-in { grid-template-columns: minmax(0, 1fr); max-height: calc(100svh - 170px); padding: 14px; }

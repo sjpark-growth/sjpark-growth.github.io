@@ -543,7 +543,8 @@
     const s = b && $('svg', b); if (!s || !s.animate) return;
     const E = 'cubic-bezier(.22,.8,.24,1)', a = accent();
     s.animate([{ transform: 'none' }, { transform: `translateX(${d * 6}px)` }, { transform: 'none' }], { duration: 460, easing: 'cubic-bezier(.3,0,.12,1)' });
-    b.animate([{ boxShadow: `0 0 0 0 color-mix(in srgb, ${a} 55%, transparent)` }, { boxShadow: `0 0 0 11px color-mix(in srgb, ${a} 0%, transparent)` }], { duration: 640, easing: E });
+    // 링은 얇게(7px · 진하기 40%) — 11px · 55% 는 휴대폰 아래 막대에서 단추보다 큰 네모 테처럼 보였다
+    b.animate([{ boxShadow: `0 0 0 0 color-mix(in srgb, ${a} 40%, transparent)` }, { boxShadow: `0 0 0 7px color-mix(in srgb, ${a} 0%, transparent)` }], { duration: 560, easing: E });
     phead.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.9)', offset: .3 }, { transform: 'scale(1)' }], { duration: 760, easing: E });
   }
   function paint(anim) {   // 지금 위치를 GNB · 진행 막대 · 가장자리 화살표에 그린다(anim = 넘겨서 바뀐 것 — 숫자 굴림 · 점 등장)
@@ -566,7 +567,7 @@
       keepNav();
     } else {
       dots.forEach((b, k) => { b.classList.toggle('on', k === i); b.setAttribute('aria-current', String(k === i)); });
-      worm($('.tm-dots', dock), i, anim, 18); worm($('.tm-cdots', dock), i, anim, 11);   // 태블릿 아래 막대 점 · 휴대폰 숫자 밑 점(둘 중 보이는 쪽만)
+      worm($('.tm-dots', dock), i, anim, 18); worm($('.tm-cdots', dock), i, anim, 13);   // 태블릿 아래 막대 점 · 휴대폰 숫자 밑 점(둘 중 보이는 쪽만)
       roll($('.tm-count b', dock), pad(i + 1), anim, true);
       $('.tm-count', dock).setAttribute('aria-label', `${TOPICS[i].label} ${i + 1} / ${N} — 목차`);   // 글자 칸으로 나뉘어 「0 2」 처럼 읽히지 않게
       $('.tm-pl', dock).textContent = i > 0 ? TOPICS[i - 1].label : '';
