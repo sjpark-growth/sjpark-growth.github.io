@@ -1259,11 +1259,11 @@
       return Promise.all(imgs.filter(i => !i.complete).map(i => new Promise(r => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); })));
     };
     /* (2026-11-05) 저장되는 PDF 파일 이름 — 크롬은 문서 제목을 기본 파일 이름으로 쓴다. 「전체 PDF」 · 「요약 PDF」가 같은 이름(「박성준 · Growth Report 2026」)으로
-       저장돼 받는 쪽에서 구분이 안 되던 것 → 인쇄하는 동안만 「박성준_웹이력서_전체(요약)_YYYYMM」으로 바꾸고 끝나면 되돌린다(Ctrl+P 도 beforeprint 로 같다) */
+       저장돼 받는 쪽에서 구분이 안 되던 것 → 인쇄하는 동안만 「박성준_포트폴리오_전체(요약)_YYYYMM」으로 바꾸고 끝나면 되돌린다(Ctrl+P 도 beforeprint 로 같다) */
     const baseTitle = document.title;
     const printTitle = () => {
       const d = new Date(), ymd = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0');
-      document.title = `박성준_웹이력서_${document.body.classList.contains('print-short') ? '요약' : '전체'}_${ymd}`;
+      document.title = `박성준_포트폴리오_${document.body.classList.contains('print-short') ? '요약' : '전체'}_${ymd}`;
     };
     addEventListener('beforeprint', printTitle);
     addEventListener('afterprint', () => { document.title = baseTitle; });
