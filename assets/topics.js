@@ -346,6 +346,9 @@
     });
   }
 
+  // 판 폭 → 장 수. 새 단(장)은 늘 장 폭만큼 늘므로 장 폭의 30% 아래로 튀어나온 것은 세지 않는다 — 넘길 때 옆에서 들어오는 절 머리(tmSide 64px)가
+  // 들어오는 동안 판 폭을 늘려, 대시보드 장에 들어오면 0.2초쯤 「1 / 2」 · 장 점이 깜빡이고 넘기는 도중에 장 나누기가 한 번 더 돌았다(11-16, 예전엔 4px 만 뺐다)
+  const pagesOf = inner => Math.max(1, Math.ceil((inner.scrollWidth - pw * 0.3) / pw));
   function layout() {
     if (!wide || dead) return;
     pw = stage.clientWidth; ph = stage.clientHeight;
@@ -385,11 +388,7 @@
       });
       inner.classList.remove('tm-measure');
     });
-    panels.forEach((p, k) => {
-      const inner = inners[k];
-      const n = Math.max(1, Math.ceil((inner.scrollWidth - 4) / pw));
-      npg[k] = n; p.style.width = n * pw + 'px';
-    });
+    panels.forEach((p, k) => { const n = pagesOf(inners[k]); npg[k] = n; p.style.width = n * pw + 'px'; });
     copyPins();
     inners.forEach((x, k) => center(k));
     // 장마다 차례 등장 순번 · 항목이 놓인 장
@@ -398,7 +397,7 @@
       list.forEach(n => { const q = n.classList.contains('tm-idx') ? 0 : pageOf(n, k); animPage.set(n, q); const c = seen.get(q) || 0; seen.set(q, c + 1); n.style.setProperty('--k', Math.min(c, 8)); });
     });
     subPg = subsOf.map((subs, k) => subs.map(([, t]) => [pageOf(t, k), lastPageOf(t, k)]));
-    lastSig = inners.map(n => n.scrollWidth).join(',');
+    lastSig = npg.join(',');
     if (cur >= 0) {
       pg = clamp(pg, 0, npg[cur] - 1);
       // 자리가 그대로면 손대지 않는다 — 넘기는 중(미끄러지는 중)에 다시 나누면 끊겨 보였다
@@ -474,10 +473,43 @@
       if (want != null) nav.scrollTo({ top: Math.max(0, want), behavior: reduce ? 'auto' : 'smooth' });
     }, reduce ? 0 : 480);
   }
-  function paint() {   // 지금 위치를 GNB · 진행 막대 · 가장자리 화살표에 그린다
+  /* 페이지네이션 애니메이션(본인 11-16) — 장 · 주제 번호가 바뀌면 옛 숫자는 넘기는 방향으로 빠지고 새 숫자가 반대쪽에서 굴러 들어온다
+     (topics.css .tm-roll · --tm-dir). 첫 그리기 · 장 다시 나눔(layout)에서는 굴리지 않고 바로 바꾼다 */
+  const rollEl = (v, c) => { const n = document.createElement('i'); if (c) n.className = c; n.textContent = v; return n; };
+  function roll(box, v, anim) {
+    v = String(v);
+    if (box.dataset.v === v) return;
+    const was = box.dataset.v;
+    box.dataset.v = v; box.classList.add('tm-roll');
+    if (!anim || reduce || !was || !v) { box.textContent = ''; if (v) box.append(rollEl(v)); return; }
+    $$('i.out', box).forEach(n => n.remove());   // 빠르게 이어 넘기면 앞 굴림은 바로 치운다
+    const old = box.lastElementChild;
+    if (old) { old.className = 'out'; old.setAttribute('aria-hidden', 'true'); setTimeout(() => old.remove(), 600); }
+    box.append(rollEl(v, 'in'));
+  }
+  // 장 점 — 점을 다시 만들지 않고 켜진 점만 바꿔 알약이 옆 점으로 늘었다 줄며 옮겨 간다(예전엔 매번 innerHTML 을 새로 써 폭 전환이 안 보였다).
+  // 주제가 바뀌어 점 수가 달라지면 새 줄이 넘기는 방향에서 들어오고 켜진 점이 자라난다
+  let pdFor = -1;
+  function paintPdots(i, anim) {
+    const n = npg[i] > 1 ? npg[i] : 0, fresh = pdFor !== i + ':' + n;
+    if (fresh) {
+      pdFor = i + ':' + n;
+      pdots.innerHTML = '<i></i>'.repeat(n);
+      if (anim && n && !reduce) { pdots.classList.remove('tm-pd-in'); void pdots.offsetWidth; pdots.classList.add('tm-pd-in'); }
+    }
+    Array.from(pdots.children).forEach((d, q) => d.classList.toggle('on', q === pg));
+  }
+  // 장을 옮기면 그쪽 화살표(넓은 화면 GNB ‹ › · 좁은 화면 아래 막대)가 살짝 밀렸다 돌아온다 — 키 · 휠 · 드래그로 넘겨도 어디로 갔는지 보이게
+  function kick(d) {
+    if (reduce) return;
+    const b = wide ? $(d > 0 ? '.tm-pn' : '.tm-pp', pager) : $(d > 0 ? '.tm-next' : '.tm-prev', dock);
+    const s = b && $('svg', b); if (!s || !s.animate) return;
+    s.animate([{ transform: 'none' }, { transform: `translateX(${d * 4}px)` }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.3,0,.12,1)' });
+  }
+  function paint(anim) {   // 지금 위치를 GNB · 진행 막대 · 가장자리 화살표에 그린다(anim = 넘겨서 바뀐 것 — 숫자 굴림 · 점 등장)
     const i = cur;
     items.forEach((li, k) => li.classList.toggle('on', k === i));
-    tabs.forEach((a, k) => { if (k === i) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); a.classList.toggle('past', k < i); $('.pc', a).textContent = wide && k === i && npg[k] > 1 ? `${pg + 1}/${npg[k]}` : ''; });
+    tabs.forEach((a, k) => { if (k === i) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); a.classList.toggle('past', k < i); roll($('.pc', a), wide && k === i && npg[k] > 1 ? `${pg + 1}/${npg[k]}` : '', anim); });
     if (wide) {
       $$('li', items[i]).forEach((li, j) => { const r = subPg[i][j]; li.classList.toggle('here', !!r && pg >= r[0] && pg <= r[1]); });
       const prevL = atStart() ? '' : (pg > 0 ? label(i, pg - 1) : label(i - 1, npg[i - 1] - 1));
@@ -486,15 +518,15 @@
       edgeP.disabled = atStart(); edgeN.disabled = atEnd();
       edgeP.setAttribute('aria-label', '이전 장' + (prevL ? ': ' + prevL : '')); edgeN.setAttribute('aria-label', '다음 장' + (nextL ? ': ' + nextL : ''));
       $('.tm-pp', pager).disabled = atStart(); $('.tm-pn', pager).disabled = atEnd();
-      $('.tm-pcount b', pager).textContent = pg + 1; $('.tm-pcount span', pager).textContent = '/ ' + npg[i];
+      roll($('.tm-pcount b', pager), pg + 1, anim); roll($('.tm-pcount span', pager), '/ ' + npg[i], anim);
       $('.tm-pcount small', pager).textContent = TOPICS[i].label;
       $('.tm-pcount', pager).setAttribute('aria-label', `${TOPICS[i].label} ${pg + 1} / ${npg[i]}장`);
-      pdots.innerHTML = npg[i] > 1 ? Array.from({ length: npg[i] }, (x, q) => `<i class="${q === pg ? 'on' : ''}"></i>`).join('') : '';
+      paintPdots(i, anim);
       const t = total(); root.style.setProperty('--tm-p', t > 1 ? ((offOf(i) + pg) / (t - 1)).toFixed(4) : '1');
       keepNav();
     } else {
       dots.forEach((b, k) => { b.classList.toggle('on', k === i); b.setAttribute('aria-current', String(k === i)); });
-      $('.tm-count b', dock).textContent = pad(i + 1);
+      roll($('.tm-count b', dock), pad(i + 1), anim);
       $('.tm-pl', dock).textContent = i > 0 ? TOPICS[i - 1].label : '';
       $('.tm-nl', dock).textContent = i < N - 1 ? TOPICS[i + 1].label : '';
       $('.tm-prev', dock).disabled = i === 0; $('.tm-next', dock).disabled = i === N - 1;
@@ -520,7 +552,8 @@
     }
     const changedT = i !== cur, changed = changedT || page !== pg;
     // 넘기는 방향(1 = 다음, −1 = 이전) — 절 머리 · 판 번호가 그쪽에서 옆으로 들어온다(topics.css tmSide)
-    if (changed && cur >= 0) root.style.setProperty('--tm-dir', (wide ? offOf(i) + page < offOf(cur) + pg : i < cur) ? '-1' : '1');
+    const dir = changed && cur >= 0 ? ((wide ? offOf(i) + page < offOf(cur) + pg : i < cur) ? -1 : 1) : 0;
+    if (dir) root.style.setProperty('--tm-dir', String(dir));
     // (좁은 화면) 다른 판의 카드로 갈 때 — 위치는 차례 등장이 붙기 전에 잰다(붙은 뒤 재면 약 30px 위로 어긋났다)
     let ty = null;
     if (!wide && o.target) { const p = panels[i]; ty = o.target.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 14; }
@@ -534,7 +567,8 @@
     const seal = () => panels.forEach((p, k) => { const on = k === cur; if (p.inert !== !on) p.inert = !on; p.setAttribute('aria-hidden', String(!on)); });
     clearTimeout(sealT);
     if (o.drag && !reduce) sealT = setTimeout(seal, 500); else seal();
-    paint();
+    paint(!!dir && !o.first);
+    if (dir && !o.first) kick(dir);
     if (changed || o.first) {
       if (!wide && changedT && !o.target && !o.drag) panels[i].scrollTop = 0;
       // (좁은 화면) 떠난 판은 화면 밖으로 나간 뒤 맨 위로 — 끌 때 옆 판이 예전 스크롤 자리로 보였다가 도착 순간 맨 위로 튀던 것
@@ -685,7 +719,7 @@
   }, true);
   // 판 안에서 펼치기 · 보기 바꾸기를 누르면 높이가 바뀌므로 장을 다시 나눈다 — 단추를 누른 뒤 장 수(판 폭)가 달라졌을 때만.
   // 아무 클릭에나 전체를 다시 나누면 한 번에 약 1초 멈췄다(교차 검증 11-16)
-  const sig = () => inners.map(n => n.scrollWidth).join(',');
+  const sig = () => inners.map(pagesOf).join(',');   // 장 수만 본다(움직이는 동안 잠깐 튀어나온 폭은 빼고 — pagesOf)
   stage.addEventListener('click', e => {
     if (!wide || !e.target.closest('button, summary, [aria-expanded]')) return;
     setTimeout(() => { if (wide && !drag && sig() !== lastSig) layout(); }, 450);

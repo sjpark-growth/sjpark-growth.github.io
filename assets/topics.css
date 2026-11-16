@@ -12,7 +12,7 @@ html.tabmode .ticker { flex: none; }
 html.tabmode main { position: relative; flex: 1 1 auto; min-height: 0; }
 html.tabmode .rail, html.tabmode .totop { display: none !important; }
 html.tabmode img { -webkit-user-drag: none; }
-html.tabmode .mast::after { transform: scaleX(var(--tm-p, 0)); transition: transform .7s var(--tm-ease, ease); }
+html.tabmode .mast::after { transform: scaleX(var(--tm-p, 0)); transition: transform var(--tm-dur, .7s) var(--tm-ease, ease); }
 /* 끄는 동안 — 글자 선택만 막는다(판 전체). 커서는 마우스일 때만(휴대폰에서 문서 전체 스타일을 다시 계산하지 않게) */
 main.tm-dragging .tm-stage { -webkit-user-select: none; user-select: none; }
 @media (pointer: fine) { main.tm-dragging, main.tm-dragging * { cursor: grabbing !important; } }
@@ -43,6 +43,15 @@ main.tm-dragging .tm-panel:not(.on) { opacity: .6; }
    --tm-dir = 1(다음) · −1(이전), topics.js go() 가 정한다. 장과 함께 들어오며 조금 늦게 따라와 자리 잡는 모양 */
 @keyframes tmSide { from { opacity: 0; transform: translate3d(calc(var(--tm-dir, 1) * 64px), 0, 0); } to { opacity: 1; transform: none; } }
 @keyframes tmIdx { from { opacity: 0; transform: translate3d(calc(var(--tm-dir, 1) * 40px), 0, 0); } to { opacity: .055; transform: none; } }
+/* 페이지네이션 숫자 굴림(본인 11-16 「페이지네이션 애니메이션」) — 넓은 화면 GNB 「3 / 10」 · 지금 주제 탭 「3/10」 · 좁은 화면 「01 / 09」.
+   옛 숫자(i.out)는 넘기는 방향으로 빠지고 새 숫자(i.in)가 반대쪽에서 들어온다(다음 = 위로 굴러감). 숫자 칸 밖은 잘라 계수기처럼.
+   자르기는 clip-path — overflow(hidden · clip)로 자르면 칸의 글자 밑선이 칸 아래 끝으로 바뀌어 「2」 옆 「/ 10」이 3px 떠 보였다(11-16 실측) */
+.tm-roll { display: inline-grid; clip-path: inset(0); }
+.tm-roll > i { grid-area: 1 / 1; font-style: normal; }
+.tm-roll > i.in { animation: tmRollIn .55s cubic-bezier(.22,.8,.24,1) both; }
+.tm-roll > i.out { animation: tmRollOut .55s cubic-bezier(.22,.8,.24,1) both; }
+@keyframes tmRollIn { from { opacity: 0; transform: translate3d(0, calc(var(--tm-dir, 1) * 100%), 0); } to { opacity: 1; transform: none; } }
+@keyframes tmRollOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translate3d(0, calc(var(--tm-dir, 1) * -100%), 0); } }
 .tm-anim.tm-play { animation: tmUp .62s cubic-bezier(.22,.8,.24,1) backwards; animation-delay: calc(var(--k, 0) * 45ms + 80ms); }
 :is(.sec-h, .growth-h) > .tm-anim.tm-play { animation: tmSide .8s cubic-bezier(.22,.8,.24,1) backwards; animation-delay: calc(var(--k, 0) * 40ms + 30ms); }
 .tm-idx.tm-anim.tm-play { animation: tmIdx .9s cubic-bezier(.22,.8,.24,1) backwards .1s; }
@@ -116,7 +125,7 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
 .tm-dock .tm-pl, .tm-dock .tm-nl { max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tm-dots { display: flex; align-items: center; padding: 0 2px; }
 .tm-dots button { width: 24px; height: 36px; padding: 0; justify-content: center; }
-.tm-dots i { display: block; width: 6px; height: 6px; border-radius: 99px; background: var(--rule-2); transition: width .5s var(--tm-ease, ease), background-color .3s; }
+.tm-dots i { display: block; width: 6px; height: 6px; border-radius: 99px; background: var(--rule-2); transition: width var(--tm-dur, .7s) var(--tm-ease, ease), background-color .3s; }
 .tm-dots button:hover i { background: var(--ink-3); }
 .tm-dots button.on i { width: 18px; background: var(--accent); }
 .tm-count { display: inline-flex; align-items: baseline; gap: 4px; padding: 0 8px 0 4px; font-family: var(--f-num); font-stretch: 85%; font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
@@ -233,7 +242,7 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   html.tm-wide .mast .tm-nav .tm-tab .n { min-width: 1.6em; }
   html.tm-wide .mast .tm-nav .tm-tab:hover { background: var(--sunk); color: var(--ink); }
   html.tm-wide .mast .tm-nav .tm-tab[aria-current="page"] { background: var(--ink); color: var(--paper); box-shadow: 0 8px 22px rgba(12, 26, 43, .18); }
-  html.tm-wide .tm-tab .pc { display: inline; margin-left: auto; font-family: var(--f-num); font-stretch: 85%; font-size: 12px; font-weight: 600; letter-spacing: .02em;
+  html.tm-wide .tm-tab .pc, html.tm-wide .tm-tab .pc.tm-roll { display: inline-grid; margin-left: auto; font-family: var(--f-num); font-stretch: 85%; font-size: 12px; font-weight: 600; letter-spacing: .02em;
     color: color-mix(in srgb, var(--paper) 72%, transparent); font-variant-numeric: tabular-nums; }
   /* 지금 주제의 항목 — 펼침(지금 장에 있는 항목은 강조색 · 점) */
   html.tm-wide .tm-sub { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .45s cubic-bezier(.2,.8,.2,1), visibility 0s .45s; }
@@ -358,8 +367,11 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   html.tm-wide .tm-edge.next .tm-el { right: calc(100% + 8px); }
   html.tm-wide .tm-edge:hover .tm-el:not(:empty) { opacity: 1; }
   html.tm-wide .tm-pdots { position: absolute; z-index: 20; left: 50%; bottom: max(5px, calc(var(--py) / 2 - 3px)); transform: translateX(-50%); display: flex; gap: 5px; pointer-events: none; }
-  html.tm-wide .tm-pdots i { display: block; width: 5px; height: 5px; border-radius: 99px; background: var(--rule-2); transition: width .45s var(--tm-ease, ease), background-color .3s; }
+  html.tm-wide .tm-pdots i { display: block; width: 5px; height: 5px; border-radius: 99px; background: var(--rule-2); transition: width var(--tm-dur, .7s) var(--tm-ease, ease), background-color .3s; }
   html.tm-wide .tm-pdots i.on { width: 16px; background: var(--accent); }
+  /* 주제가 바뀌어 점 줄을 새로 만들 때 — 넘기는 방향에서 들어온다(가운데 맞춤 translateX(-50%) 를 함께 적는다) */
+  @keyframes tmDotsIn { from { opacity: 0; transform: translate3d(calc(-50% + var(--tm-dir, 1) * 28px), 0, 0); } to { opacity: 1; transform: translate3d(-50%, 0, 0); } }
+  html.tm-wide .tm-pdots.tm-pd-in { animation: tmDotsIn .6s cubic-bezier(.22,.8,.24,1) .12s both; }
   html.tm-wide .tm-hint { left: calc(50% + var(--gnb-w) / 2); bottom: 30px; }
   html.tm-wide .tm-hint.off { transform: translate(-50%, 10px); }
   html.tm-wide main.tm-dragging .tm-edge { opacity: 0 !important; }
@@ -372,7 +384,7 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
 
 @media (prefers-reduced-motion: reduce) {
   .tm-track, .tm-panel, .tm-ind, .tm-dots i, .tm-drop, html.tabmode .mast::after, .tm-sub, .tm-pdots i, .tm-edge { transition: none !important; }
-  .tm-anim.tm-play, .tm-hint, .tm-hint .h-drag i { animation: none !important; }
+  .tm-anim.tm-play, .tm-hint, .tm-hint .h-drag i, .tm-roll > i, .tm-pdots { animation: none !important; }
 }
 @media print {
   html.tabmode, html.tabmode body { height: auto; overflow: visible; display: block; }
