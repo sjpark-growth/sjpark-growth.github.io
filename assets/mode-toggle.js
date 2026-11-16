@@ -39,7 +39,10 @@
     label(); save('scroll');
   }
   btn.addEventListener('click', () => (D.active ? toScroll() : toDeck()));
+  // 기억한 보기로 — 스크롤로 시작하는 시안(toggle.html)은 「장」을, 장으로 시작하는 게시본(아티팩트)은 「스크롤」을 기억했을 때 바꾼다
   let v = null; try { v = localStorage.getItem('psj-view'); } catch (e) {}
-  if (v === 'deck') { if (document.readyState === 'complete') toDeck(); else addEventListener('load', toDeck, { once: true }); }
+  const later = fn => { if (document.readyState === 'complete') setTimeout(fn, 0); else addEventListener('load', fn, { once: true }); };
+  if (v === 'deck' && !D.active) later(toDeck);
+  else if (v === 'scroll' && D.active) later(toScroll);
   label();
 })();

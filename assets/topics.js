@@ -676,7 +676,15 @@
 
   /* 주소 #/주제 · #/주제/장 — 뒤로 / 앞으로 */
   const fromHash = () => { const m = location.hash.match(/^#\/?([a-z]+)(?:[-\/](\d+))?$/) || []; return [TOPICS.findIndex(t => t.id === m[1]), m[2] ? +m[2] - 1 : 0]; };
-  const onHash = () => { const [k, q] = fromHash(); if (k >= 0 && (k !== cur || (wide && q !== pg))) go(k, { push: false, page: q }); };
+  const onHash = () => {
+    const [k, q] = fromHash();
+    if (k >= 0) { if (k !== cur || (wide && q !== pg)) go(k, { push: false, page: q }); return; }
+    // 카드 · 절 주소(#p-naver · #archive)로 바뀌어도 그 판 · 그 장으로(처음 열 때만 받던 것 — 11-16)
+    if (!/^#[\w-]+$/.test(location.hash)) return;
+    let t = null; try { t = $(location.hash); } catch (e) { return; }
+    const kk = t ? panels.findIndex(p => p.contains(t)) : -1;
+    if (kk >= 0) go(kk, { push: false, target: t === inners[kk].firstElementChild ? null : t, page: 0 });
+  };
   on(window, 'popstate', onHash); on(window, 'hashchange', onHash);
   let rzT = 0;
   on(window, 'resize', () => {

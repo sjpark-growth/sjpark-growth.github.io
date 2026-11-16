@@ -2150,3 +2150,5 @@ body { overflow-x: clip; }
   .mast .tools :is(#deckBtn, #modeBtn) { gap: 0; padding: 0 9px; }
   .mast .tools :is(#deckBtn, #modeBtn) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); }
 }
+/* 전환해 돌아왔을 때 카드 머리가 상단 바 아래에 가리지 않게(카드 · 기타 대시보드 카드 주소로 올 때 — 안 A · B) */
+.proj[id], .xd[id] { scroll-margin-top: calc(var(--mast-h, 64px) + 8px); }
