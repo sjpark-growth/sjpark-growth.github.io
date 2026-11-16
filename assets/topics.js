@@ -277,28 +277,37 @@
   function unzoom() { $$('[data-tm-z]', stage).forEach(n => { n.style.zoom = ''; delete n.dataset.tmZ; }); }
 
   /* 넓은 화면 — 여러 장짜리 주제의 머리 문구를 모든 장에 고정(본인 11-16 「헤드카피 소 주제에도 고정」 — 「주요 업무」, 같은 날 「기타 대시보드」도).
-     절 머리(.sec-h)를 판 위 고정 칸(.tm-pin)으로 옮기고 판 안은 그 높이만큼 위를 비운다. 같은 주제 안에서 장을 넘길 때는
-     트랙과 반대로 같은 만큼 움직여 제자리에 있는 것처럼 보이고, 다른 주제로 갈 때는 판과 함께 미끄러진다. 좁은 화면에서는 제자리로 돌려놓는다 */
+     절 머리(.sec-h)를 판 위 고정 칸(.tm-pin)으로 옮기고 판 안은 그 높이만큼 위를 비운다. 장마다 같은 머리(사본 — copyPins)가 있어
+     장과 함께 옆으로 넘어간다. 좁은 화면에서는 제자리로 돌려놓는다 */
   const PINS = [['work', '#work .sec-h'], ['xdash', '#xdash .sec-h']].map(([id, sel]) => ({ k: TOPICS.findIndex(t => t.id === id), sel })).filter(p => p.k >= 0);
   let pins = [];
   function setPin(on) {
     if (on && !pins.length) {
       PINS.forEach(({ k, sel }) => {
         const h = $(sel); if (!h) return;
-        const p = { k, el: h, parent: h.parentElement, next: h.nextElementSibling, box: el('div', { class: 'tm-pin' }), in: el('div', { class: 'tm-pin-in' }) };
+        const p = { k, el: h, parent: h.parentElement, next: h.nextElementSibling, box: el('div', { class: 'tm-pin' }), in: el('div', { class: 'tm-pin-in' }), copies: [] };
         p.in.appendChild(h); p.box.appendChild(p.in); panels[k].insertBefore(p.box, inners[k]);   // 배율은 안쪽(.tm-pin-in)에만 — 위치 · 폭은 바깥이 장 기준으로
         pins.push(p);
       });
     } else if (!on && pins.length) {
-      pins.forEach(p => { p.parent.insertBefore(p.el, p.next); p.box.remove(); inners[p.k].style.paddingTop = ''; inners[p.k].style.height = ''; });
+      pins.forEach(p => { p.parent.insertBefore(p.el, p.next); p.copies.forEach(c => c.remove()); p.box.remove(); inners[p.k].style.paddingTop = ''; inners[p.k].style.height = ''; });
       pins = [];
     }
   }
-  function placePin(off = 0) {
+  /* (2026-11-16 본인 「위 헤드값도 부드럽게 옆으로 넘어갔으면」) 예전에는 머리 하나를 트랙과 반대로 움직여 제자리에 세웠다 — 카드만 넘어가고
+     머리는 멈춰 있었다(두 움직임이 한 프레임 어긋나면 떨리기도). 이제 장마다 머리 사본을 두어 장과 함께 옆으로 넘어간다(끌 때도 손가락을 따라감).
+     원본(제목 id · 읽기 프로그램용)은 첫 장, 사본은 id · 차례 등장을 빼고 aria-hidden · inert. 장 수가 바뀌면 layout 이 다시 만든다 */
+  function copyPins() {
     pins.forEach(p => {
-      const last = npg[p.k] - 1, q = cur === p.k ? pg : cur > p.k ? last : 0;
-      const inside = cur === p.k && off && !((pg === 0 && off > 0) || (pg === last && off < 0));   // 같은 주제 안에서 끄는 중이면 손가락을 따라가지 않는다
-      p.box.style.transform = `translate3d(${q * pw - (inside ? off : 0)}px, 0, 0)`;
+      p.copies.forEach(c => c.remove()); p.copies = [];
+      for (let q = npg[p.k] - 1; q >= 1; q--) {
+        const c = p.box.cloneNode(true);
+        c.classList.add('tm-pin-copy'); c.setAttribute('aria-hidden', 'true'); c.inert = true;
+        c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+        c.querySelectorAll('.tm-anim, .tm-play, .tm-flash').forEach(n => { n.classList.remove('tm-anim', 'tm-play', 'tm-flash'); n.style.removeProperty('--k'); });
+        c.style.transform = `translate3d(${q * pw}px, 0, 0)`;
+        p.box.after(c); p.copies.push(c);
+      }
     });
   }
 
@@ -381,6 +390,7 @@
       const n = Math.max(1, Math.ceil((inner.scrollWidth - 4) / pw));
       npg[k] = n; p.style.width = n * pw + 'px';
     });
+    copyPins();
     inners.forEach((x, k) => center(k));
     // 장마다 차례 등장 순번 · 항목이 놓인 장
     anims.forEach((list, k) => {
@@ -440,7 +450,7 @@
   const atStart = () => cur === 0 && pg === 0;
   const atEnd = () => cur === N - 1 && pg === npg[N - 1] - 1;
   function place(off = 0) {
-    if (wide) { track.style.transform = `translate3d(${-(offOf(cur) + pg) * pw + off}px, 0, 0)`; placePin(off); }
+    if (wide) track.style.transform = `translate3d(${-(offOf(cur) + pg) * pw + off}px, 0, 0)`;
     else track.style.transform = `translate3d(calc(${-cur * 100}% + ${off}px), 0, 0)`;
   }
   function moveInd() {
@@ -509,6 +519,8 @@
       else if (i === cur) page = pg;
     }
     const changedT = i !== cur, changed = changedT || page !== pg;
+    // 넘기는 방향(1 = 다음, −1 = 이전) — 절 머리 · 판 번호가 그쪽에서 옆으로 들어온다(topics.css tmSide)
+    if (changed && cur >= 0) root.style.setProperty('--tm-dir', (wide ? offOf(i) + page < offOf(cur) + pg : i < cur) ? '-1' : '1');
     // (좁은 화면) 다른 판의 카드로 갈 때 — 위치는 차례 등장이 붙기 전에 잰다(붙은 뒤 재면 약 30px 위로 어긋났다)
     let ty = null;
     if (!wide && o.target) { const p = panels[i]; ty = o.target.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 14; }
@@ -568,13 +580,13 @@
      튕긴 속도가 끊기고 한 박자 쉬었다 가는 느낌이었다. 이제 놓는 순간의 손가락 속도로 이어 가다 부드럽게 서는(감속만 하는) 곡선을
      남은 거리에 맞춘 길이(0.2~0.46초)로 쓴다. 다음 끌기 · 다른 이동이 오면 곧바로 풀린다(settle) */
   let easeT = 0;
-  function settle() { clearTimeout(easeT); track.style.transition = ''; pins.forEach(p => { p.box.style.transition = ''; }); }
+  function settle() { clearTimeout(easeT); track.style.transition = ''; }
   function ease(rem, v0) {
     if (reduce) return;
     const T = Math.round(clamp(160 + rem * 0.5, 200, 460));
     const s = clamp(v0 * T / Math.max(1, rem), 0.8, 3);   // 곡선의 첫 기울기 = 놓는 순간 속도 ÷ 평균 속도
     const tr = `transform ${T}ms cubic-bezier(.3,${(0.3 * s).toFixed(3)},.25,1)`;
-    track.style.transition = tr; pins.forEach(p => { p.box.style.transition = tr; });
+    track.style.transition = tr;
     clearTimeout(easeT); easeT = setTimeout(settle, T + 80);
   }
   on(window, 'pointermove', e => {
@@ -755,7 +767,7 @@
     if (deckBtn0) deckBtn0.hidden = false;
     root.classList.remove('tabmode', 'tm-wide', 'tm-ready', 'tm-sheet');
     main.classList.remove('tm-dragging', 'near-l', 'near-r');
-    ['--tm-p', '--tm-pw', '--tm-ph', '--tm-z0', '--tm-avail'].forEach(k => root.style.removeProperty(k));
+    ['--tm-p', '--tm-pw', '--tm-ph', '--tm-z0', '--tm-avail', '--tm-dir'].forEach(k => root.style.removeProperty(k));
     document.title = title0;
   }
   return { stop, anchorId };
