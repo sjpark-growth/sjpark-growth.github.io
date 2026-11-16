@@ -46,12 +46,24 @@ main.tm-dragging .tm-panel:not(.on) { opacity: .6; }
 /* 페이지네이션 숫자 굴림(본인 11-16 「페이지네이션 애니메이션」) — 넓은 화면 GNB 「3 / 10」 · 지금 주제 탭 「3/10」 · 좁은 화면 「01 / 09」.
    옛 숫자(i.out)는 넘기는 방향으로 빠지고 새 숫자(i.in)가 반대쪽에서 들어온다(다음 = 위로 굴러감). 숫자 칸 밖은 잘라 계수기처럼.
    자르기는 clip-path — overflow(hidden · clip)로 자르면 칸의 글자 밑선이 칸 아래 끝으로 바뀌어 「2」 옆 「/ 10」이 3px 떠 보였다(11-16 실측) */
-.tm-roll { display: inline-grid; clip-path: inset(0); }
-.tm-roll > i { grid-area: 1 / 1; font-style: normal; }
-.tm-roll > i.in { animation: tmRollIn .55s cubic-bezier(.22,.8,.24,1) both; }
-.tm-roll > i.out { animation: tmRollOut .55s cubic-bezier(.22,.8,.24,1) both; }
-@keyframes tmRollIn { from { opacity: 0; transform: translate3d(0, calc(var(--tm-dir, 1) * 100%), 0); } to { opacity: 1; transform: none; } }
-@keyframes tmRollOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translate3d(0, calc(var(--tm-dir, 1) * -100%), 0); } }
+   (11-16 둘째 「더 강화」) 글자 칸(.tm-sl)마다 따로 굴리고(바뀐 자리만 · 일의 자리부터 70ms 차례), 들어올 때 살짝 기울었다 서고(skew) 흐림이 걷힌다.
+   공백도 칸이라 white-space: pre(안 하면 「/ 10」 의 빈칸이 접혀 「/10」) */
+.tm-roll { display: inline-flex; align-items: baseline; }
+.tm-sl { display: inline-grid; clip-path: inset(0 -2px); font-style: normal; white-space: pre; }
+.tm-sl > i { grid-area: 1 / 1; font-style: normal; }
+.tm-sl > i.in { animation: tmRollIn .62s cubic-bezier(.2,.9,.25,1.12) both; }
+.tm-sl > i.out { animation: tmRollOut .5s cubic-bezier(.4,0,.6,1) both; }
+@keyframes tmRollIn { from { opacity: 0; filter: blur(1.5px); transform: translate3d(0, calc(var(--tm-dir, 1) * 105%), 0) skewY(calc(var(--tm-dir, 1) * -8deg)); } 55% { filter: none; } to { opacity: 1; transform: none; } }
+@keyframes tmRollOut { from { opacity: 1; transform: none; } to { opacity: 0; filter: blur(1.5px); transform: translate3d(0, calc(var(--tm-dir, 1) * -105%), 0) skewY(calc(var(--tm-dir, 1) * 8deg)); } }
+/* 지렁이 알약 — 점 위에 하나(topics.js worm). 앞쪽 끝이 먼저, 뒤쪽 끝이 늦게(지연은 JS 가 방향 보고 transition-delay 로).
+   곡선은 빨리 출발하는 쪽 — 느리게 출발하는 곡선은 키를 빠르게 이어 누를 때마다 처음부터 다시 느리게 출발해 알약이 제자리에 머물렀다(11-16 실측) */
+.tm-worm { position: absolute; z-index: 1; top: 50%; height: var(--wh, 6px); margin-top: calc(var(--wh, 6px) / -2); border-radius: 99px; background: var(--accent); pointer-events: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent), 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: left .46s cubic-bezier(.3,.75,.2,1), right .46s cubic-bezier(.3,.75,.2,1); }
+/* 진행 막대 끝의 빛나는 점 — 좁은 화면은 상단 바 아래 가로 막대, 넓은 화면은 GNB 오른쪽 세로 막대(아래 넓은 화면 블록) */
+.tm-phead { position: absolute; z-index: 3; bottom: -3.5px; left: clamp(0px, calc(var(--tm-p, 0) * 100% - 3.5px), calc(100% - 7px)); width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); pointer-events: none; transition: left var(--tm-dur, .7s) var(--tm-ease, ease);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 12px 1px color-mix(in srgb, var(--accent) 60%, transparent); }
 .tm-anim.tm-play { animation: tmUp .62s cubic-bezier(.22,.8,.24,1) backwards; animation-delay: calc(var(--k, 0) * 45ms + 80ms); }
 :is(.sec-h, .growth-h) > .tm-anim.tm-play { animation: tmSide .8s cubic-bezier(.22,.8,.24,1) backwards; animation-delay: calc(var(--k, 0) * 40ms + 30ms); }
 .tm-idx.tm-anim.tm-play { animation: tmIdx .9s cubic-bezier(.22,.8,.24,1) backwards .1s; }
@@ -123,11 +135,18 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
 .tm-dock button:active:not(:disabled) { transform: scale(.95); }
 .tm-dock button:disabled { opacity: .32; cursor: default; }
 .tm-dock .tm-pl, .tm-dock .tm-nl { max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tm-dots { display: flex; align-items: center; padding: 0 2px; }
+/* 막대 폭 = 내용 폭(화면 − 24px 까지). left: 50% 인 고정 상자는 저절로는 화면 절반 남짓까지만 넓어져, 태블릿 폭(768 · 900)에서 「01 / 09」 가
+   35px 로 눌려 두 줄로 꺾였다(11-16 실측). 넘치면 이전 · 다음 이름만 말줄임 */
+.tm-dock { width: max-content; max-width: calc(100vw - 24px); box-sizing: border-box; }
+.tm-dock > * { flex: none; }
+.tm-dock > .tm-prev, .tm-dock > .tm-next { flex: 0 1 auto; min-width: 0; }
+.tm-dock button { white-space: nowrap; }
+.tm-dots { position: relative; display: flex; align-items: center; padding: 0 2px; --wh: 6px; }
 .tm-dots button { width: 24px; height: 36px; padding: 0; justify-content: center; }
-.tm-dots i { display: block; width: 6px; height: 6px; border-radius: 99px; background: var(--rule-2); transition: width var(--tm-dur, .7s) var(--tm-ease, ease), background-color .3s; }
+.tm-dots i { display: block; width: 6px; height: 6px; border-radius: 99px; background: var(--rule-2); transition: background-color .3s; }
 .tm-dots button:hover i { background: var(--ink-3); }
-.tm-dots button.on i { width: 18px; background: var(--accent); }
+.tm-dots button.on i { background: var(--accent); }   /* 켜진 점 위로 지렁이 알약이 덮는다(폭은 알약이) */
+.tm-cdots { display: none; }   /* 휴대폰 숫자 밑 점 — 아래 600px 블록 */
 .tm-count { display: inline-flex; align-items: baseline; gap: 4px; padding: 0 8px 0 4px; font-family: var(--f-num); font-stretch: 85%; font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 /* (2026-11-16) 숫자도 목차 단추 — 누르면 모든 주제 · 항목 */
 .tm-dock .tm-count { align-items: baseline; gap: 4px; padding: 0 10px 0 8px; font-family: var(--f-num); font-stretch: 85%; font-size: 13px; color: var(--ink-3); }
@@ -171,9 +190,14 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
 }
 @media (max-width: 600px) {
   html.tabmode .ticker { display: none; }
-  .tm-dock { left: 10px; right: 10px; transform: none; justify-content: space-between; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .tm-dock { left: 10px; right: 10px; width: auto; max-width: none; transform: none; justify-content: space-between; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
   .tm-dock .tm-pl, .tm-dock .tm-nl, .tm-dots { display: none; }
   .tm-dock button { height: 40px; padding: 0 12px; }
+  /* 점이 빠지는 폭 — 「02 / 09」 아래에 작은 점 줄(누르지 않음 · 숫자 단추의 일부)과 지렁이 알약(11-16 「더 강화」) */
+  .tm-dock .tm-count { flex-wrap: wrap; justify-content: center; align-content: center; row-gap: 5px; }
+  .tm-cdots { position: relative; display: flex; flex-basis: 100%; justify-content: center; gap: 5px; --wh: 4px; }
+  .tm-cdots > i { display: block; width: 4px; height: 4px; border-radius: 99px; background: var(--rule-2); }
+  .tm-cdots .tm-worm { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent); }
   .tm-hint { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); font-size: 12px; }
   .tm-inner { padding-bottom: 92px; }
   .tm-drop { padding: 0 8px; }
@@ -242,7 +266,7 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   html.tm-wide .mast .tm-nav .tm-tab .n { min-width: 1.6em; }
   html.tm-wide .mast .tm-nav .tm-tab:hover { background: var(--sunk); color: var(--ink); }
   html.tm-wide .mast .tm-nav .tm-tab[aria-current="page"] { background: var(--ink); color: var(--paper); box-shadow: 0 8px 22px rgba(12, 26, 43, .18); }
-  html.tm-wide .tm-tab .pc, html.tm-wide .tm-tab .pc.tm-roll { display: inline-grid; margin-left: auto; font-family: var(--f-num); font-stretch: 85%; font-size: 12px; font-weight: 600; letter-spacing: .02em;
+  html.tm-wide .tm-tab .pc, html.tm-wide .tm-tab .pc.tm-roll { display: inline-flex; margin-left: auto; font-family: var(--f-num); font-stretch: 85%; font-size: 12px; font-weight: 600; letter-spacing: .02em;
     color: color-mix(in srgb, var(--paper) 72%, transparent); font-variant-numeric: tabular-nums; }
   /* 지금 주제의 항목 — 펼침(지금 장에 있는 항목은 강조색 · 점) */
   html.tm-wide .tm-sub { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .45s cubic-bezier(.2,.8,.2,1), visibility 0s .45s; }
@@ -366,9 +390,10 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   html.tm-wide .tm-edge.prev .tm-el { left: calc(100% + 8px); }
   html.tm-wide .tm-edge.next .tm-el { right: calc(100% + 8px); }
   html.tm-wide .tm-edge:hover .tm-el:not(:empty) { opacity: 1; }
-  html.tm-wide .tm-pdots { position: absolute; z-index: 20; left: 50%; bottom: max(5px, calc(var(--py) / 2 - 3px)); transform: translateX(-50%); display: flex; gap: 5px; pointer-events: none; }
-  html.tm-wide .tm-pdots i { display: block; width: 5px; height: 5px; border-radius: 99px; background: var(--rule-2); transition: width var(--tm-dur, .7s) var(--tm-ease, ease), background-color .3s; }
-  html.tm-wide .tm-pdots i.on { width: 16px; background: var(--accent); }
+  html.tm-wide .tm-pdots { position: absolute; z-index: 20; left: 50%; bottom: max(5px, calc(var(--py) / 2 - 3px)); transform: translateX(-50%); display: flex; gap: 9px; pointer-events: none; --wh: 5px; }
+  html.tm-wide .tm-pdots i { display: block; width: 5px; height: 5px; border-radius: 99px; background: var(--rule-2); transition: background-color .3s; }
+  html.tm-wide .tm-pdots i.on { background: var(--accent); }   /* 폭은 지렁이 알약이(점 간격 5 → 9px — 쉬는 알약 16px 이 옆 점을 덮지 않게) */
+  html.tm-wide .tm-phead { left: auto; bottom: auto; right: -3.5px; top: clamp(0px, calc(var(--tm-p, 0) * 100% - 3.5px), calc(100% - 7px)); transition: top var(--tm-dur, .7s) var(--tm-ease, ease); }
   /* 주제가 바뀌어 점 줄을 새로 만들 때 — 넘기는 방향에서 들어온다(가운데 맞춤 translateX(-50%) 를 함께 적는다) */
   @keyframes tmDotsIn { from { opacity: 0; transform: translate3d(calc(-50% + var(--tm-dir, 1) * 28px), 0, 0); } to { opacity: 1; transform: translate3d(-50%, 0, 0); } }
   html.tm-wide .tm-pdots.tm-pd-in { animation: tmDotsIn .6s cubic-bezier(.22,.8,.24,1) .12s both; }
@@ -383,8 +408,8 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tm-track, .tm-panel, .tm-ind, .tm-dots i, .tm-drop, html.tabmode .mast::after, .tm-sub, .tm-pdots i, .tm-edge { transition: none !important; }
-  .tm-anim.tm-play, .tm-hint, .tm-hint .h-drag i, .tm-roll > i, .tm-pdots { animation: none !important; }
+  .tm-track, .tm-panel, .tm-ind, .tm-dots i, .tm-drop, html.tabmode .mast::after, .tm-sub, .tm-pdots i, .tm-edge, .tm-worm, .tm-phead { transition: none !important; }
+  .tm-anim.tm-play, .tm-hint, .tm-hint .h-drag i, .tm-sl > i, .tm-pdots { animation: none !important; }
 }
 @media print {
   html.tabmode, html.tabmode body { height: auto; overflow: visible; display: block; }
@@ -393,7 +418,7 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   .tm-track { display: block; transform: none !important; }
   .tm-panel { height: auto; overflow: visible; opacity: 1 !important; }
   .tm-inner { padding-bottom: 0; }
-  .tm-idx, .tm-dock, .tm-drop, .tm-hint, .tm-back, .tm-nav, .tm-pager, .tm-copy, .tm-edge, .tm-pdots { display: none !important; }
+  .tm-idx, .tm-dock, .tm-drop, .tm-hint, .tm-back, .tm-nav, .tm-pager, .tm-copy, .tm-edge, .tm-pdots, .tm-phead { display: none !important; }
   .tm-anim { animation: none !important; }
   html.tm-sheet main::after { display: none; }
 }

@@ -211,7 +211,7 @@
   dock.innerHTML = `
     <button type="button" class="tm-prev" aria-label="이전 주제">${ARR('M10 3 5 8l5 5')}<span class="tm-pl"></span></button>
     <div class="tm-dots">${TOPICS.map((t, i) => `<button type="button" data-i="${i}" aria-label="${pad(i + 1)} ${t.label}"><i></i></button>`).join('')}</div>
-    <button type="button" class="tm-count" aria-controls="tmDrop" aria-expanded="false" title="목차 — 모든 주제 · 항목"><b>01</b><span>/ ${pad(N)}</span></button>
+    <button type="button" class="tm-count" aria-controls="tmDrop" aria-expanded="false" title="목차 — 모든 주제 · 항목"><b>01</b><span>/ ${pad(N)}</span><span class="tm-cdots" aria-hidden="true">${'<i></i>'.repeat(N)}</span></button>
     <button type="button" class="tm-next" aria-label="다음 주제"><span class="tm-nl"></span>${ARR('m6 3 5 5-5 5')}</button>
     <button type="button" class="tm-menu" aria-controls="tmDrop" aria-expanded="false" title="모든 주제 · 항목"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span>목차</span></button>`;
   document.body.appendChild(dock);
@@ -228,6 +228,9 @@
   const edgeN = el('button', { type: 'button', class: 'tm-edge next', 'aria-label': '다음 장' }, ARR('m6 3 5 5-5 5') + '<span class="tm-el"></span>');
   const pdots = el('div', { class: 'tm-pdots', 'aria-hidden': 'true' });
   main.append(edgeP, edgeN, pdots);
+  // 진행 막대 끝의 빛나는 점 — 넓은 화면은 GNB 오른쪽 세로 막대, 좁은 화면은 상단 바 아래 가로 막대를 따라간다(--tm-p · 11-16 「더 강화」)
+  const phead = el('i', { class: 'tm-phead', 'aria-hidden': 'true' });
+  mast.appendChild(phead);
   edgeP.addEventListener('click', () => step(-1)); edgeN.addEventListener('click', () => step(1));
   $('.tm-pp', pager).addEventListener('click', () => step(-1)); $('.tm-pn', pager).addEventListener('click', () => step(1));
   on(main, 'pointermove', e => {
@@ -475,20 +478,52 @@
   }
   /* 페이지네이션 애니메이션(본인 11-16) — 장 · 주제 번호가 바뀌면 옛 숫자는 넘기는 방향으로 빠지고 새 숫자가 반대쪽에서 굴러 들어온다
      (topics.css .tm-roll · --tm-dir). 첫 그리기 · 장 다시 나눔(layout)에서는 굴리지 않고 바로 바꾼다 */
+  // (11-16 둘째, 본인 「더 강화해줘」) 글자 칸(.tm-sl)마다 따로 — 바뀐 자리만, 일의 자리부터 70ms 씩 차례로 굴린다(계수기처럼).
+  // 자릿수가 달라지면(9 → 10) 통째로 한 칸에서 굴린다. hit = 도착할 때 강조색으로 물들며 살짝 커졌다 돌아온다(GNB 「3」 · 휴대폰 「02」)
   const rollEl = (v, c) => { const n = document.createElement('i'); if (c) n.className = c; n.textContent = v; return n; };
-  function roll(box, v, anim) {
+  const slot = t => { const s = document.createElement('i'); s.className = 'tm-sl'; s.append(rollEl(t)); return s; };
+  function turn(s, t, delay) {   // 한 칸 굴림 — 옛 글자는 빠지고 새 글자가 들어온다. 빠르게 이어 넘기면 앞 굴림은 바로 치운다
+    $$('i.out', s).forEach(n => n.remove());
+    const old = s.lastElementChild, n = rollEl(t, 'in');
+    if (old) { old.className = 'out'; old.setAttribute('aria-hidden', 'true'); old.style.animationDelay = delay + 'ms'; setTimeout(() => old.remove(), 640 + delay); }
+    n.style.animationDelay = delay + 'ms'; s.append(n);
+  }
+  const accent = () => getComputedStyle(root).getPropertyValue('--accent').trim() || '#2f5bd3';
+  function roll(box, v, anim, hit) {
     v = String(v);
     if (box.dataset.v === v) return;
-    const was = box.dataset.v;
+    const was = box.dataset.v || '';
     box.dataset.v = v; box.classList.add('tm-roll');
-    if (!anim || reduce || !was || !v) { box.textContent = ''; if (v) box.append(rollEl(v)); return; }
-    $$('i.out', box).forEach(n => n.remove());   // 빠르게 이어 넘기면 앞 굴림은 바로 치운다
-    const old = box.lastElementChild;
-    if (old) { old.className = 'out'; old.setAttribute('aria-hidden', 'true'); setTimeout(() => old.remove(), 600); }
-    box.append(rollEl(v, 'in'));
+    const lay = t => { box.textContent = ''; [...t].forEach(c => box.append(slot(c))); };
+    if (!anim || reduce || !was || !v) { lay(v); return; }
+    if (was.length !== v.length) { box.textContent = ''; const s = slot(was); box.append(s); turn(s, v, 0); }
+    else {
+      if (box.children.length !== was.length) lay(was);   // 앞 굴림이 통째 칸이었으면 글자 칸으로 다시 나눈 뒤
+      let k = 0;
+      for (let p = v.length - 1; p >= 0; p--) if (v[p] !== was[p]) turn(box.children[p], v[p], (k++) * 70);
+    }
+    if (hit && box.animate) { const a = accent(); box.animate([{ color: a, transform: 'scale(1.18)', offset: 0 }, { color: a, offset: .45 }], { duration: 950, easing: 'cubic-bezier(.22,.8,.24,1)' }); }
   }
-  // 장 점 — 점을 다시 만들지 않고 켜진 점만 바꿔 알약이 옆 점으로 늘었다 줄며 옮겨 간다(예전엔 매번 innerHTML 을 새로 써 폭 전환이 안 보였다).
-  // 주제가 바뀌어 점 수가 달라지면 새 줄이 넘기는 방향에서 들어오고 켜진 점이 자라난다
+  /* 지렁이 알약(본인 11-16 「더 강화」) — 점은 제자리 · 같은 크기, 그 위 알약(b.tm-worm) 하나가 옮겨 간다. 넘기는 쪽 끝이 먼저 새 점까지 늘어나고
+     뒤쪽 끝이 0.13초 늦게 따라붙는다(멀리 건너뛰면 그만큼 길게 늘었다 줄어듦). P = 쉬는 알약 폭. 숨은 자리(display: none)는 다음 그리기에서 다시 잰다 */
+  function worm(host, k, anim, P, grow) {
+    if (!host) return;
+    let w = host.querySelector(':scope > .tm-worm');
+    if (!w) { w = document.createElement('b'); w.className = 'tm-worm'; w.setAttribute('aria-hidden', 'true'); host.append(w); anim = false; }
+    const d = $$('i', host)[k], hr = host.getBoundingClientRect();
+    if (!d || !hr.width) { w.style.display = 'none'; return; }
+    const r = d.getBoundingClientRect(), c = r.left - hr.left + r.width / 2, L = c - P / 2, R = hr.width - c - P / 2;
+    const was = parseFloat(w.style.left), moving = anim && !reduce && w.style.display !== 'none' && !isNaN(was) && Math.abs(was - L) > .5;
+    w.style.display = '';
+    if (!moving) {
+      w.style.transition = 'none'; w.style.left = L + 'px'; w.style.right = R + 'px'; void w.offsetWidth; w.style.transition = '';
+      if (grow && !reduce && w.animate) w.animate([{ transform: 'scaleX(.2)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 520, delay: 160, easing: 'cubic-bezier(.22,.8,.24,1)', fill: 'backwards' });
+      return;
+    }
+    w.style.transitionDelay = L > was ? '.13s, 0s' : '0s, .13s';   // left, right 순서(topics.css .tm-worm transition) — 앞쪽 끝이 먼저
+    w.style.left = L + 'px'; w.style.right = R + 'px';
+  }
+  // 장 점 — 점 줄은 주제가 바뀌어 점 수가 달라질 때만 새로 만든다(넘기는 방향에서 들어오고 알약이 자라남). 같은 주제 안에서는 알약만 옮겨 간다
   let pdFor = -1;
   function paintPdots(i, anim) {
     const n = npg[i] > 1 ? npg[i] : 0, fresh = pdFor !== i + ':' + n;
@@ -498,13 +533,18 @@
       if (anim && n && !reduce) { pdots.classList.remove('tm-pd-in'); void pdots.offsetWidth; pdots.classList.add('tm-pd-in'); }
     }
     Array.from(pdots.children).forEach((d, q) => d.classList.toggle('on', q === pg));
+    worm(pdots, pg, anim, 16, fresh && anim);
   }
-  // 장을 옮기면 그쪽 화살표(넓은 화면 GNB ‹ › · 좁은 화면 아래 막대)가 살짝 밀렸다 돌아온다 — 키 · 휠 · 드래그로 넘겨도 어디로 갔는지 보이게
+  // 장을 옮기면 그쪽 화살표(넓은 화면 GNB ‹ › · 좁은 화면 아래 막대)가 6px 밀렸다 돌아오고 단추 둘레에 강조색 링이 퍼진다 —
+  // 키 · 휠 · 드래그로 넘겨도 어디로 갔는지 보이게. GNB 진행 점(.tm-phead)도 한 번 부풀었다 돌아온다
   function kick(d) {
     if (reduce) return;
     const b = wide ? $(d > 0 ? '.tm-pn' : '.tm-pp', pager) : $(d > 0 ? '.tm-next' : '.tm-prev', dock);
     const s = b && $('svg', b); if (!s || !s.animate) return;
-    s.animate([{ transform: 'none' }, { transform: `translateX(${d * 4}px)` }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.3,0,.12,1)' });
+    const E = 'cubic-bezier(.22,.8,.24,1)', a = accent();
+    s.animate([{ transform: 'none' }, { transform: `translateX(${d * 6}px)` }, { transform: 'none' }], { duration: 460, easing: 'cubic-bezier(.3,0,.12,1)' });
+    b.animate([{ boxShadow: `0 0 0 0 color-mix(in srgb, ${a} 55%, transparent)` }, { boxShadow: `0 0 0 11px color-mix(in srgb, ${a} 0%, transparent)` }], { duration: 640, easing: E });
+    phead.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.9)', offset: .3 }, { transform: 'scale(1)' }], { duration: 760, easing: E });
   }
   function paint(anim) {   // 지금 위치를 GNB · 진행 막대 · 가장자리 화살표에 그린다(anim = 넘겨서 바뀐 것 — 숫자 굴림 · 점 등장)
     const i = cur;
@@ -518,7 +558,7 @@
       edgeP.disabled = atStart(); edgeN.disabled = atEnd();
       edgeP.setAttribute('aria-label', '이전 장' + (prevL ? ': ' + prevL : '')); edgeN.setAttribute('aria-label', '다음 장' + (nextL ? ': ' + nextL : ''));
       $('.tm-pp', pager).disabled = atStart(); $('.tm-pn', pager).disabled = atEnd();
-      roll($('.tm-pcount b', pager), pg + 1, anim); roll($('.tm-pcount span', pager), '/ ' + npg[i], anim);
+      roll($('.tm-pcount b', pager), pg + 1, anim, true); roll($('.tm-pcount span', pager), '/ ' + npg[i], anim);
       $('.tm-pcount small', pager).textContent = TOPICS[i].label;
       $('.tm-pcount', pager).setAttribute('aria-label', `${TOPICS[i].label} ${pg + 1} / ${npg[i]}장`);
       paintPdots(i, anim);
@@ -526,7 +566,9 @@
       keepNav();
     } else {
       dots.forEach((b, k) => { b.classList.toggle('on', k === i); b.setAttribute('aria-current', String(k === i)); });
-      roll($('.tm-count b', dock), pad(i + 1), anim);
+      worm($('.tm-dots', dock), i, anim, 18); worm($('.tm-cdots', dock), i, anim, 11);   // 태블릿 아래 막대 점 · 휴대폰 숫자 밑 점(둘 중 보이는 쪽만)
+      roll($('.tm-count b', dock), pad(i + 1), anim, true);
+      $('.tm-count', dock).setAttribute('aria-label', `${TOPICS[i].label} ${i + 1} / ${N} — 목차`);   // 글자 칸으로 나뉘어 「0 2」 처럼 읽히지 않게
       $('.tm-pl', dock).textContent = i > 0 ? TOPICS[i - 1].label : '';
       $('.tm-nl', dock).textContent = i < N - 1 ? TOPICS[i + 1].label : '';
       $('.tm-prev', dock).disabled = i === 0; $('.tm-next', dock).disabled = i === N - 1;
@@ -796,7 +838,7 @@
     $$('.tm-anim, .tm-flash').forEach(n => { n.classList.remove('tm-anim', 'tm-play', 'tm-flash'); n.style.removeProperty('--k'); });
     for (let i = homes.length - 1; i >= 0; i--) { const [n, parent, next] = homes[i]; parent.insertBefore(n, next && next.parentNode === parent ? next : null); }
     if (undoXlink) undoXlink();
-    [stage, dock, hint, drop, edgeP, edgeN, pdots, pager, copy, back].forEach(n => n && n.remove());
+    [stage, dock, hint, drop, edgeP, edgeN, pdots, phead, pager, copy, back].forEach(n => n && n.remove());
     if (oldNav) nav.replaceWith(oldNav); else nav.remove();
     if (deckBtn0) deckBtn0.hidden = false;
     root.classList.remove('tabmode', 'tm-wide', 'tm-ready', 'tm-sheet');
