@@ -1479,6 +1479,18 @@
     }, { passive: true });
     addEventListener('beforeprint', () => $$('.reveal').forEach(finish));
   }
+  /* (2026-11-16) 스크롤 ↔ 장 넘김(안 A) — 본판 상단 「장으로 보기」(#deckBtn): 누르는 순간 화면 위쪽에 걸친 카드 · 절 id 를
+     주제별 보기(topics.html) 주소에 붙여 같은 자리에서 열리게. 장 넘김 쪽 「스크롤로 보기」도 거꾸로 같은 일을 한다(topics.js anchorId) */
+  function wireDeckBtn() {
+    const a = $('#deckBtn'); if (!a || document.documentElement.classList.contains('tabmode')) return;
+    a.addEventListener('click', () => {
+      const y = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mast-h')) || 60) + 30;
+      const hit = n => { const r = n.getBoundingClientRect(); return r.top <= y && r.bottom > y; };
+      const t = $$('.proj[id], .xd[id]').find(hit) || $$('main > section[id]').find(hit);
+      a.setAttribute('href', (a.getAttribute('href') || 'topics.html').split('#')[0] + (t ? '#' + t.id : ''));
+    });
+  }
+
   function wireSpot() {
     if (reduceMotion || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     const SEL = '.proj, .gcard, .pillar, .belief, .job, .score, .phases > li, .arc, .mp, .hk .kpi, .factgrid > section, .dash-side';
@@ -1516,6 +1528,7 @@
   wireMeta();
   wireReveal();
   wireSpot();
+  wireDeckBtn();
   onFirstView($('#kpis'), () => setTimeout(() => rollNumbers($('#kpis')), reduceMotion ? 0 : 200), 0.2);
   onFirstView($('#perfChart'), () => drawPerf(true), 0.2);
 })();

@@ -14,7 +14,18 @@
 (function () {
   'use strict';
   const root = document.documentElement;
-  if (!root.classList.contains('tabmode')) return;
+  /* (2026-11-16) 켜고 끌 수 있게 — window.TopicsDeck.start(opts) · stop(). topics.html 은 html.tabmode 로 시작하면 저절로 켜진다.
+     한 페이지 안에서 스크롤 ↔ 장 넘김을 바꾸는 시안(toggle.html · assets/mode-toggle.js)이 쓴다.
+     opts.target = 처음 보일 요소(그 판 · 그 장으로), opts.back = 상단 「스크롤로 보기」 링크(기본 켬 — 시안은 자기 단추를 쓴다) */
+  function start(opts) {
+  opts = opts || {};
+  // 시안에서 스크롤로 보다가 켤 때 — 본판 스크롤 등장(app.js wireReveal)이 남긴 「아직 안 보임」 · 접힌 상단 바를 풀고 맨 위에서 시작
+  document.querySelectorAll('.reveal').forEach(n => n.classList.remove('reveal', 'reveal-in'));
+  root.classList.remove('mast-off'); window.scrollTo({ top: 0, behavior: 'instant' });
+  root.classList.add('tabmode');
+  const L = [], on = (t, ty, fn, o) => { t.addEventListener(ty, fn, o); L.push([t, ty, fn, o]); };   // 끌 때 떼어 낼 바깥(문서 · 창 · main · 상단 바) 이벤트
+  let dead = false;
+  const title0 = document.title;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -27,7 +38,7 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   /* 주제 — 판에 넣을 절(secs)과 항목(sub: [이름, 대상]) */
-  const TOPICS = [
+  const TOPICS0 = [
     { id: 'intro', label: '소개', en: 'Intro', desc: '첫인상 — 성과 리포트 · 핵심 성과 · 핵심 요약', secs: ['.hero', '#summary'],
       sub: () => [['성과 리포트', '.mboard-wrap'], ['핵심 성과', '.hkey'], ['핵심 요약', '#summary .sum-l'], ['그 밖의 개선', '#summary .more']] },
     { id: 'dash', label: '대시보드', en: 'Dashboard', desc: '직접 만든 운영 도구 — 화면의 숫자는 모두 임의 값', secs: ['#dash'],
@@ -47,6 +58,7 @@
     { id: 'contact', label: '원칙 · 연락처', en: 'Contact', desc: '일하는 원칙 네 가지와 연락처 · 직무 점수', secs: ['#beliefs', '#contact', '.foot'],
       sub: () => [['일하는 원칙', '#beliefs'], ['연락처', '#contact .sec-h'], ['직무 점수', '.scorebox'], ['인적 사항', '#factGrid']] },
   ];
+  const TOPICS = TOPICS0.filter(t => t.secs.some(sel => document.querySelector(sel)));
   const N = TOPICS.length;
   const pad = n => String(n).padStart(2, '0');
 
@@ -54,6 +66,9 @@
   const main = $('main');
   const stage = el('div', { class: 'tm-stage' });
   const track = el('div', { class: 'tm-track' });
+  // 끌 때 절을 제자리로 — 문서 순서대로 [절, 부모, 다음 형제] 를 적어 두고 거꾸로 되돌린다
+  const docOrder = (a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+  const homes = TOPICS.flatMap(t => t.secs.map(sel => $(sel)).filter(Boolean)).sort(docOrder).map(n => [n, n.parentNode, n.nextSibling]);
   const panels = TOPICS.map((t, i) => {
     const p = el('section', { class: 'tm-panel', id: 'tm-' + t.id, role: 'region', 'aria-label': `${pad(i + 1)} ${t.label}`, tabindex: '-1' });
     if (i) p.appendChild(el('div', { class: 'tm-idx', 'aria-hidden': 'true' }, pad(i + 1)));
@@ -69,12 +84,14 @@
 
   /* 대시보드 판 — 데모 세 개(브리핑룸 · 재고 신호판 · 쇼핑 인사이트) 단추는 「기타 대시보드」 판으로 옮겼으니 그 판으로 가는 단추 하나로.
      설명서 단추는 그대로(본인 11-16 「설명서는 그대로 두고」). 본판(index.html)은 data.js demo2 그대로 */
+  let undoXlink = null;
   (() => {
     const acts = $('#dashSide .actions'); if (!acts || !$('#xdash')) return;
     const moved = $$('a.btn', acts).filter(a => /(briefing|stock|insight)-demo\.html/.test(a.getAttribute('href') || ''));
     if (!moved.length) return;
-    moved[0].before(el('a', { class: 'btn ghost tm-xlink', href: '#xdash' }, '기타 대시보드 4개 <span aria-hidden="true">→</span>'));
-    moved.forEach(a => a.remove());
+    const link = el('a', { class: 'btn ghost tm-xlink', href: '#xdash' }, '기타 대시보드 4개 <span aria-hidden="true">→</span>');
+    moved[0].before(link); moved.forEach(a => a.remove());
+    undoXlink = () => { moved.forEach(a => link.before(a)); link.remove(); };
   })();
 
   /* 장(판)에 들어올 때 차례로 떠오를 덩어리 — 순번(--k)은 장마다 다시 센다(layout) */
@@ -98,8 +115,13 @@
   const ind = el('span', { class: 'tm-ind', 'aria-hidden': 'true' });
   nav.append(list, ind);
   if (oldNav) oldNav.replaceWith(nav); else shell.appendChild(nav);
-  const back = el('a', { class: 'iconbtn tm-back', href: 'index.html', title: '한 페이지로 이어 보기(본판)' }, '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h10"/></svg><span>스크롤로 보기</span>');
-  $('.mast .tools').prepend(back);
+  const back = opts.back === false ? null : el('a', { class: 'iconbtn tm-back', href: 'index.html', title: '한 페이지로 이어 보기(본판) — 지금 보던 자리로' }, '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h10"/></svg><span>스크롤로 보기</span>');
+  if (back) {
+    $('.mast .tools').prepend(back);
+    // 안 A(11-16) — 누르는 순간 지금 장의 카드 · 절 id 를 붙여 본판의 같은 자리로(게시본은 공개 사이트 주소 뒤에 붙는다)
+    back.addEventListener('click', () => { const id = anchorId(), base = (back.getAttribute('href') || 'index.html').split('#')[0]; back.setAttribute('href', base + (id ? '#' + id : '')); });
+  }
+  const deckBtn0 = $('#deckBtn'); if (deckBtn0) deckBtn0.hidden = true;   // 본판의 「장으로 보기」 단추는 장 넘김 동안 숨김
   // 넓은 화면 GNB 아래 — 장 넘기기 + 저작권 줄(꼬리말은 넓은 화면에서 장에 넣지 않는다)
   const ARR = d => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
   const pager = el('div', { class: 'tm-pager', role: 'group', 'aria-label': '장 넘기기' },
@@ -148,7 +170,7 @@
       dropT = setTimeout(() => openDrop(i), drop.hidden ? 120 : 0);
     });
   });
-  mast.addEventListener('mouseleave', () => { if (fine.matches && !root.classList.contains('tm-sheet')) closeDrop(); });
+  on(mast, 'mouseleave', () => { if (fine.matches && !root.classList.contains('tm-sheet')) closeDrop(); });
   drop.addEventListener('mouseenter', () => clearTimeout(dropT));
   const subClick = e => {
     const b = e.target.closest('[data-go]'); if (!b) return false;
@@ -158,8 +180,8 @@
     return true;
   };
   drop.addEventListener('click', subClick);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drop.hidden) { closeDrop(true); tabs[cur].focus(); } });
-  document.addEventListener('pointerdown', e => { if (!drop.hidden && !drop.contains(e.target) && !e.target.closest('.tm-nav, [aria-controls="tmDrop"]')) closeDrop(true); });
+  on(document, 'keydown', e => { if (e.key === 'Escape' && !drop.hidden) { closeDrop(true); tabs[cur].focus(); } });
+  on(document, 'pointerdown', e => { if (!drop.hidden && !drop.contains(e.target) && !e.target.closest('.tm-nav, [aria-controls="tmDrop"]')) closeDrop(true); });
 
   nav.addEventListener('keydown', e => {   // 좁은 화면 탭에서 ↓ = 그 주제 드롭다운
     const i = tabs.indexOf(document.activeElement); if (i < 0 || wide) return;
@@ -195,12 +217,12 @@
   main.append(edgeP, edgeN, pdots);
   edgeP.addEventListener('click', () => step(-1)); edgeN.addEventListener('click', () => step(1));
   $('.tm-pp', pager).addEventListener('click', () => step(-1)); $('.tm-pn', pager).addEventListener('click', () => step(1));
-  main.addEventListener('pointermove', e => {
+  on(main, 'pointermove', e => {
     if (!wide || e.pointerType !== 'mouse' || drag) return;
     const r = main.getBoundingClientRect(), x = e.clientX - r.left;
     main.classList.toggle('near-l', x < 110); main.classList.toggle('near-r', x > r.width - 110);
   });
-  main.addEventListener('pointerleave', () => main.classList.remove('near-l', 'near-r'));
+  on(main, 'pointerleave', () => main.classList.remove('near-l', 'near-r'));
 
   const hint = el('div', { class: 'tm-hint', 'aria-hidden': 'true' }, '<span class="h-drag"><i></i></span><span class="ht"></span>');
   document.body.appendChild(hint);
@@ -303,7 +325,7 @@
   }
 
   function layout() {
-    if (!wide) return;
+    if (!wide || dead) return;
     pw = stage.clientWidth; ph = stage.clientHeight;
     if (!pw || !ph) return;
     root.style.setProperty('--tm-pw', pw + 'px'); root.style.setProperty('--tm-ph', ph + 'px');
@@ -542,7 +564,7 @@
     track.style.transition = tr; pins.forEach(p => { p.box.style.transition = tr; });
     clearTimeout(easeT); easeT = setTimeout(settle, T + 80);
   }
-  addEventListener('pointermove', e => {
+  on(window, 'pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
     const rx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (!drag.on) {
@@ -585,13 +607,13 @@
     const kill = ev => { ev.stopPropagation(); ev.preventDefault(); };
     addEventListener('click', kill, { capture: true, once: true }); setTimeout(() => removeEventListener('click', kill, true), 60);
   };
-  addEventListener('pointerup', endDrag); addEventListener('pointercancel', endDrag);
+  on(window, 'pointerup', endDrag); on(window, 'pointercancel', endDrag);
 
   /* 휠 · 트랙패드 — 넓은 화면은 세로 휠도 장 넘김(한 번 돌림 = 한 장, 손을 멈출 때까지 다음 장으로 가지 않는다).
      안에서 스크롤되는 칸(대시보드 구축 내용 목록 등)이 그쪽으로 더 스크롤될 수 있으면 그 칸에 맡긴다. 좁은 화면은 가로 밀기만 */
   const scrollsY = (n, dy) => { for (; n && n !== stage; n = n.parentElement) { const oy = getComputedStyle(n).overflowY; if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) { if (dy > 0 ? n.scrollTop + n.clientHeight < n.scrollHeight - 1 : n.scrollTop > 0) return true; } } return false; };
   let wLock = 0, wAcc = 0, wLast = 0;
-  main.addEventListener('wheel', e => {
+  on(main, 'wheel', e => {
     if (e.ctrlKey || drag) return;
     const horiz = Math.abs(e.deltaX) > Math.abs(e.deltaY);
     if (!horiz && (!wide || scrollsY(e.target, e.deltaY))) return;
@@ -606,7 +628,7 @@
   }, { passive: true });
 
   /* 키 — ← → (넓은 화면은 ↑ ↓ · PageUp/Down · Space 도). 입력 칸 · 표 · 대화 상자 안에서는 그대로 */
-  document.addEventListener('keydown', e => {
+  on(document, 'keydown', e => {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
     if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable], .seg, .modal, .lightbox, .tablewrap')) return;
     const k = e.key, onBtn = e.target.closest && e.target.closest('button, a, summary');
@@ -620,14 +642,14 @@
     e.preventDefault(); step(d);
   });
   /* 넓은 화면 — 키보드 Tab 으로 다른 장의 단추 · 링크에 가면 그 장으로 */
-  document.addEventListener('focusin', e => {
+  on(document, 'focusin', e => {
     // 판 자체(go 의 focus 옵션 — 항목으로 간 뒤 판에 초점)는 따라가지 않는다: 판의 장은 늘 0 이라 키보드로 고른 항목 장에서 첫 장으로 튕겼다(교차 검증 11-16)
     if (!wide || !stage.contains(e.target) || e.target.classList.contains('tm-panel') || panels[cur].contains(e.target) === false) return;
     const q = pageOf(e.target, cur); if (q !== pg && (e.target.matches(':focus-visible') || !fine.matches)) go(cur, { page: q });
   });
 
   /* 페이지 안 링크(#perf · #p-cp1 …) — 그 판(장)으로 옮기고 그 자리로. 본판의 세로 스크롤 처리(app.js)보다 먼저 받는다 */
-  document.addEventListener('click', e => {
+  on(document, 'click', e => {
     const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || a.closest('.tm-nav')) return;
     const h = a.getAttribute('href'); if (!h || h === '#' || h.startsWith('#/')) return;
     let t = null; try { t = $(h); } catch (err) { return; }
@@ -646,7 +668,7 @@
   // 내용 높이가 늦게 바뀌는 것(장을 나눈 뒤 차트를 새 폭으로 다시 그림 · 그림 · 숫자 굴리기)도 장 수를 바꾼다 — 성과 네 단계가 옆 장(그로스) 위로
   // 흐리게 겹쳐 보였다(11-16). 0.8초마다 판 폭만 보고 바뀌었으면 다시 나눈다(같으면 아무것도 안 함 · 5초에 3번까지)
   let polls = [];
-  setInterval(() => {
+  const pollI = setInterval(() => {
     if (!wide || drag || document.hidden || sig() === lastSig) return;
     const now = performance.now(); polls = polls.filter(t => now - t < 5000); if (polls.length >= 3) return;
     polls.push(now); layout();
@@ -655,9 +677,9 @@
   /* 주소 #/주제 · #/주제/장 — 뒤로 / 앞으로 */
   const fromHash = () => { const m = location.hash.match(/^#\/?([a-z]+)(?:[-\/](\d+))?$/) || []; return [TOPICS.findIndex(t => t.id === m[1]), m[2] ? +m[2] - 1 : 0]; };
   const onHash = () => { const [k, q] = fromHash(); if (k >= 0 && (k !== cur || (wide && q !== pg))) go(k, { push: false, page: q }); };
-  addEventListener('popstate', onHash); addEventListener('hashchange', onHash);
+  on(window, 'popstate', onHash); on(window, 'hashchange', onHash);
   let rzT = 0;
-  addEventListener('resize', () => {
+  on(window, 'resize', () => {
     const changed = setMode(wideMQ.matches);
     if (wide) {   // 장 폭을 바로 맞추고(어긋남 방지), 나누기는 손을 멈춘 뒤
       pw = stage.clientWidth; ph = stage.clientHeight; root.style.setProperty('--tm-pw', pw + 'px'); root.style.setProperty('--tm-ph', ph + 'px');
@@ -666,23 +688,64 @@
     track.classList.add('tm-instant'); place(); requestAnimationFrame(() => track.classList.remove('tm-instant'));
     const restore = changed && wide;
     // 차트는 폭이 바뀐 뒤(ResizeObserver 60ms) 다시 그려지므로 한 번 더 나눈다 — 안 하면 좁게 → 넓게 돌아온 뒤 성과가 두 장으로 남았다
-    clearTimeout(rzT); rzT = setTimeout(() => { layout(); go(cur, { page: restore ? restorePg() : pg, instant: true, push: false }); relayout(500); }, changed ? 0 : 160);
+    clearTimeout(rzT); rzT = setTimeout(() => { if (dead) return; layout(); go(cur, { page: restore ? restorePg() : pg, instant: true, push: false }); relayout(500); }, changed ? 0 : 160);
     moveInd();
   });
-  document.fonts && document.fonts.ready.then(() => { moveInd(); relayout(0); });
-  addEventListener('load', () => { relayout(0); relayout(1500); });
+  document.fonts && document.fonts.ready.then(() => { if (dead) return; moveInd(); relayout(0); });
+  if (document.readyState === 'complete') { relayout(300); relayout(1500); } else on(window, 'load', () => { relayout(0); relayout(1500); });   // 시안은 다 읽힌 뒤에 켜진다
 
   /* 인쇄 — 판을 세로로 다시 쌓는다(style 은 topics.css 인쇄 블록). 넓은 화면 배치(zoom · 장 폭)를 풀고, inert 를 풀어야 인쇄 · 복사에 다 나온다 */
   let printPg = 0;
-  addEventListener('beforeprint', () => { printPg = wide ? pg : restorePg(); setMode(false); panels.forEach(p => { p.inert = false; p.removeAttribute('aria-hidden'); }); });
-  addEventListener('afterprint', () => { clearTimeout(rzT); setMode(wideMQ.matches); if (wide) layout(); go(cur, { page: wide ? printPg : 0, push: false, instant: true }); relayout(400); });   // 차트가 화면 폭으로 다시 그려진 뒤 한 번 더 나눈다
+  on(window, 'beforeprint', () => { printPg = wide ? pg : restorePg(); setMode(false); panels.forEach(p => { p.inert = false; p.removeAttribute('aria-hidden'); }); });
+  on(window, 'afterprint', () => { clearTimeout(rzT); setMode(wideMQ.matches); if (wide) layout(); go(cur, { page: wide ? printPg : 0, push: false, instant: true }); relayout(400); });   // 차트가 화면 폭으로 다시 그려진 뒤 한 번 더 나눈다
 
   // 처음 — #/주제(/장) 가 없으면 본판식 주소(#perf · #p-cp1)도 받아 그 판 · 그 자리로
   setMode(wideMQ.matches);
   layout();
   let [k0, q0] = fromHash(), t0 = null;
-  if (k0 < 0 && /^#[\w-]+$/.test(location.hash)) { try { t0 = $(location.hash); } catch (e) { t0 = null; } k0 = t0 ? panels.findIndex(p => p.contains(t0)) : -1; }   // #1abc 처럼 선택자가 안 되는 주소면 첫 판
+  if (opts.target) { t0 = opts.target; k0 = panels.findIndex(p => p.contains(t0)); q0 = 0; if (k0 < 0) t0 = null; }
+  else if (k0 < 0 && /^#[\w-]+$/.test(location.hash)) { try { t0 = $(location.hash); } catch (e) { t0 = null; } k0 = t0 ? panels.findIndex(p => p.contains(t0)) : -1; }   // #1abc 처럼 선택자가 안 되는 주소면 첫 판
   if (k0 < 0) { k0 = 0; q0 = 0; }
   go(k0, { instant: true, first: true, page: q0, target: t0 && t0 !== inners[k0].firstElementChild ? t0 : null });
   root.classList.add('tm-ready');
+
+  /* 지금 보는 장(판)의 기준 요소 id — 「스크롤로 보기」 · 한 페이지 모드 전환이 본판의 같은 자리로 가게.
+     넓은 화면: 지금 장에 첫 조각이 놓인 카드(.proj · .xd)나 절, 좁은 화면: 판 위쪽에 걸친 마지막 카드 · 절. 첫 화면(.hero)은 빈 값(맨 위) */
+  function anchorId() {
+    const p = panels[cur]; if (!p) return '';
+    const cand = $$('.proj[id], .xd[id], .tm-inner > section[id]', p);
+    let pick = null;
+    if (wide) pick = cand.find(n => n.matches('.proj, .xd') && pageOf(n, cur) === pg) || cand.find(n => pageOf(n, cur) <= pg && lastPageOf(n, cur) >= pg) || null;
+    else { const top = p.getBoundingClientRect().top + 8; pick = cand.filter(n => { const r = n.getBoundingClientRect(); return r.top <= top + 80 && r.bottom > top; }).pop() || cand[0] || null; }
+    return pick ? pick.id : '';
+  }
+
+  /* 끄기 — 바깥 이벤트 · 시계를 떼고, 판 배치를 풀고, 절을 제자리로, 만든 것을 지우고, 상단 바 · 주소 · 제목을 되돌린다 */
+  function stop() {
+    if (dead) return; dead = true;
+    [layT, rzT, easeT, sealT, resetT, navT, dropT].forEach(t => clearTimeout(t)); clearInterval(pollI);
+    L.forEach(([t, ty, fn, o]) => t.removeEventListener(ty, fn, o)); L.length = 0;
+    if (wide) setMode(false);
+    $$('.tm-anim, .tm-flash').forEach(n => { n.classList.remove('tm-anim', 'tm-play', 'tm-flash'); n.style.removeProperty('--k'); });
+    for (let i = homes.length - 1; i >= 0; i--) { const [n, parent, next] = homes[i]; parent.insertBefore(n, next && next.parentNode === parent ? next : null); }
+    if (undoXlink) undoXlink();
+    [stage, dock, hint, drop, edgeP, edgeN, pdots, pager, copy, back].forEach(n => n && n.remove());
+    if (oldNav) nav.replaceWith(oldNav); else nav.remove();
+    if (deckBtn0) deckBtn0.hidden = false;
+    root.classList.remove('tabmode', 'tm-wide', 'tm-ready', 'tm-sheet');
+    main.classList.remove('tm-dragging', 'near-l', 'near-r');
+    ['--tm-p', '--tm-pw', '--tm-ph', '--tm-z0', '--tm-avail'].forEach(k => root.style.removeProperty(k));
+    document.title = title0;
+  }
+  return { stop, anchorId };
+  }
+
+  let deck = null;
+  window.TopicsDeck = {
+    start(o) { if (!deck) deck = start(o); return !!deck; },
+    stop() { if (deck) { deck.stop(); deck = null; } },
+    get active() { return !!deck; },
+    anchorId() { return deck ? deck.anchorId() : ''; },
+  };
+  if (root.classList.contains('tabmode')) window.TopicsDeck.start();
 })();

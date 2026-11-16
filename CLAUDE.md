@@ -190,6 +190,11 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
   · 「주요 업무」 절 머리(.sec-h)는 넓은 화면에서 판 위 고정 칸 `.tm-pin` 으로 옮겨 카드 10장 모두에 보인다(`setPin` — 같은 주제 안에서는 트랙과 반대로 움직여 제자리, 판 안은 머리 높이만큼 위를 비우고 **단 높이도 그만큼 줄인다** — 안 줄이면 이 판만 화면보다 130px 길어 카드 아래가 잘렸다). 좁은 화면으로 가면 제자리로.
   · 장마다 내용을 위아래 가운데(빈 높이의 46% 만큼 아래로 — `center()`, position: relative + top 이라 장 나눔은 그대로). 장 하나에 통째로 들어가는 가장 큰 덩어리(한 장짜리 절 · 여러 장 절 안의 카드)를 민다. 장 사이에서 잘린 글 덩어리가 있는 장은 건드리지 않는다.
   · 줄바꿈: 넓은 화면에서 낱말 뒤 숫자(「지킬 곳 1로」 「진입 14」)는 붙이고 구분점 · 줄표 · 화살표 · 닫는 괄호가 줄 머리에 오지 않게 공백을 U+00A0 으로(`glue` — 좁은 화면으로 가면 원래 글자로), 본문 `text-wrap: pretty` · 제목 `balance`.
+  · (2026-11-16 여섯째, 본인 「지금 가능한 부분은 모두 적용 · 안이 각각이라면 둘 다 테스트 시안」 — 스크롤 ↔ 장 넘김 전환)
+    - topics.js 는 이제 **켜고 끌 수 있다** — `window.TopicsDeck.start({ target, back })` · `stop()` · `active` · `anchorId()`. topics.html 은 `html.tabmode` 로 시작하면 저절로 켜진다(동작은 예전과 같음). 끌 때 바깥 이벤트(`on()` 으로 단 것) · 시계를 떼고, 판 배치(zoom · 가운데 · 고정 머리 · 줄바꿈 공백)를 풀고, 절을 문서 순서 기록(`homes`)대로 제자리에 되돌리고, 상단 메뉴 · 대시보드 단추 · 제목을 원래대로. 절이 없는 주제는 뺀다(본판 틀에서 켜도 빈 판 없음). 바깥 이벤트를 새로 달 때는 `on(대상, 종류, 함수)` 로 — 그래야 끌 때 떨어진다(두 번 켰다 껐을 때 → 키 한 번에 한 장인지 시험 `tm-toggle-test.js`).
+    - **안 A**: 본판 상단 `#deckBtn`(넓은 화면 아이콘만 — 글자까지 넣으면 1280~1920 에서 상단 바가 tight 로 바뀌었다. 1101~1280 은 아이콘만으로도 tight — 꼬리표 「Growth Report 2026」 · 테마 글자만 숨음)이 누르는 순간 화면 위쪽에 걸친 카드(.proj · .xd) · 절 id 를 topics.html 주소에 붙인다. 주제별 보기 「스크롤로 보기」는 지금 장의 카드 · 절 id 를 index.html 주소에(본판에 없는 기타 대시보드는 그 절 id 그대로 — 본판에 없으면 맨 위). 장 넘김 동안 `#deckBtn` 은 숨김.
+    - **안 B**: `toggle.html` + `assets/mode-toggle.js` — 스크롤로 시작, `#modeBtn` 으로 그 자리에서 바꿈(장 → 스크롤은 지금 장의 카드로 즉시 스크롤 · 부드러운 스크롤이면 긴 거리를 굴러가는 동안 엉뚱한 곳이 보였다). 고른 보기는 `localStorage psj-view`. 켤 때 본판 스크롤 등장(.reveal)의 「아직 안 보임」 · 접힌 상단 바(mast-off)를 푼다. 실측(헤드리스 1463 · 390): 두 번 왕복해도 절 순서 · 상단 메뉴 9 · 대시보드 단추 5 · 남은 요소 0 · 키 한 번에 한 장 · 오류 0.
+    - toggle.html 은 topics.html 복사본이다 — topics.html 을 바꾸면 작업 폴더 `_work/artifact/make-toggle.py` 로 다시 만든다.
   · (2026-11-16 다섯째, 본인 「목차 버튼 외에 아래 숫자 눌러도 목차 · 퍼포먼스 라이브데모 외 4개 대시보드를 눈에 띄게 — 기타 대시보드 탭에 각각, PMC 트래커 → 판매가 트래커(설명서는 그대로)」)
     - 숫자도 목차 단추: 좁은 화면 아래 막대 「01 / 09」(`.tm-count`) · 넓은 화면 GNB 아래 「3 / 10」(`.tm-pcount`)을 누르면 「목차」와 같은 모든 주제 · 항목 시트(넓은 화면은 GNB 옆에 여러 단). `aria-controls="tmDrop"` 단추들이 함께 aria-expanded 를 바꾼다.
     - 주제 03 「기타 대시보드」(`#xdash` — topics.html 에만 있는 절, 내용 data.js `moreDash`, 그리기 app.js `renderMoreDash`): 브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커 카드 네 장(넓은 화면은 카드 하나가 한 장 · 머리 고정 — 고정 머리 `PINS` 에 work · xdash). 썸네일 `assets/xd-*.webp` = 데모 첫 화면 1440×810 → 800×450(쇼핑 인사이트는 합성 데이터 탭 「전 몰 키워드 인사이트」를 찍고 검색칸 예시는 흐리게). 판매가 트래커는 공개 데모가 없어 숫자 없는 그림 + 「사내 전용 · 데모 없음」. 대시보드 판의 데모 세 단추(브리핑룸 · 재고 · 인사이트)는 「기타 대시보드 4개 →」 하나로 바꾸고 설명서 단추는 그대로(topics.js — 본판은 data.js demo2 그대로). 데모 화면이 바뀌면 썸네일도 다시 찍는다(작업 폴더 `_work/artifact/shot-demos.js`).
@@ -215,7 +220,7 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 ## 7. 배포 (GitHub Pages)
 
 - 이 폴더 전체가 저장소 루트다. `index.html` 이 루트에 있어야 하고, `.nojekyll` 은 지우지 않는다.
-- 검색엔진 차단: `index.html` · `en.html` · `dashboard-demo.html` · `briefing-demo.html` · `stock-demo.html` · `guide-demo.html`(2026-10-31) · `insight-demo.html`(2026-11-14) · `topics.html`(2026-11-15) 여덟 파일의 `<meta name="robots" content="noindex, nofollow">` 를 지우지 않는다.
+- 검색엔진 차단: `index.html` · `en.html` · `dashboard-demo.html` · `briefing-demo.html` · `stock-demo.html` · `guide-demo.html`(2026-10-31) · `insight-demo.html`(2026-11-14) · `topics.html`(2026-11-15) · `toggle.html`(2026-11-16) 아홉 파일의 `<meta name="robots" content="noindex, nofollow">` 를 지우지 않는다.
 - 파일 이름 대소문자는 서버에서 구분된다. 새 이미지를 넣을 때 `data.js` 의 경로와 대소문자까지 똑같이 맞춘다.
 - 올리는 순서(2026-10-31)는 전역 스킬 `resume-publish`(`~\.claude\skills\resume-publish`)에 명령째 있다 — 점검 3종(`node tools/demo-wash.js --check` · 작업 폴더 `check-numbers.js` · 화면 `site-gate.js`) → 파일 이름으로 커밋 → push 직전 `git fetch` + `git rebase origin/main`(다른 세션 · 봇 커밋 「데모 자동 가림」이 수시로 들어온다) → `git push origin HEAD:main`(force 금지 · 원격은 origin 만, mirror 는 올리지 않음) → `live-match.js` 로 공개본이 origin/main 과 바이트까지 같은지. push 는 사용자가 그 대화에서 올리라고 했을 때만.
 
