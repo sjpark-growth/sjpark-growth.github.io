@@ -968,6 +968,36 @@
     $('#perfTable').innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
   }
 
+  /* ------------------------------------------------------------ 기타 대시보드 (2026-11-16)
+     주제별 보기(topics.html)에만 있는 절(#xdash) — 본판 index.html 에는 없어서 그리지 않는다. 내용 data.js moreDash.
+     데모가 없는 판매가 트래커는 숫자 없는 그림(가격 선 · 변동 표시) */
+  const XD_ART = `<svg viewBox="0 0 320 180" fill="none" aria-hidden="true">
+    <rect x="1" y="1" width="318" height="178" rx="12" fill="var(--surface)" stroke="var(--rule-2)"/>
+    <path d="M24 40H296M24 80H296M24 120H296M24 160H296" stroke="var(--rule)" stroke-width="1"/>
+    <path d="M24 70H78V70L78 96H134V96L134 84H190V84L190 118H246V118L246 92H296" stroke="var(--ink-3)" stroke-width="2" stroke-dasharray="4 4"/>
+    <path d="M24 78H78L78 104H134L134 78H190L190 132H246L246 100H296" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="78" cy="104" r="6" fill="var(--surface)" stroke="var(--accent)" stroke-width="3"/>
+    <circle cx="190" cy="132" r="6" fill="var(--surface)" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="164" y="22" width="88" height="22" rx="6" fill="var(--accent-soft)"/><path d="M174 33h22M202 33h40" stroke="var(--accent-ink)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="52" y="128" width="72" height="20" rx="6" fill="var(--sunk)"/><path d="M60 138h56" stroke="var(--ink-3)" stroke-width="3" stroke-linecap="round"/>
+  </svg>`;
+  function renderMoreDash() {
+    const host = $('#moreDash'), M = R.moreDash; if (!host || !M) return;
+    $('#xdashTag').textContent = M.tag; $('#xdash-h').textContent = M.title; $('#xdashLede').innerHTML = M.lede;
+    host.innerHTML = M.items.map((d, i) => `
+      <article class="xd" id="xd-${d.id}" aria-labelledby="xdt-${d.id}">
+        ${d.demo ? `<a class="xd-shot" href="${d.demo}" target="_blank" rel="noopener" aria-label="${d.name} 데모 새 탭에서 열기"><img src="${d.shot}" alt="${d.name} 데모 첫 화면 — 숫자는 임의 값" width="800" height="450"><span class="xd-open">${ICON.ext}데모 열기</span></a>`
+          : `<div class="xd-shot xd-none" role="img" aria-label="${d.name} — ${d.note}">${XD_ART}<span class="xd-badge">${d.note}</span></div>`}
+        <div class="xd-body">
+          <div class="xd-meta"><span class="xd-n">${String(i + 1).padStart(2, '0')}</span><span>${d.kind}</span>${d.pill ? `<span class="pill">${d.pill}</span>` : ''}</div>
+          <h3 id="xdt-${d.id}">${d.name}</h3>
+          <p class="hook">${d.hook}</p>
+          <ul class="how">${d.how.map(x => `<li>${x}</li>`).join('')}</ul>
+          ${d.demo ? `<a class="btn" href="${d.demo}" target="_blank" rel="noopener">${ICON.ext}데모 열기</a>` : `<span class="xd-note">${d.note}</span>`}
+        </div>
+      </article>`).join('');
+  }
+
   /* ------------------------------------------------------------ projects */
   const linkOf = id => id === 'dashboard' ? '#dash' : '#p-' + id;
   function renderProjects() {
@@ -1473,6 +1503,7 @@
   rollBoard();
   renderGrowth();
   renderShowcase();
+  renderMoreDash();
   renderPerf();
   renderProjects();
   renderPillars();

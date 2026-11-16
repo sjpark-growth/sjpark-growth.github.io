@@ -110,6 +110,9 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
 .tm-dots button:hover i { background: var(--ink-3); }
 .tm-dots button.on i { width: 18px; background: var(--accent); }
 .tm-count { display: inline-flex; align-items: baseline; gap: 4px; padding: 0 8px 0 4px; font-family: var(--f-num); font-stretch: 85%; font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+/* (2026-11-16) 숫자도 목차 단추 — 누르면 모든 주제 · 항목 */
+.tm-dock .tm-count { align-items: baseline; gap: 4px; padding: 0 10px 0 8px; font-family: var(--f-num); font-stretch: 85%; font-size: 13px; color: var(--ink-3); }
+.tm-dock .tm-count[aria-expanded="true"] { background: var(--sunk); }
 .tm-count b { font-size: 16px; font-weight: 600; color: var(--ink); }
 .tm-dock .tm-menu { border-left: 1px solid var(--rule); border-radius: 0 10px 10px 0; margin-left: 2px; }
 .tm-dock .tm-menu[aria-expanded="true"] { color: var(--accent-ink); }
@@ -158,6 +161,39 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   .tm-drop.all .tm-drop-in { grid-template-columns: minmax(0, 1fr); max-height: calc(100svh - 170px); padding: 14px; }
 }
 
+/* ---------- (2026-11-16) 기타 대시보드 — 브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커(app.js renderMoreDash · data.js moreDash)
+   카드 하나 = 데모 첫 화면(누르면 공개 데모 새 탭) | 이름 · 한 줄 · 어떻게 · 데모 열기. 넓은 화면에서는 카드 하나가 한 장 */
+.xdash { display: grid; gap: clamp(16px, 2vw, 26px); }
+.xd { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: clamp(16px, 2.2vw, 34px); align-items: center;
+  padding: clamp(14px, 1.6vw, 22px); border: 1px solid var(--rule); border-radius: 16px; background: var(--surface); box-shadow: 0 1px 0 rgba(12, 26, 43, .04); }
+.xd-shot { position: relative; display: block; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid var(--rule-2); border-radius: 12px; background: var(--sunk); text-decoration: none; }
+.xd-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 0 0; display: block; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+a.xd-shot:hover img, a.xd-shot:focus-visible img { transform: scale(1.035); }
+a.xd-shot:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.xd-open { position: absolute; right: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 10px;
+  background: rgba(12, 26, 43, .84); color: #fff; font-size: 13px; font-weight: 700; transition: transform .2s; }
+.xd-open svg { width: 14px; height: 14px; }
+a.xd-shot:hover .xd-open { transform: translateY(-2px); }
+.xd-none { display: grid; place-items: center; padding: 6%; }
+.xd-none svg { width: 100%; height: auto; }
+.xd-badge { position: absolute; left: 12px; top: 12px; padding: 4px 10px; border-radius: 8px; background: var(--ink); color: var(--paper); font-size: 12px; font-weight: 700; }
+.xd-body { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-width: 0; }
+.xd-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.xd-n { font-family: var(--f-num); font-stretch: 85%; font-size: 14px; font-weight: 700; color: var(--accent-ink); }
+.xd-meta .pill { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent-ink); }
+.xd h3 { margin: 0; font-size: clamp(22px, 2.3vw, 32px); line-height: 1.2; font-weight: 800; letter-spacing: -0.04em; }
+.xd .hook { margin: 0; font-size: 16px; line-height: 1.65; color: var(--ink); }
+.xd .hook b { font-weight: 800; background: linear-gradient(transparent 62%, color-mix(in srgb, var(--accent) 22%, transparent) 62%); }
+.xd .how { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.6; color: var(--ink-2); }
+.xd .how li { position: relative; padding-left: 16px; }
+.xd .how li::before { content: ""; position: absolute; left: 2px; top: .68em; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); opacity: .7; }
+.xd .how b { color: var(--ink); font-weight: 700; }
+.xd .how strong { color: var(--accent-ink); }
+.xd-note { padding: 5px 10px; border: 1px dashed var(--rule-2); border-radius: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
+.tm-xlink span { margin-left: 2px; }
+@media (max-width: 860px) { .xd { grid-template-columns: minmax(0, 1fr); align-items: start; } }
+@media print { .xd { break-inside: avoid; } .xd-open { display: none; } }
+
 /* =========================================================================
    (2026-11-16) 넓은 화면 — 왼쪽 GNB + 한 화면짜리 장을 옆으로 넘기는 덱
    본인 「드래그로 화면 좌우 이동 · 한 화면 안에 인터페이스가 들어가도록 · 상단 바를 좌측 GNB 로(화면이 와이드)」
@@ -182,7 +218,7 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
     background: none; border-radius: 0; scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
   html.tm-wide .tm-list { display: flex; flex-direction: column; gap: 2px; list-style: none; margin: 0; padding: 0; }
   html.tm-wide .tm-item { display: block; }
-  html.tm-wide .mast .tm-nav .tm-tab { display: flex; align-items: baseline; gap: 10px; width: 100%; box-sizing: border-box; padding: clamp(3px, calc(1.6vh - 6px), 8px) 10px;
+  html.tm-wide .mast .tm-nav .tm-tab { display: flex; align-items: baseline; gap: 10px; width: 100%; box-sizing: border-box; padding: clamp(3px, calc(1.6vh - 8px), 7px) 10px;   /* 주제 9개 + 항목 10개를 펼쳐도 스크롤 없이(11-16 기타 대시보드 추가 뒤) */
     border-radius: 10px; font-size: 14.5px; color: var(--ink-2); transition: background-color .35s, color .35s, box-shadow .35s; }
   html.tm-wide .mast .tm-nav .tm-tab .n { min-width: 1.6em; }
   html.tm-wide .mast .tm-nav .tm-tab:hover { background: var(--sunk); color: var(--ink); }
@@ -214,6 +250,8 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   html.tm-wide .tm-pager button:disabled { opacity: .32; cursor: default; }
   html.tm-wide .tm-pcount { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: auto auto; justify-content: center; align-items: baseline; column-gap: 4px;
     font-family: var(--f-num); font-stretch: 85%; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  html.tm-wide .tm-pager .tm-pcount { width: auto; height: 32px; padding: 0 6px; border: 0; border-radius: 10px; background: none; cursor: pointer; transition: background-color .18s; }   /* 숫자도 목차 단추 */
+  html.tm-wide .tm-pager .tm-pcount:hover, html.tm-wide .tm-pager .tm-pcount[aria-expanded="true"] { background: var(--sunk); border-color: transparent; color: var(--ink-3); }
   html.tm-wide .tm-pcount b { font-size: 19px; font-weight: 600; color: var(--ink); }
   html.tm-wide .tm-pcount span { font-size: 13px; }
   html.tm-wide .tm-pcount small { display: none; grid-column: 1 / -1; justify-self: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -229,6 +267,9 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   html.tm-wide .tm-dg > ul { grid-column: 1; grid-row: auto; grid-template-columns: minmax(0, 1fr); margin-top: 6px; }
   html.tm-wide .tm-dh .n { font-size: 22px; } html.tm-wide .tm-dh b { font-size: 18px; }
   html.tm-wide .tm-dg li button { min-height: 34px; font-size: 13.5px; }
+  /* 목차(모든 주제) — 넓은 화면은 GNB 옆에 여러 단으로(숫자 「3 / 10」을 눌러 연다) */
+  html.tm-wide .tm-drop.all { top: 12px; width: min(1040px, calc(100vw - var(--gnb-w) - 32px)); }
+  html.tm-wide .tm-drop.all .tm-drop-in { max-height: calc(100vh - 24px); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 
   /* ---- 장(page) — 판 안을 여러 단으로 흘린다 */
   html.tm-wide main { --py: clamp(16px, 3.4vh, 40px); --px: clamp(26px, 3vw, 60px); position: fixed; inset: 0 0 0 var(--gnb-w); }
@@ -246,7 +287,7 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   html.tm-wide .tm-inner > * { margin: 0; padding-block: 0 !important; border: 0 !important; background: none !important; box-shadow: none; }
   html.tm-wide .tm-inner > * + * { break-before: column; }
   html.tm-wide .tm-inner .shell { max-width: var(--maxw); padding-inline: 0; }
-  html.tm-wide .tm-inner :is(.proj, .job, .belief, .pillar, .gcard, .panel, .arc, .score, .phases > li, .factgrid > section, .scorebox, .gantt, .cnote, .toolgrp, .mp,
+  html.tm-wide .tm-inner :is(.proj, .xd, .job, .belief, .pillar, .gcard, .panel, .arc, .score, .phases > li, .factgrid > section, .scorebox, .gantt, .cnote, .toolgrp, .mp,
     .sum-l, .sum-r, .more, .contact.big, .sec-h, .growth-h, .gextra, .hk, .kpis, .dash-wrap) { break-inside: avoid; }
   html.tm-wide .tm-inner :is(.sec-h, .growth-h) { break-after: avoid; }
   /* 첫 화면 · 대시보드 — 장 높이를 그대로 채운다 */
@@ -276,6 +317,9 @@ html.tm-sheet main::after { content: ""; position: absolute; inset: 0; z-index: 
   html.tm-wide .tm-track.tm-instant .tm-pin { transition: none; }
   html.tm-wide .tm-pin-in { max-width: var(--maxw); margin: 0 auto; }
   html.tm-wide .tm-pin .sec-h { margin-bottom: 0; }
+  /* 기타 대시보드 카드 — 넓은 화면에서는 데모 화면을 더 크게(눈에 띄게) */
+  html.tm-wide .xd { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: clamp(20px, 2.4vw, 40px); padding: clamp(16px, 1.8vw, 26px); }
+  html.tm-wide .xd .hook { font-size: 17px; }
   /* 참고 자료 — 여섯 칸으로(머리 + 두 줄이 한 장에) */
   html.tm-wide .archive { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 

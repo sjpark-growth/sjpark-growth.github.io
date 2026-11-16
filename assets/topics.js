@@ -32,6 +32,8 @@
       sub: () => [['성과 리포트', '.mboard-wrap'], ['핵심 성과', '.hkey'], ['핵심 요약', '#summary .sum-l'], ['그 밖의 개선', '#summary .more']] },
     { id: 'dash', label: '대시보드', en: 'Dashboard', desc: '직접 만든 운영 도구 — 화면의 숫자는 모두 임의 값', secs: ['#dash'],
       sub: () => [['대시보드 데모', '.dash-frame'], ['구축 내용', '.dash-side']] },
+    { id: 'xdash', label: '기타 대시보드', en: 'More dashboards', desc: '브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커 — 대시보드 옆에 붙인 운영 도구', secs: ['#xdash'],
+      sub: () => $$('#moreDash .xd').map(c => [txt($('h3', c)), c]) },
     { id: 'perf', label: '성과', en: 'Performance', desc: '16개월, 네 단계로 바꾼 숫자', secs: ['#perf'],
       sub: () => [['성과 차트', '#perf .perf > .panel:first-child'], ['기간 비교', '#perf .cmp'], ['네 단계', '#phaseList']] },
     { id: 'growth', label: '그로스', en: 'Growth', desc: '광고 밖 — 첫 화면 · 카테고리 · 쿠폰 구조', secs: ['#growth'],
@@ -65,8 +67,18 @@
   // 항목 대상은 한 번 찾아 둔다(app.js 가 다 그린 뒤라 카드가 있다)
   const subsOf = TOPICS.map(t => (t.sub() || []).filter(x => x && x[0]).map(([name, tg]) => [name, typeof tg === 'string' ? $(tg) : tg]).filter(x => x[1]));
 
+  /* 대시보드 판 — 데모 세 개(브리핑룸 · 재고 신호판 · 쇼핑 인사이트) 단추는 「기타 대시보드」 판으로 옮겼으니 그 판으로 가는 단추 하나로.
+     설명서 단추는 그대로(본인 11-16 「설명서는 그대로 두고」). 본판(index.html)은 data.js demo2 그대로 */
+  (() => {
+    const acts = $('#dashSide .actions'); if (!acts || !$('#xdash')) return;
+    const moved = $$('a.btn', acts).filter(a => /(briefing|stock|insight)-demo\.html/.test(a.getAttribute('href') || ''));
+    if (!moved.length) return;
+    moved[0].before(el('a', { class: 'btn ghost tm-xlink', href: '#xdash' }, '기타 대시보드 4개 <span aria-hidden="true">→</span>'));
+    moved.forEach(a => a.remove());
+  })();
+
   /* 장(판)에 들어올 때 차례로 떠오를 덩어리 — 순번(--k)은 장마다 다시 센다(layout) */
-  const ANIM = '.tm-idx, .hero-l > *, .hero-r > *, #summary .shell > *, .sec-h > *, .growth-h > *, .dash-wrap > *, .perf > *, .phases > li, .gcards > *, .gextra, .projects > .proj, .pillars > *, .toolrow, .gantt, .cnote, .jobs > *, .archive > *, .beliefs > *, .contact.big, .scorebox, .factgrid > *, .foot .shell > *';
+  const ANIM = '.tm-idx, .hero-l > *, .hero-r > *, #summary .shell > *, .sec-h > *, .growth-h > *, .dash-wrap > *, .xdash > .xd, .perf > *, .phases > li, .gcards > *, .gextra, .projects > .proj, .pillars > *, .toolrow, .gantt, .cnote, .jobs > *, .archive > *, .beliefs > *, .contact.big, .scorebox, .factgrid > *, .foot .shell > *';
   const anims = panels.map(p => $$(ANIM, p).filter(n => !n.closest('[hidden]')));
   anims.forEach(list => list.forEach((n, k) => { n.classList.add('tm-anim'); n.style.setProperty('--k', Math.min(k, 8)); }));
   const animPage = new Map();
@@ -91,7 +103,7 @@
   // 넓은 화면 GNB 아래 — 장 넘기기 + 저작권 줄(꼬리말은 넓은 화면에서 장에 넣지 않는다)
   const ARR = d => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
   const pager = el('div', { class: 'tm-pager', role: 'group', 'aria-label': '장 넘기기' },
-    `<button type="button" class="tm-pp" aria-label="이전 장">${ARR('M10 3 5 8l5 5')}</button><span class="tm-pcount" aria-live="polite"><b>1</b><span>/ 1</span><small></small></span><button type="button" class="tm-pn" aria-label="다음 장">${ARR('m6 3 5 5-5 5')}</button>`);
+    `<button type="button" class="tm-pp" aria-label="이전 장">${ARR('M10 3 5 8l5 5')}</button><button type="button" class="tm-pcount" aria-controls="tmDrop" aria-expanded="false" title="목차 — 모든 주제 · 항목"><b>1</b><span>/ 1</span><small></small></button><button type="button" class="tm-pn" aria-label="다음 장">${ARR('m6 3 5 5-5 5')}</button>`);
   nav.after(pager);
   const fl = $('#footLine'), copy = el('p', { class: 'tm-copy' }, esc((fl && fl.firstChild ? fl.firstChild.textContent : '').trim() || '© 박성준'));   // 「© 이름 · 2026」만(메일 · 전화는 연락처 장에)
   shell.appendChild(copy);
@@ -121,12 +133,12 @@
     }
     drop.hidden = false; requestAnimationFrame(() => drop.classList.add('on'));
     root.classList.toggle('tm-sheet', !!all);
-    const mb = $('.tm-menu'); if (mb) mb.setAttribute('aria-expanded', String(!!all));
+    $$('[aria-controls="tmDrop"]').forEach(b => b.setAttribute('aria-expanded', String(!!all)));   // 목차 단추 · 숫자 단추
     if (kbd) { const b = $('button', drop); b && b.focus(); }
   };
   const closeDrop = (now) => {
     clearTimeout(dropT);
-    const off = () => { drop.classList.remove('on'); root.classList.remove('tm-sheet'); const mb = $('.tm-menu'); if (mb) mb.setAttribute('aria-expanded', 'false'); setTimeout(() => { if (!drop.classList.contains('on')) { drop.hidden = true; dropFor = -1; } }, reduce ? 0 : 220); };
+    const off = () => { drop.classList.remove('on'); root.classList.remove('tm-sheet'); $$('[aria-controls="tmDrop"]').forEach(b => b.setAttribute('aria-expanded', 'false')); setTimeout(() => { if (!drop.classList.contains('on')) { drop.hidden = true; dropFor = -1; } }, reduce ? 0 : 220); };
     if (now) off(); else dropT = setTimeout(off, 160);
   };
   tabs.forEach((a, i) => {
@@ -147,7 +159,7 @@
   };
   drop.addEventListener('click', subClick);
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drop.hidden) { closeDrop(true); tabs[cur].focus(); } });
-  document.addEventListener('pointerdown', e => { if (!drop.hidden && !drop.contains(e.target) && !e.target.closest('.tm-nav, .tm-menu')) closeDrop(true); });
+  document.addEventListener('pointerdown', e => { if (!drop.hidden && !drop.contains(e.target) && !e.target.closest('.tm-nav, [aria-controls="tmDrop"]')) closeDrop(true); });
 
   nav.addEventListener('keydown', e => {   // 좁은 화면 탭에서 ↓ = 그 주제 드롭다운
     const i = tabs.indexOf(document.activeElement); if (i < 0 || wide) return;
@@ -164,7 +176,7 @@
   dock.innerHTML = `
     <button type="button" class="tm-prev" aria-label="이전 주제">${ARR('M10 3 5 8l5 5')}<span class="tm-pl"></span></button>
     <div class="tm-dots">${TOPICS.map((t, i) => `<button type="button" data-i="${i}" aria-label="${pad(i + 1)} ${t.label}"><i></i></button>`).join('')}</div>
-    <span class="tm-count" aria-live="polite"><b>01</b><span>/ ${pad(N)}</span></span>
+    <button type="button" class="tm-count" aria-controls="tmDrop" aria-expanded="false" title="목차 — 모든 주제 · 항목"><b>01</b><span>/ ${pad(N)}</span></button>
     <button type="button" class="tm-next" aria-label="다음 주제"><span class="tm-nl"></span>${ARR('m6 3 5 5-5 5')}</button>
     <button type="button" class="tm-menu" aria-controls="tmDrop" aria-expanded="false" title="모든 주제 · 항목"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span>목차</span></button>`;
   document.body.appendChild(dock);
@@ -172,8 +184,9 @@
   $('.tm-prev', dock).addEventListener('click', () => step(-1));
   $('.tm-next', dock).addEventListener('click', () => step(1));
   dots.forEach(b => b.addEventListener('click', () => go(+b.dataset.i, { page: 0 })));
-  const menu = $('.tm-menu', dock);
-  menu.addEventListener('click', () => { if (!drop.hidden && root.classList.contains('tm-sheet')) closeDrop(true); else openDrop(cur, true, !menu.matches(':hover')); });
+  // 목차(모든 주제 · 항목) — 「목차」 단추와 숫자(좁은 화면 아래 막대 「01 / 09」 · 넓은 화면 GNB 아래 「3 / 10」) 어느 쪽을 눌러도(본인 11-16)
+  const sheetBtn = b => b.addEventListener('click', () => { if (!drop.hidden && root.classList.contains('tm-sheet')) closeDrop(true); else openDrop(cur, true, !b.matches(':hover')); });
+  sheetBtn($('.tm-menu', dock)); sheetBtn($('.tm-count', dock)); sheetBtn($('.tm-pcount', pager));
 
   /* 넓은 화면 — 화면 가장자리 화살표(마우스가 가장자리에 가까울 때만) · 장 점 */
   const edgeP = el('button', { type: 'button', class: 'tm-edge prev', 'aria-label': '이전 장' }, ARR('M10 3 5 8l5 5') + '<span class="tm-el"></span>');
@@ -213,7 +226,7 @@
   };
 
   const ZMIN = 0.8;   // 이만큼까지만 줄여 한 장에 맞춘다(더 줄여야 하면 여러 장으로 나눈다)
-  const FIT = '.proj, .job, .belief, .pillar, .gcard, .arc, .scorebox, .perf > .panel, .gantt, .cnote';   // 한 장보다 크면 그것만 줄인다
+  const FIT = '.proj, .xd, .job, .belief, .pillar, .gcard, .arc, .scorebox, .perf > .panel, .gantt, .cnote';   // 한 장보다 크면 그것만 줄인다
   const hOf = n => n.getBoundingClientRect().height;
   /* [lo, hi] 배율 안에서 avail 에 들어가는 가장 큰 배율을 찾는다. lo 로도 넘치면 strict 는 hi 로 되돌리고 0, 아니면 lo 로 둔다 */
   // 배율은 0.01 단위로 내림 — 차트가 새 폭으로 다시 그려져 높이가 조금 바뀌어도 배율이 오락가락하지 않게
@@ -228,25 +241,30 @@
   }
   function unzoom() { $$('[data-tm-z]', stage).forEach(n => { n.style.zoom = ''; delete n.dataset.tmZ; }); }
 
-  /* 넓은 화면 — 「주요 업무」 머리 문구를 모든 카드 장에 고정(본인 11-16 「헤드카피 소 주제에도 고정」).
+  /* 넓은 화면 — 여러 장짜리 주제의 머리 문구를 모든 장에 고정(본인 11-16 「헤드카피 소 주제에도 고정」 — 「주요 업무」, 같은 날 「기타 대시보드」도).
      절 머리(.sec-h)를 판 위 고정 칸(.tm-pin)으로 옮기고 판 안은 그 높이만큼 위를 비운다. 같은 주제 안에서 장을 넘길 때는
      트랙과 반대로 같은 만큼 움직여 제자리에 있는 것처럼 보이고, 다른 주제로 갈 때는 판과 함께 미끄러진다. 좁은 화면에서는 제자리로 돌려놓는다 */
-  const PIN_K = TOPICS.findIndex(t => t.id === 'work');
-  let pin = null;
+  const PINS = [['work', '#work .sec-h'], ['xdash', '#xdash .sec-h']].map(([id, sel]) => ({ k: TOPICS.findIndex(t => t.id === id), sel })).filter(p => p.k >= 0);
+  let pins = [];
   function setPin(on) {
-    if (on && !pin && PIN_K >= 0) {
-      const h = $('#work .sec-h'); if (!h) return;
-      pin = { el: h, parent: h.parentElement, next: h.nextElementSibling, box: el('div', { class: 'tm-pin' }), in: el('div', { class: 'tm-pin-in' }) };
-      pin.in.appendChild(h); pin.box.appendChild(pin.in); panels[PIN_K].insertBefore(pin.box, inners[PIN_K]);   // 배율은 안쪽(.tm-pin-in)에만 — 위치 · 폭은 바깥이 장 기준으로
-    } else if (!on && pin) {
-      pin.parent.insertBefore(pin.el, pin.next); pin.box.remove(); inners[PIN_K].style.paddingTop = ''; inners[PIN_K].style.height = ''; pin = null;
+    if (on && !pins.length) {
+      PINS.forEach(({ k, sel }) => {
+        const h = $(sel); if (!h) return;
+        const p = { k, el: h, parent: h.parentElement, next: h.nextElementSibling, box: el('div', { class: 'tm-pin' }), in: el('div', { class: 'tm-pin-in' }) };
+        p.in.appendChild(h); p.box.appendChild(p.in); panels[k].insertBefore(p.box, inners[k]);   // 배율은 안쪽(.tm-pin-in)에만 — 위치 · 폭은 바깥이 장 기준으로
+        pins.push(p);
+      });
+    } else if (!on && pins.length) {
+      pins.forEach(p => { p.parent.insertBefore(p.el, p.next); p.box.remove(); inners[p.k].style.paddingTop = ''; inners[p.k].style.height = ''; });
+      pins = [];
     }
   }
   function placePin(off = 0) {
-    if (!pin) return;
-    const last = npg[PIN_K] - 1, q = cur === PIN_K ? pg : cur > PIN_K ? last : 0;
-    const inside = cur === PIN_K && off && !((pg === 0 && off > 0) || (pg === last && off < 0));   // 같은 주제 안에서 끄는 중이면 손가락을 따라가지 않는다
-    pin.box.style.transform = `translate3d(${q * pw - (inside ? off : 0)}px, 0, 0)`;
+    pins.forEach(p => {
+      const last = npg[p.k] - 1, q = cur === p.k ? pg : cur > p.k ? last : 0;
+      const inside = cur === p.k && off && !((pg === 0 && off > 0) || (pg === last && off < 0));   // 같은 주제 안에서 끄는 중이면 손가락을 따라가지 않는다
+      p.box.style.transform = `translate3d(${q * pw - (inside ? off : 0)}px, 0, 0)`;
+    });
   }
 
   /* 넓은 화면 — 장마다 내용을 위아래 가운데로(본인 11-16 「주요 정보들 상단이 아닌 중앙에서 · 아래가 비어 보이지 않게」).
@@ -295,13 +313,13 @@
     { const c0 = getComputedStyle(inners[0]); root.style.setProperty('--tm-avail', (ph - parseFloat(c0.paddingTop) - parseFloat(c0.paddingBottom)) + 'px'); }
     unzoom(); uncenter();
     setPin(true);
-    if (pin) {   // 고정 머리 높이만큼 「주요 업무」 판 위를 비운다
-      const ip = inners[PIN_K]; ip.style.paddingTop = ''; ip.style.height = '';
-      setZ(pin.in, z0);
-      const ics = getComputedStyle(ip), pt = parseFloat(ics.paddingTop) + hOf(pin.box) + 16;
+    pins.forEach(p => {   // 고정 머리 높이만큼 그 판 위를 비운다
+      const ip = inners[p.k]; ip.style.paddingTop = ''; ip.style.height = '';
+      setZ(p.in, z0);
+      const ics = getComputedStyle(ip), pt = parseFloat(ics.paddingTop) + hOf(p.box) + 16;
       ip.style.paddingTop = pt + 'px';
       ip.style.height = (ph - pt - parseFloat(ics.paddingBottom)) + 'px';   // 위를 비운 만큼 단 높이도 줄인다(안 줄이면 이 판만 화면보다 길어 카드 아래가 잘렸다)
-    }
+    });
     inners.forEach((inner, k) => {
       inner.classList.add('tm-measure');   // 한 단 · 높이 자유 — 자연 높이를 잰다
       const cs = getComputedStyle(inner), avail = ph - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
@@ -515,13 +533,13 @@
      튕긴 속도가 끊기고 한 박자 쉬었다 가는 느낌이었다. 이제 놓는 순간의 손가락 속도로 이어 가다 부드럽게 서는(감속만 하는) 곡선을
      남은 거리에 맞춘 길이(0.2~0.46초)로 쓴다. 다음 끌기 · 다른 이동이 오면 곧바로 풀린다(settle) */
   let easeT = 0;
-  function settle() { clearTimeout(easeT); track.style.transition = ''; if (pin) pin.box.style.transition = ''; }
+  function settle() { clearTimeout(easeT); track.style.transition = ''; pins.forEach(p => { p.box.style.transition = ''; }); }
   function ease(rem, v0) {
     if (reduce) return;
     const T = Math.round(clamp(160 + rem * 0.5, 200, 460));
     const s = clamp(v0 * T / Math.max(1, rem), 0.8, 3);   // 곡선의 첫 기울기 = 놓는 순간 속도 ÷ 평균 속도
     const tr = `transform ${T}ms cubic-bezier(.3,${(0.3 * s).toFixed(3)},.25,1)`;
-    track.style.transition = tr; if (pin) pin.box.style.transition = tr;
+    track.style.transition = tr; pins.forEach(p => { p.box.style.transition = tr; });
     clearTimeout(easeT); easeT = setTimeout(settle, T + 80);
   }
   addEventListener('pointermove', e => {
