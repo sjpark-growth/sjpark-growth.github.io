@@ -229,7 +229,7 @@
       try { next === 'system' ? localStorage.removeItem('psj-theme') : localStorage.setItem('psj-theme', next); } catch (e) {}
       label.textContent = names[next];
     });
-    /* (2026-11-05) 저장되는 PDF 파일 이름 — 크롬은 문서 제목을 기본 파일 이름으로 쓴다. 인쇄하는 동안만 「Seongjoon_Park_Resume_EN_YYYYMM」 */
+    /* (2026-11-05) 저장되는 PDF 파일 이름 — 크롬은 문서 제목을 기본 파일 이름으로 쓴다. 인쇄하는 동안만 「Seongjoon_Park_Portfolio_EN_YYYYMM」(2026-11-17 Resume → Portfolio) */
     var baseTitle = document.title;
     var printTitle = function () { var d = new Date(); document.title = 'Seongjoon_Park_Portfolio_EN_' + d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2); };
     addEventListener('beforeprint', printTitle);
