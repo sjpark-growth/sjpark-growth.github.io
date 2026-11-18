@@ -46,12 +46,12 @@
 
 | 수치 | 나오는 곳 |
 |---|---|
-| 통합 ROAS 962% → 1,331% (+369%p) (2026-11-18, 이전 1,328% · +366%p) | ticker · board.roas · kpis · jobs(현 직장) · careerNote · scores · en.html(머리 · KPI · 경력) · index.html(og · twitter description) · 공유 카드 — 2026-09-28 반복을 줄이려고 profile.highlights(종합) · pillars(PERFORMANCE)에서 뺐다. 다시 늘리지 않는다 |
+| 통합 ROAS 962% → 1,331% (+369%p) (2026-11-18, 이전 1,328% · +366%p) | angles.performance(thesis 「+369%p」) · ticker · board.roas · kpis · jobs(현 직장) · careerNote · scores · en.html(머리 · KPI · 경력) · index.html(og · twitter description) · 공유 카드 — 2026-09-28 반복을 줄이려고 profile.highlights(종합) · pillars(PERFORMANCE)에서 뺐다. 다시 늘리지 않는다 |
 | 쿠팡 윙 ROAS 437% → 659% (+222%p) · 매출 +100.2%(광고비 +32.8%, 26.7–8 YoY) | profile.highlights · boardMulti · projects.cp3 · pillars(PERFORMANCE) · motion.js(cp3) |
 | 기간 이름 | 25년 1~6월은 「입사 전 6개월」로 통일(「25년 상반기 평균」 「전년 동기」 「입사 전 평균」 쓰지 않음) — board.roas · kpis · app.js 차트 라벨 |
 | 쿠팡 1P 1,426% → 1,893% (+468%p) | ticker · board.multi(꺼 둠) · boardMulti · kpis · profile.highlights · projects.cp1 · jobs |
 | 브랜드 키워드 의존도 38.0% → 15.8% (−22.2%p) · 입사 전 6개월 → 26.9 | ticker · board.brand · kpis · projects.brand · jobs · careerNote · en.html · motion.js(brand) · app.js VIEWS(brand 캡션 「41.8%(25.1) → 15.8%(26.9)」) · 공유 카드. 채널별(1P 19.5 → 6.2 · 윙 44.6 → 17.5 · 쇼핑검색 53.9 → 24.4 · 파워링크 67.2 → 19.7)은 projects.brand · cp1 · naver · motion.js |
-| 동일 몰 7월 매출 30.8억 → 41억 (+10.2억 · +33.1%), 광고비 −4.7% (2026-11-18, 그 전 −4.4% · −4.5%) | ticker · kpis · growth.coupon · jobs · scores · en.html(₩3.08B → ₩4.10B · spend −4.7%) · 공유 카드. 광고비 % 는 10개 키 7월 광고비(26.7 vs 25.7), 매출은 세일즈 시트 기준(대시보드 밖) |
+| 동일 몰 7월 매출 30.8억 → 41억 (+10.2억 · +33.1%), 광고비 −4.7% (2026-11-18, 그 전 −4.4% · −4.5%) | ticker · kpis · growth.coupon · jobs · scores · en.html(₩3.08B → ₩4.10B · spend −4.7%) · 공유 카드. 광고비 % 는 10개 키 7월 광고비(26.7 vs 25.7), 매출은 세일즈 시트 기준(대시보드 밖). 광고비 % 가 실제로 나오는 곳은 kpis · jobs · en.html(KPI · 경력) · 공유 카드뿐(ticker · growth.coupon · scores 는 매출 쪽만 — 2026-11-18 verifier 확인) |
 | 전환매출 +83.5% (광고비 +32.6% · 2.6배 속도) · 26 상반기 YoY (2026-11-18, 이전 +83.6% · +33.0% · 2.5배) | ticker · kpis · jobs · en.html |
 | 전체 매출 +36.6% | kpis · growth.main · projects.nonad · jobs · scores |
 | 쿠팡 PMC 최대 −95% (25.9 → 26.2) | moreWins · growth.coupon · projects.nonad · jobs · motion.js(nonad) |
