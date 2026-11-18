@@ -543,7 +543,7 @@
   /* 6 · 네이버 */
   SCENES.naver = {
     duration: 13, poster: 11.8,
-    chapters: [[0, '파워링크·쇼핑검색에 몰려 있던 브랜드 키워드를 걷어냄'], [4.8, '지면별 효율을 평탄화한 뒤 쇼핑검색 예산 비중 40% → 70%'], [8.8, 'GFA ROAS 304% → 623% (+319%p) · 상반기 광고비 +58.2%에 매출 +65.1%']],
+    chapters: [[0, '파워링크·쇼핑검색에 몰려 있던 브랜드 키워드를 걷어냄'], [4.8, '지면별 효율을 평탄화한 뒤 쇼핑검색 예산 비중 40% → 70%'], [8.8, 'GFA ROAS 304% → 623% (+319%p) · 상반기 광고비 +56.9%에 매출 +64.5%']],
     draw(g, t) {
       g.kicker(t < 4.8 ? 'NAVER · 브랜드 키워드 비중' : t < 8.8 ? 'BUDGET MIX · 운영 보고서' : 'RESULT');
       g.alpha(1 - seg(t, 4.4, 4.9), () => {
@@ -584,8 +584,8 @@
         g.alpha(seg(t, 10.4, 11), () => {
           g.box(700, 200, 480, 250, { fill: C.panel, r: 14, stroke: C.line });
           g.text('26년 상반기 · 전년 동기 대비', 730, 244, { size: 17, color: C.ink2 });
-          g.text('광고비', 730, 306, { size: 20, color: C.ink2 }); g.text('+58.2%', 1150, 310, { size: 38, weight: 600, font: 'num', align: 'right', color: C.ink2 });
-          g.text('매출', 730, 380, { size: 20, color: C.ink2 }); g.text('+65.1%', 1150, 386, { size: 46, weight: 600, font: 'num', align: 'right', color: C.good });
+          g.text('광고비', 730, 306, { size: 20, color: C.ink2 }); g.text('+56.9%', 1150, 310, { size: 38, weight: 600, font: 'num', align: 'right', color: C.ink2 });
+          g.text('매출', 730, 380, { size: 20, color: C.ink2 }); g.text('+64.5%', 1150, 386, { size: 46, weight: 600, font: 'num', align: 'right', color: C.good });
           g.text('늘린 만큼 더 빠르게 따라온 매출', 730, 428, { size: 16, color: C.ink3 });
         });
       });
