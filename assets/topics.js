@@ -46,11 +46,15 @@
   const TOPICS0 = [
     { id: 'intro', label: '소개', en: 'Intro', desc: '첫인상 — 성과 리포트 · 핵심 성과 · 핵심 요약', secs: ['.hero', '#summary'],
       sub: () => [['성과 리포트', '.mboard-wrap'], ['핵심 성과', '.hkey'], ['핵심 요약', '#summary .sum-l'], ['그 밖의 개선', '#summary .more']] },
+    // (2026-11-20) 주요 성과 — 현 직장 중심(본판 index.html 에만 있는 절 — 없는 틀에서는 빠진다)
+    { id: 'results', label: '주요 성과', en: 'Key results', desc: '현 직장 — 매출과 공헌이익을 함께 키운 숫자', secs: ['#results'],
+      sub: () => [['매출 · 공헌이익', '#rsLead'], ['현 직장 핵심 숫자', '#rsCards'], ['이전 직장', '#rsPrev']] },
     { id: 'dash', label: '대시보드', en: 'Dashboard', desc: '직접 만든 운영 도구 — 화면의 숫자는 모두 임의 값', secs: ['#dash'],
       sub: () => [['대시보드 데모', '.dash-frame'], ['구축 내용', '.dash-side']] },
     { id: 'xdash', label: '기타 대시보드', en: 'More dashboards', desc: '브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커 — 대시보드 옆에 붙인 운영 도구', secs: ['#xdash'],
       sub: () => $$('#moreDash .xd').map(c => [txt($('h3', c)), c]) },
-    { id: 'perf', label: '성과', en: 'Performance', desc: '16개월, 네 단계로 바꾼 숫자', secs: ['#perf'],
+    // (2026-11-20) 「주요 성과」 탭과 헷갈리지 않게 「성과」 → 「성과 추이」
+    { id: 'perf', label: '성과 추이', en: 'Performance', desc: '16개월, 네 단계로 바꾼 숫자', secs: ['#perf'],
       sub: () => [['성과 차트', '#perf .perf > .panel:first-child'], ['기간 비교', '#perf .cmp'], ['네 단계', '#phaseList']] },
     { id: 'growth', label: '그로스', en: 'Growth', desc: '광고 밖 — 첫 화면 · 카테고리 · 쿠폰 구조', secs: ['#growth'],
       sub: () => $$('#gcards .gcard').map(c => [txt($('h3', c)), c]) },
@@ -97,6 +101,8 @@
   });
   const inners = panels.map(p => $('.tm-inner', p));
   stage.appendChild(track); main.appendChild(stage);
+  // 무대는 스스로 스크롤하지 않는다 — 주소의 #절로 브라우저가 옆으로 굴려 두면(overflow: clip 을 모르는 브라우저) 바로 0 으로(2026-11-20 — 좁은 화면 한 장 어긋남)
+  stage.addEventListener('scroll', () => { if (stage.scrollLeft || stage.scrollTop) { stage.scrollLeft = 0; stage.scrollTop = 0; } });
   // 항목 대상은 한 번 찾아 둔다(app.js 가 다 그린 뒤라 카드가 있다)
   const subsOf = TOPICS.map(t => (t.sub() || []).filter(x => x && x[0]).map(([name, tg]) => [name, typeof tg === 'string' ? $(tg) : tg]).filter(x => x[1]));
 
@@ -113,7 +119,7 @@
   })();
 
   /* 장(판)에 들어올 때 차례로 떠오를 덩어리 — 순번(--k)은 장마다 다시 센다(layout) */
-  const ANIM = '.tm-idx, .hero-l > *, .hero-r > *, #summary .shell > *, .sec-h > *, .growth-h > *, .dash-wrap > *, .xdash > .xd, .perf > *, .phases > li, .gcards > *, .gextra, .projects > .proj, .pillars > *, .toolrow, .gantt, .cnote, .jobs > *, .archive > *, .beliefs > *, .contact.big, .scorebox, .factgrid > *, .foot .shell > *';
+  const ANIM = '.tm-idx, .hero-l > *, .hero-r > *, #summary .shell > *, .rs-lead, .rs-cards > li, .rs-prev, .sec-h > *, .growth-h > *, .dash-wrap > *, .xdash > .xd, .perf > *, .phases > li, .gcards > *, .gextra, .projects > .proj, .pillars > *, .toolrow, .gantt, .cnote, .jobs > *, .archive > *, .beliefs > *, .contact.big, .scorebox, .factgrid > *, .foot .shell > *';
   const anims = panels.map(p => $$(ANIM, p).filter(n => !n.closest('[hidden]')));
   anims.forEach(list => list.forEach((n, k) => { n.classList.add('tm-anim'); n.style.setProperty('--k', Math.min(k, 8)); }));
   const animPage = new Map();
@@ -452,8 +458,25 @@
      · 「지킬 곳 1로」 「진입 14」처럼 낱말 뒤 숫자는 붙이고, 구분점 · 줄표 · 화살표 · 닫는 괄호가 줄 머리에, 화살표 · 여는 괄호가 줄 끝에 오지 않게
        공백을 줄바꿈 없는 공백(U+00A0)으로 바꾼다. 좁은 화면으로 가면 원래 글자로 되돌린다(좁은 칸에서 긴 덩어리가 글자 단위로 쪼개지지 않게) */
   const NB = ' ', glued = new Map();
-  function glue(on) {
-    if (!on) { glued.forEach((v, t) => { t.nodeValue = v; }); glued.clear(); return; }
+  /* (2026-11-20 본인 「전체적으로 줄바꿈 · 문맥 개선 — 숫자 · 단위 사이에서 끊기지 않게」) 좁은 화면(FLOW 본판)에도 가벼운 규칙만 —
+     화살표 앞뒤 · 「(+369%p)」 앞만 붙인다(「962% → 1,331%」가 화살표에서 갈라지지 않게). 낱말 + 숫자 · 구분점은 좁은 칸에서 덩어리가 길어져 빼고,
+     인쇄 중에는 모두 되돌린다(PDF 줄바꿈 · 장 수 그대로). mode = 'full'(넓은 화면) · 'light'(좁은 화면 FLOW) · ''(되돌림) */
+  let glueMode = '';
+  const glueFor = () => glue(wide ? 'full' : (FLOW ? 'light' : ''));
+  function glue(mode) {
+    mode = mode === true ? 'full' : (mode || '');
+    if (mode === glueMode) return;
+    glued.forEach((v, t) => { t.nodeValue = v; }); glued.clear(); glueMode = mode;
+    if (!mode) return;
+    if (mode === 'light') {
+      const lw = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest('svg, script, style, textarea, .player .stage, [data-roll-to]') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
+      for (let t; (t = lw.nextNode());) {
+        const s = t.nodeValue; if (s.indexOf(' ') < 0) continue;
+        const v = s.replace(/ (?=→)/g, NB).replace(/→ /g, '→' + NB).replace(/ (?=\([+\-−]?\d)/g, NB);
+        if (v !== s) { glued.set(t, s); t.nodeValue = v; }
+      }
+      return;
+    }
     // 숫자 굴림 칸([data-roll-to] — app.js 가 글자를 목표값까지 굴린다)은 건드리지 않는다: 「최대 −95」의 빈칸이 U+00A0 이 되면 목표 글자와 달라져
     // 게시 전 점검(site-gate print-flow)이 「덜 끝난 칸」으로 읽었다(2026-11-20, 본판 전환 때 발견 — 모든 덱 공통)
     const w = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest('svg, script, style, textarea, .player .stage, [data-roll-to]') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
@@ -471,7 +494,7 @@
   function setMode(w) {
     if (w === wide) return false;
     wide = w; root.classList.toggle('tm-wide', w);
-    glue(w);
+    glueFor();
     closeDrop(true); navFor = -1;
     main.classList.remove('near-l', 'near-r');
     if (!w) {
@@ -924,11 +947,12 @@
 
   /* 인쇄 — 판을 세로로 다시 쌓는다(style 은 topics.css 인쇄 블록). 넓은 화면 배치(zoom · 장 폭)를 풀고, inert 를 풀어야 인쇄 · 복사에 다 나온다 */
   let printPg = 0;
-  on(window, 'beforeprint', () => { printPg = wide ? pg : restorePg(); setMode(false); panels.forEach(p => { p.inert = false; p.removeAttribute('aria-hidden'); }); });
-  on(window, 'afterprint', () => { clearTimeout(rzT); setMode(wideMQ.matches); if (wide) layout(); go(cur, { page: wide ? printPg : 0, push: false, instant: true }); relayout(400); });   // 차트가 화면 폭으로 다시 그려진 뒤 한 번 더 나눈다
+  on(window, 'beforeprint', () => { printPg = wide ? pg : restorePg(); setMode(false); glue(''); panels.forEach(p => { p.inert = false; p.removeAttribute('aria-hidden'); }); });
+  on(window, 'afterprint', () => { clearTimeout(rzT); setMode(wideMQ.matches); glueFor(); if (wide) layout(); go(cur, { page: wide ? printPg : 0, push: false, instant: true }); relayout(400); });   // 차트가 화면 폭으로 다시 그려진 뒤 한 번 더 나눈다
 
   // 처음 — #/주제(/장) 가 없으면 본판식 주소(#perf · #p-cp1)도 받아 그 판 · 그 자리로
   setMode(wideMQ.matches);
+  glueFor();   // 처음이 좁은 화면이면 setMode 가 바로 빠지므로(이미 좁은 배치) 여기서 한 번
   layout();
   let [k0, q0] = fromHash(), t0 = null;
   if (opts.target) { t0 = opts.target; k0 = panels.findIndex(p => p.contains(t0)); q0 = 0; if (k0 < 0) t0 = null; }
@@ -957,6 +981,7 @@
     ends.forEach(n => n.remove()); if (pull) pull.remove();
     L.forEach(([t, ty, fn, o]) => t.removeEventListener(ty, fn, o)); L.length = 0;
     if (wide) setMode(false);
+    glue('');   // 좁은 화면 가벼운 줄바꿈 공백도 원래 글자로(스크롤판으로 돌아갈 때)
     $$('.tm-anim, .tm-flash').forEach(n => { n.classList.remove('tm-anim', 'tm-play', 'tm-flash'); n.style.removeProperty('--k'); });
     for (let i = homes.length - 1; i >= 0; i--) { const [n, parent, next] = homes[i]; parent.insertBefore(n, next && next.parentNode === parent ? next : null); }
     if (undoXlink) undoXlink();

@@ -998,6 +998,35 @@
       </article>`).join('');
   }
 
+  /* ------------------------------------------------------------ 주요 성과 (2026-11-20 · data.js results)
+     현 직장 중심 — 왼쪽(넓은 화면) = 담당 외부몰 매출 · 공헌이익 전년 같은 달 대비(두 숫자 + 달마다 막대 두 줄),
+     오른쪽 = 현 직장 핵심 숫자 카드(전 → 후 막대), 아래 = 이전 직장 두 줄(보조). 막대는 증가율 · 전후 값만 — 금액 축 없음 */
+  function renderResults() {
+    const host = $('#results'), S = R.results; if (!host || !S) return;
+    $('#resultsTag').textContent = S.tag; $('#results-h').textContent = S.title; $('#resultsLede').innerHTML = S.lede;
+    // 가장 긴 막대 = 칸의 62% — 막대 끝에 붙는 숫자 글자(「공헌이익 +47.0%」)가 휴대폰 폭에서도 칸 안에 들어오게
+    const L = S.lead, top = Math.max(...L.months.map(m => Math.max(m.s, m.c))) / 0.62;
+    const bar = (v, cls, label) => `<span class="rs-bar ${cls}" style="--w:${(v / top * 100).toFixed(1)}%"><i></i><b>${label}</b></span>`;
+    const num = t => parseFloat(String(t).replace(/[^\d.]/g, '')) || 0;
+    $('#rsLead').innerHTML = `
+      <p class="rs-label"><span>${L.label}</span><span class="rs-period">${L.period}</span></p>
+      <div class="rs-pair">${L.pair.map(p => `<div class="rs-big${p.hot ? ' hot' : ''}"><span class="rs-k">${p.k}</span><span class="rs-v">${p.v}<small>${p.u}</small></span></div>`).join('<span class="rs-plus" aria-hidden="true">&amp;</span>')}</div>
+      <ul class="rs-months" aria-label="달마다 전년 같은 달 대비 증가율">${L.months.map(m => `
+        <li><span class="rs-m">${m.m}</span><span class="rs-bars">${bar(m.s, 'sales', `매출 +${m.s.toFixed(1)}%`)}${bar(m.c, 'contrib', `공헌이익 +${m.c.toFixed(1)}%`)}</span></li>`).join('')}
+      </ul>
+      <p class="rs-legend" aria-hidden="true"><span class="sales">매출</span><span class="contrib">공헌이익</span></p>
+      <p class="rs-note">${L.note}</p>`;
+    $('#rsCards').innerHTML = S.cards.map(c => {
+      const pair = c.from ? (() => { const a = num(c.from), b = num(c.v), m = Math.max(a, b) || 1;
+        return `<span class="rs-mini" aria-hidden="true"><i class="was" style="--w:${(a / m * 100).toFixed(1)}%"></i><i class="now" style="--w:${(b / m * 100).toFixed(1)}%"></i></span>`; })() : '';
+      const body = `<span class="rs-ck">${c.k}</span>
+        <span class="rs-cv">${c.from ? `<s>${c.from}</s><span aria-hidden="true"> → </span>` : ''}${c.v}<small>${c.u}</small></span>
+        ${c.d ? `<span class="rs-cd">${c.d}</span>` : ''}${pair}${c.s ? `<span class="rs-cs">${c.s}</span>` : ''}`;
+      return `<li>${c.to ? `<a class="rs-card" href="${c.to}">${body}</a>` : `<div class="rs-card">${body}</div>`}</li>`;
+    }).join('');
+    $('#rsPrev').innerHTML = `<h3 class="rs-ph">이전 직장</h3><ul>${S.prev.map(p => `<li><b>${p.co}</b><span class="rs-when">${p.when}</span><span class="rs-pt">${p.t}</span></li>`).join('')}</ul>`;
+  }
+
   /* ------------------------------------------------------------ projects */
   const linkOf = id => id === 'dashboard' ? '#dash' : '#p-' + id;
   function renderProjects() {
@@ -1515,6 +1544,7 @@
   rollBoard();
   renderGrowth();
   renderShowcase();
+  renderResults();
   renderMoreDash();
   renderPerf();
   renderProjects();

@@ -60,7 +60,6 @@
   };
   const VIA = { wheel: 'wheel', key: 'keys', drag: 'drag', swipe: 'swipe', pull: 'pull', end: 'dock', button: 'dock' };
   const X = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
-  const Q = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="6.3"/><path d="M6.2 6.3a1.85 1.85 0 1 1 2.6 1.7c-.55.25-.8.6-.8 1.15v.35"/><circle cx="8" cy="11.5" r=".5" fill="currentColor"/></svg>';
 
   let card = null, closeT = 0, k0 = '', sy0 = null;
   function build() {
@@ -109,13 +108,15 @@
     clearTimeout(closeT); closeT = setTimeout(() => hide(true), 2600);
   }
 
-  /* 「?」 넘기는 법 단추 — 넓은 화면 GNB 장 넘기기 줄 끝 · 좁은 화면 아래 막대 「목차」 앞(켤 때마다 topics.js 가 새로 만드니 그때마다 붙인다) */
+  /* 「넘기는 법」 단추 — 글자로(2026-11-20 본인 「심볼이라 직관적이지 않아 — 텍스트로」, 처음엔 「?」 그림이었다).
+     넓은 화면 = GNB 아래 도구 줄의 「스크롤로 보기」 옆, 좁은 화면 = 아래 막대 「목차」 앞. 아래 막대는 켤 때마다 topics.js 가 새로 만드니 그때마다 붙인다 */
   function addHelp() {
-    [[document.querySelector('.tm-pager'), null], [document.querySelector('.tm-dock'), document.querySelector('.tm-dock .tm-menu')]].forEach(([host, before]) => {
-      if (!host || host.querySelector('.pg-help')) return;
+    const mode = document.getElementById('modeBtn'), tools = mode && mode.parentElement;
+    [[tools, mode ? mode.nextSibling : null, 'iconbtn pg-help'], [document.querySelector('.tm-dock'), document.querySelector('.tm-dock .tm-menu'), 'pg-help']].forEach(([host, before, cls]) => {
+      if (!host || host.querySelector(':scope > .pg-help')) return;
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'pg-help'; b.title = '넘기는 법'; b.setAttribute('aria-label', '넘기는 법 보기');
-      b.innerHTML = Q;
+      b.type = 'button'; b.className = cls; b.title = '휠 · 방향키 · 드래그로 넘기는 법 보기';
+      b.textContent = '넘기는 법';
       b.addEventListener('click', () => (card ? hide(false) : show()));
       host.insertBefore(b, before);
     });
@@ -129,7 +130,8 @@
   document.addEventListener('tm:ready', ready);
   document.addEventListener('tm:nav', e => learned(e.detail && e.detail.via));
   document.addEventListener('tm:mode', () => { if (card && kind() !== k0) show(); });   // 창 크기로 넓은 ↔ 좁은 배치가 바뀌면 그 배치의 안내로
-  document.addEventListener('tm:stop', () => hide(false));
+  // 스크롤판으로 바꾸면 상단 바의 「넘기는 법」도 뗀다(아래 막대 쪽은 topics.js 가 막대째 지운다) — 다시 장 넘김이 켜지면 tm:ready 에서 다시 붙인다
+  document.addEventListener('tm:stop', () => { hide(false); document.querySelectorAll('.pg-help').forEach(b => b.remove()); });
   document.addEventListener('psj:view', e => { if (e.detail === 'scroll') hide(true); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && card) hide(true); });
   // 상단 바 · 아래 막대(주제 탭 · 목차 · 테마 등)를 누르면 닫는다 — 이미 둘러볼 줄 아는 것(「?」 단추는 빼고)

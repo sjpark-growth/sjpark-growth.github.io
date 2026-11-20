@@ -2152,3 +2152,63 @@ body { overflow-x: clip; }
 }
 /* 전환해 돌아왔을 때 카드 머리가 상단 바 아래에 가리지 않게(카드 · 기타 대시보드 카드 주소로 올 때 — 안 A · B) */
 .proj[id], .xd[id] { scroll-margin-top: calc(var(--mast-h, 64px) + 8px); }
+
+/* ============================================================ 주요 성과 (2026-11-20 · 본판 index.html #results)
+   본인 「매출과 공헌이익을 동시에 성장시킨 건 큰 무기」 · 「내용은 현 직장이 주된 내용」 — 왼쪽 크게 = 담당 외부몰 매출 · 공헌이익(전년 같은 달 대비, 달마다 막대 두 줄),
+   오른쪽 = 현 직장 핵심 숫자 카드(전 → 후 막대), 아래 = 이전 직장 두 줄(보조). 내용 data.js results · 그리기 app.js renderResults. 인쇄에는 안 넣는다(paged.css) */
+.results .rs-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 16px 22px; align-items: start; }
+.rs-lead { grid-row: span 2; padding: clamp(18px, 2vw, 26px); border: 1px solid var(--rule); border-radius: 18px; background: var(--surface); box-shadow: 0 10px 30px rgba(12, 26, 43, .06); }
+.rs-label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin: 0 0 14px; font-size: 13.5px; font-weight: 700; color: var(--ink-2); }
+.rs-period { font-size: 12.5px; font-weight: 600; color: var(--ink-3); }
+.rs-pair { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 16px; margin-bottom: 20px; }
+.rs-big { display: grid; gap: 4px; }
+.rs-k { font-size: 13px; font-weight: 700; color: var(--ink-3); }
+.rs-v { font-family: var(--f-num); font-stretch: 85%; font-size: clamp(40px, 4.6vw, 62px); line-height: 1; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); white-space: nowrap; }
+.rs-v small { margin-left: 2px; font-size: .5em; }
+.rs-big.hot .rs-v { color: var(--accent-ink); }
+.rs-plus { padding-bottom: 8px; font-size: 24px; font-weight: 300; color: var(--ink-3); }
+.rs-months { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.rs-months li { display: grid; grid-template-columns: 2.4em minmax(0, 1fr); align-items: center; gap: 10px; }
+.rs-m { font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.rs-bars { display: grid; gap: 4px; min-width: 0; }
+.rs-bar { display: flex; align-items: center; height: 18px; min-width: 0; }
+.rs-bar i { flex: none; display: block; width: var(--w); height: 100%; border-radius: 0 6px 6px 0; background: color-mix(in srgb, var(--ink-3) 38%, transparent); }
+.rs-bar.contrib i { background: var(--accent); }
+.rs-bar b { flex: none; margin-left: 8px; font-family: var(--f-num); font-size: 12.5px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.rs-bar.contrib b { color: var(--accent-ink); }
+.rs-legend { display: flex; gap: 14px; margin: 14px 0 0; font-size: 12px; color: var(--ink-3); }
+.rs-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; vertical-align: -1px; background: color-mix(in srgb, var(--ink-3) 38%, transparent); }
+.rs-legend .contrib::before { background: var(--accent); }
+.rs-note { margin: 10px 0 0; font-size: 12px; line-height: 1.55; color: var(--ink-3); }
+.rs-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.rs-cards > li { min-width: 0; }
+.rs-card { box-sizing: border-box; display: grid; align-content: start; gap: 3px; height: 100%; padding: 13px 15px; border: 1px solid var(--rule); border-radius: 14px;
+  background: var(--surface); color: inherit; text-decoration: none; transition: border-color .2s, transform .2s; }
+a.rs-card:hover { border-color: var(--accent); }
+a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rs-ck { font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
+.rs-cv { font-family: var(--f-num); font-stretch: 85%; font-size: 25px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.rs-cv s { font-size: .62em; color: var(--ink-3); text-decoration: none; }
+.rs-cv small { margin-left: 1px; font-size: .56em; }
+.rs-cd { font-size: 13px; font-weight: 700; color: var(--accent-ink); }
+.rs-cs { font-size: 11.5px; line-height: 1.45; color: var(--ink-3); }
+.rs-mini { display: grid; gap: 3px; margin: 3px 0 2px; }
+.rs-mini i { display: block; width: var(--w); height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--ink-3) 38%, transparent); }
+.rs-mini i.now { background: var(--accent); }
+.rs-prev { grid-column: 2; padding: 12px 16px; border: 1px dashed var(--rule-2); border-radius: 14px; }
+.rs-ph { margin: 0 0 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
+.rs-prev ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.rs-prev li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 13px; }
+.rs-when { font-size: 11.5px; color: var(--ink-3); }
+.rs-pt { flex: 1 1 100%; color: var(--ink-2); }
+.rs-pt strong { color: var(--accent-ink); }
+@media (max-width: 860px) {
+  .results .rs-grid { grid-template-columns: minmax(0, 1fr); }
+  .rs-lead { grid-row: auto; }
+  .rs-prev { grid-column: auto; }
+}
+@media (max-width: 600px) {
+  .rs-card { padding: 12px; }
+  .rs-cv { font-size: 22px; }
+  .rs-lead { padding: 16px; }
+}

@@ -18,7 +18,9 @@ main.tm-dragging .tm-stage { -webkit-user-select: none; user-select: none; }
 @media (pointer: fine) { main.tm-dragging, main.tm-dragging * { cursor: grabbing !important; } }
 
 /* ---------- 판 */
-.tm-stage { position: absolute; inset: 0; overflow: hidden; }
+/* overflow: clip — hidden 이면 스크립트 · 주소의 #절 이동(브라우저 기본 앵커 이동)이 판 무대를 옆으로 스크롤할 수 있어, 좁은 화면에서 `#perf` 같은 주소로
+   열면 트랙 이동과 겹쳐 한 장 옆 판이 보였다(2026-11-20 발견 — 넓은 화면은 원래 clip). clip 을 모르는 브라우저는 hidden + topics.js 의 되돌림 */
+.tm-stage { position: absolute; inset: 0; overflow: hidden; overflow: clip; }
 /* (2026-11-16 본인 「페이지네이션 좀 더 부드럽게」) 장 넘김 곡선 — 예전 .8s cubic-bezier(.77,0,.18,1) 은 출발이 굼뜨고 가운데서 몰아쳐
    「멈칫 → 휙」 느낌이었다. 이제 가볍게 출발해 길게 감속하는 곡선 하나를 트랙 · 판 흐림 · 탭 알약이 함께 쓴다 */
 html.tabmode { --tm-dur: .7s; --tm-ease: cubic-bezier(.3,0,.12,1); }
