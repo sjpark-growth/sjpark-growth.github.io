@@ -2289,3 +2289,37 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
   #dash .dash-side .how-box { flex: 1 1 auto; }
   #dash .dash-side .how.how-tips { flex: none; min-height: 0; overflow: visible; padding: 0; -webkit-mask-image: none; mask-image: none; }
 }
+
+/* (2026-11-20) 첫 화면 좌우 균형 — 본인 「핵심 성과를 좌측 아래로 내려서 좌우 크기 밸런스」.
+   넓은 화면(≥1101px · 화면만)에서 오른쪽 틀(.hero-r)을 풀어(display: contents — 휴대폰 배치와 같은 방법) 첫 화면을 2단 격자로 다시 놓는다:
+   왼쪽 = 소개 + 그 아래 「핵심 성과」 2×2, 오른쪽 = 「핵심 과업」 머리 + 대시보드 · 차트 2×2 가 높이를 꽉 채움(차트는 칸 높이를 따라 커진다 — app.js boardH).
+   폭은 1 : 1.08 — 핵심 성과가 왼쪽 칸으로 오면서 1 : 1.34 로는 숫자 칸이 좁았다. 태블릿 · 휴대폰 · 인쇄 배치는 그대로 */
+@media screen and (min-width: 1101px) {
+  .hero .shell {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "l h" "l b" "k b"; column-gap: clamp(20px, 2.6vw, 44px); row-gap: clamp(8px, 1.3vh, 14px);
+    min-height: clamp(540px, calc(100vh - var(--mast-h, 55px) - 41px - var(--hp-t) - var(--hp-b)), 840px);
+    min-height: clamp(540px, calc(100svh - var(--mast-h, 55px) - 41px - var(--hp-t) - var(--hp-b)), 840px);
+  }
+  html.tm-wide .hero .shell { min-height: 0; }   /* 장 넘김에서는 topics.css 가 높이를 장 높이로 정한다 */
+  .hero .shell > .hero-r { display: contents; }
+  .hero-l { grid-area: l; align-self: center; }
+  .hero-r > .mb-h { grid-area: h; align-self: end; }
+  .hero-r > .mboard { grid-area: b; }
+  .hero-r > .hkey { grid-area: k; align-self: end; }
+  .hero .hk { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero .hk .kpi { border-radius: 0 !important; }
+  .hero .hk .kpi:nth-child(1) { border-top-left-radius: 11px !important; }
+  .hero .hk .kpi:nth-child(2) { border-top-right-radius: 11px !important; }
+  .hero .hk .kpi:nth-child(3) { border-bottom-left-radius: 11px !important; }
+  .hero .hk .kpi:nth-child(4) { border-bottom-right-radius: 11px !important; }
+  /* 왼쪽 칸이 핵심 성과까지 담도록 조금 촘촘히 — 크기는 창 높이(vh)를 따라간다 */
+  .hero-l .portrait { width: clamp(84px, 13vh, 150px); }
+  .hero-l .idrow h1 { font-size: clamp(38px, 6.6vh, 74px); margin-top: 4px; }
+  .hero-l .thesis { font-size: clamp(21px, 3.3vh, 34px); margin-top: clamp(10px, 1.8vh, 22px); }
+  .hero-l .contact { margin-top: clamp(10px, 1.6vh, 20px); }
+  .hero-l .herosum { margin-top: clamp(8px, 1.3vh, 14px); row-gap: 2px; }
+  .hero-l .herosum span { font-size: 12.7px; line-height: 1.4; }
+  .hero .hk .kpi { padding: clamp(7px, 1.1vh, 11px) 13px clamp(8px, 1.2vh, 12px); }
+  .hero .hk .kpi .v { font-size: clamp(22px, 3.4vh, 34px); }
+}

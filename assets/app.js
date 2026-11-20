@@ -225,7 +225,7 @@
             <span class="mp-badge">숫자는 모두 임의 값</span>
             <span class="mp-open">${ICON.expand}클릭해서 직접 조작</span>
           </button>
-          <p class="mp-span">${b.span || ''}<a href="#dash">영상으로 보기 ↓</a></p>`;
+          <p class="mp-span">${b.span || ''}<a href="#dash">자세히 보기 ↓</a></p>`;
         host.appendChild(a);
         $('.mp-shot', a).addEventListener('click', () => openDemo(feat.demo || 'dashboard-demo.html?video&explore'));
         return;
@@ -300,7 +300,7 @@
     const start = () => {
       if (!ROLL.matches) { clearTimeout(timer); return; }
       if (!dots) {
-        dots = el('div', { class: 'mb-dots', role: 'group', 'aria-label': '성과 리포트 넘기기' });
+        dots = el('div', { class: 'mb-dots', role: 'group', 'aria-label': '핵심 과업 넘기기' });
         play = el('button', { type: 'button', class: 'mb-play', 'aria-label': '자동 넘김 멈추기' }, ICON.pause);
         play.addEventListener('click', () => {
           stopped = !stopped;

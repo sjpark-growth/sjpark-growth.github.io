@@ -46,8 +46,9 @@
   const TOPICS0 = [
     // (2026-11-20 본인 「핵심 요약이 없어지거나 최하단 원칙 / 연락처 부근으로 가공해서 들어가도 될 것 같아」) 본판(FLOW)은 핵심 요약을 마지막 주제로 —
     // 장 넘김에서만 옮기고 스크롤판 · 인쇄 순서는 그대로(PDF 16 · 7장). 옛 시안(topics · toggle)은 예전대로 소개 안에
-    { id: 'intro', label: '소개', en: 'Intro', desc: FLOW ? '첫인상 — 성과 리포트 · 핵심 성과' : '첫인상 — 성과 리포트 · 핵심 성과 · 핵심 요약', secs: FLOW ? ['.hero'] : ['.hero', '#summary'],
-      sub: () => [['성과 리포트', '.mboard-wrap'], ['핵심 성과', '.hkey']].concat(FLOW ? [] : [['핵심 요약', '#summary .sum-l'], ['그 밖의 개선', '#summary .more']]) },
+    { id: 'intro', label: '소개', en: 'Intro', desc: FLOW ? '첫인상 — 핵심 과업 · 핵심 성과' : '첫인상 — 핵심 과업 · 핵심 성과 · 핵심 요약', secs: FLOW ? ['.hero'] : ['.hero', '#summary'],
+      // (11-20) 넓은 화면에서 .mboard-wrap 은 틀을 풀어(display: contents) 상자가 없다 — 머리 줄(.mb-h)로 간다
+      sub: () => [['핵심 과업', '.hero-r > .mb-h'], ['핵심 성과', '.hkey']].concat(FLOW ? [] : [['핵심 요약', '#summary .sum-l'], ['그 밖의 개선', '#summary .more']]) },
     // (2026-11-20) 주요 성과 — 현 직장 중심(본판 index.html 에만 있는 절 — 없는 틀에서는 빠진다)
     { id: 'results', label: '주요 성과', en: 'Key results', desc: '현 직장 — 매출과 공헌이익을 함께 키운 숫자', secs: ['#results'],
       sub: () => [['매출 · 공헌이익', '#rsLead'], ['현 직장 핵심 숫자', '#rsCards'], ['이전 직장', '#rsPrev']] },

@@ -365,7 +365,8 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   html.tm-wide #dash .dash-side { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
   /* 첫 화면 · 대시보드 — 장 높이를 그대로 채운다 */
   /* 절에 기준 배율(--tm-z0, topics.js)이 걸리면 px 도 함께 줄어드므로 나눠서 장 높이를 꼭 채운다 */
-  html.tm-wide .hero .shell { height: calc(var(--tm-avail, 640px) / var(--tm-z0, 1)); }
+  /* (11-20) 첫 화면은 height 대신 min-height — 왼쪽(소개 + 핵심 성과)이 낮은 창에서 장보다 길어지면 절이 늘어나 layout() 이 한 장에 맞게 줄인다(fitZoom) */
+  html.tm-wide .hero .shell { min-height: calc(var(--tm-avail, 640px) / var(--tm-z0, 1)); }
   html.tm-wide .hero-r { min-height: 0; }
   html.tm-wide #dash { height: calc(var(--tm-avail, 640px) / var(--tm-z0, 1)); }
   /* 주요 업무 카드 — 한 장에 한 장씩: 영상 | 제목 · 설명 · 어떻게, 영상 아래 숫자 세 칸 */
