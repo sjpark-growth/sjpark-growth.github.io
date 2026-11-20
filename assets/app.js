@@ -1617,6 +1617,28 @@
     addEventListener('scroll', () => { if (cur && !raf) raf = requestAnimationFrame(paint); }, { passive: true });
   }
 
+  /* (2026-11-20 넷째, 본인 「첫 화면 상단 고정을 가운데 정렬로 소폭」) 넓은 화면 첫 화면 2단 격자에서 오른쪽 묶음(「핵심 과업」 머리 + 네 칸)을
+     왼쪽(소개 + 핵심 성과) 높이의 가운데로 — 두 단 높이 차이의 절반만큼 머리 줄을 내린다(style.css --hr-shift). 오른쪽 틀(.hero-r)은
+     display: contents 라 CSS 만으로는 두 조각을 한 덩어리로 가운데 놓을 수 없다. 높이는 offsetHeight(내림 값과 무관)로 재서 되먹임이 없다 */
+  function centerHeroRight() {
+    const shell = $('.hero .shell'), hl = $('.hero-l'), hk = $('.hero-r > .hkey'), mh = $('.hero-r > .mb-h'), mb = $('#mboard');
+    if (!shell || !hl || !hk || !mh || !mb) return;
+    const wideQ = matchMedia('screen and (min-width: 1101px)');
+    let last = -1;
+    const fit = () => {
+      let s = 0;
+      if (wideQ.matches) {
+        const gap = parseFloat(getComputedStyle(shell).rowGap) || 0;
+        const L = hl.offsetHeight + gap + hk.offsetHeight, R = mh.offsetHeight + gap + mb.offsetHeight;
+        s = Math.max(0, Math.round((L - R) / 2));
+      }
+      if (s !== last) { last = s; shell.style.setProperty('--hr-shift', s + 'px'); }
+    };
+    if ('ResizeObserver' in window) { const ro = new ResizeObserver(() => requestAnimationFrame(fit)); [hl, hk, mh, mb].forEach(n => ro.observe(n)); }
+    wideQ.addEventListener ? wideQ.addEventListener('change', fit) : wideQ.addListener(fit);
+    fit();
+  }
+
   /* ------------------------------------------------------------ boot */
   applyAngle();
   paintPeriods();
@@ -1624,6 +1646,7 @@
   renderHero();
   renderBoard();
   rollBoard();
+  centerHeroRight();
   renderGrowth();
   renderShowcase();
   renderResults();

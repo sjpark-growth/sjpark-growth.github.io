@@ -2307,7 +2307,7 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
   html.tm-wide .hero .shell { min-height: 0; }   /* 장 넘김에서는 topics.css 가 높이를 장 높이로 정한다 */
   .hero .shell > .hero-r { display: contents; }
   .hero-l { grid-area: l; align-self: start; }
-  .hero-r > .mb-h { grid-area: h; align-self: start; }
+  .hero-r > .mb-h { grid-area: h; align-self: start; margin-top: var(--hr-shift, 0px); }   /* 오른쪽 묶음을 왼쪽 높이 가운데로(app.js centerHeroRight · 11-20 넷째) */
   .hero-r > .mboard { grid-area: b; align-self: start; flex: none; grid-template-rows: auto auto; }
   .hero-r > .mboard > .mp { aspect-ratio: 1 / 1; }
   .hero-r > .hkey { grid-area: k; align-self: start; }
