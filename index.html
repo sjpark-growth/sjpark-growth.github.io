@@ -1,5 +1,8 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" class="tabmode" data-tm-flow="on">
+<!-- (2026-11-20 · 본인 D-30 「안 C로 진행」) 기본은 장 넘김(페이지네이션) — html.tabmode 로 시작해 topics.js 가 절을 주제 판으로 옮기고, data-tm-flow="on" 이면
+     좁은 화면도 판 끝에서 한 번 더 스크롤 · ↓ · 밀어 올리기로 다음 주제(FLOW). 넘기는 법 안내 = assets/paged-guide.js · paged.css, 같은 페이지 안 「스크롤로 보기」 = #modeBtn · assets/mode-toggle.js.
+     절 · id 는 예전 스크롤판 그대로(주소 #perf · #p-cp1 도 그 판 · 그 자리로 열린다). 세부 CLAUDE.md 5-5 -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,6 +30,8 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1a2b'/%3E%3Cpath d='M7 22 L13 15 L18 18 L25 9' fill='none' stroke='%238b9bff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/topics.css">
+<link rel="stylesheet" href="assets/paged.css">
 <script>
   /* 테마: 저장된 선택이 있으면 먼저 찍어 깜빡임을 막는다 */
   try { var t = localStorage.getItem('psj-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
@@ -49,11 +54,11 @@
       <a href="#contact">연락처</a>
     </nav>
     <div class="tools">
-      <!-- (2026-11-16) 안 A — 한 주제씩 장으로 넘겨 보는 페이지(topics.html)로. 누르는 순간 보던 카드 · 절 주소를 붙인다(app.js wireDeckBtn) -->
-      <a class="iconbtn" id="deckBtn" href="topics.html" title="한 주제씩 장으로 넘겨 보기 — 지금 보던 자리로">
+      <!-- (2026-11-20) 같은 페이지 안 「스크롤로 보기 ↔ 장으로 보기」(assets/mode-toggle.js). 고른 보기는 이 탭에서만(sessionStorage) — 새로 들어오면 늘 장 넘김 -->
+      <button class="iconbtn" id="modeBtn" type="button" aria-pressed="true" data-store="session" data-key="psj-view" title="한 페이지로 이어 보기 — 지금 보던 자리로">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="1.5" y="3.5" width="4" height="9" rx="1"/><rect x="6" y="3.5" width="4" height="9" rx="1"/><rect x="10.5" y="3.5" width="4" height="9" rx="1"/></svg>
-        <span>장으로 보기</span>
-      </a>
+        <span>스크롤로 보기</span>
+      </button>
       <button class="iconbtn" id="themeBtn" type="button" aria-label="화면 테마 바꾸기">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor"/></svg>
         <span id="themeLabel">자동</span>
@@ -129,6 +134,20 @@
         <div class="dash-frame" id="dashFrame"></div>
         <aside class="dash-side" id="dashSide"></aside>
       </div>
+    </div>
+  </section>
+
+  <!-- ============================== 기타 대시보드 (2026-11-16 주제별 보기에서 시작 · 2026-11-20 본판으로) ==============================
+       브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커. 내용 data.js moreDash · 그리기 app.js renderMoreDash. 인쇄(PDF)에는 넣지 않는다(paged.css — 예전 PDF 장 수 그대로) -->
+  <section class="sec" id="xdash" aria-labelledby="xdash-h">
+    <div class="shell">
+      <div class="sec-h">
+        <span class="tag" id="xdashTag"></span>
+        <h2 id="xdash-h"></h2>
+        <span class="aside">데모는 새 탭에서 열립니다</span>
+        <p id="xdashLede"></p>
+      </div>
+      <div class="xdash" id="moreDash"></div>
     </div>
   </section>
 
@@ -288,5 +307,8 @@
 <script src="assets/data.js"></script>
 <script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/topics.js"></script>
+<script src="assets/mode-toggle.js"></script>
+<script src="assets/paged-guide.js"></script>
 </body>
 </html>

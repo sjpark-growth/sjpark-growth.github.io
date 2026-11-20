@@ -1,5 +1,5 @@
 /* =========================================================================
-   페이지네이션 기본 시안(paged.html · 2026-11-20) — topics.css 위에 더한다. 색 · 글꼴 토큰은 style.css 그대로
+   기본 페이지네이션(본판 index.html — 2026-11-20 안 C 결정, 처음엔 시안 paged.html) — topics.css 위에 더한다. 색 · 글꼴 토큰은 style.css 그대로
    · 좁은 화면 판 끝 「다음 주제」 띠(.tm-end) · 끝에서 더 스크롤 · 밀어 올릴 때 차오르는 알약(.tm-pull) — topics.js FLOW(html.tm-flow)
    · 넘기는 법 안내 카드(.pg-coach) · 「?」 단추(.pg-help) — paged-guide.js
    넓은 화면(html.tm-wide)은 원래 장 단위 넘김이라 띠 · 알약을 숨긴다. 인쇄 · 동작 줄이기도 아래에
@@ -151,4 +151,8 @@ html.tm-wide .tm-pager .pg-help:hover { color: var(--accent-ink); }
   .pg-coach, .tm-pull, .tm-pull-r .fg { transition: none !important; }
   .pg-ic *, .pg-pulse, .pg-eb i, .tm-end-a svg { animation: none !important; }
 }
-@media print { .tm-end, .tm-pull, .pg-coach, .pg-help { display: none !important; } }
+/* 인쇄(전체 · 요약 PDF) — 안내 · 띠 · 알약 · 「?」는 빼고, 본판이 된 뒤에도 PDF 는 예전 스크롤판과 같게(기타 대시보드 절 #xdash 는 화면 전용 · 판 아래 여백 0) */
+@media print {
+  .tm-end, .tm-pull, .pg-coach, .pg-help, #xdash { display: none !important; }
+  html.tm-flow .tm-inner { padding-bottom: 0 !important; }
+}

@@ -31,9 +31,9 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(hover: hover) and (pointer: fine)');
   const wideMQ = matchMedia('screen and (min-width: 1180px) and (min-height: 560px)');   // topics.css 의 html.tm-wide 와 같은 조건
-  /* (2026-11-20) 「기본은 페이지네이션 + 스크롤 · 방향키로도 넘김」 시안(paged.html — html[data-tm-flow="on"])에서만 켜는 것:
+  /* (2026-11-20) 「기본은 페이지네이션 + 스크롤 · 방향키로도 넘김」(본판 index.html — html[data-tm-flow="on"], 시안 paged.html 에서 시작해 같은 날 안 C 결정)에서만 켜는 것:
      좁은 화면도 판 끝에서 한 번 더 스크롤 · ↓ / Space · 밀어 올리기로 다음 주제(위로는 이전 주제의 끝으로), 판 끝 「다음 주제」 띠, 차오르는 알약(.tm-pull).
-     다른 시안(topics.html · toggle.html · 게시본)은 예전 그대로. 넘길 때마다 document 에 tm:nav(어떻게 넘겼는지 via) · 켤 때 tm:ready · 배치가 바뀌면 tm:mode · 끌 때 tm:stop */
+     옛 시안(topics.html · toggle.html · 비공개 게시본)은 예전 그대로. 넘길 때마다 document 에 tm:nav(어떻게 넘겼는지 via) · 켤 때 tm:ready · 배치가 바뀌면 tm:mode · 끌 때 tm:stop */
   const FLOW = opts.flow != null ? !!opts.flow : root.dataset.tmFlow === 'on';
   const emit = (type, detail) => { try { document.dispatchEvent(new CustomEvent(type, { detail })); } catch (e) {} };
   const el = (tag, attrs, html) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs || {})) if (v != null) e.setAttribute(k, v); if (html != null) e.innerHTML = html; return e; };
@@ -454,7 +454,9 @@
   const NB = ' ', glued = new Map();
   function glue(on) {
     if (!on) { glued.forEach((v, t) => { t.nodeValue = v; }); glued.clear(); return; }
-    const w = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest('svg, script, style, textarea, .player .stage') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
+    // 숫자 굴림 칸([data-roll-to] — app.js 가 글자를 목표값까지 굴린다)은 건드리지 않는다: 「최대 −95」의 빈칸이 U+00A0 이 되면 목표 글자와 달라져
+    // 게시 전 점검(site-gate print-flow)이 「덜 끝난 칸」으로 읽었다(2026-11-20, 본판 전환 때 발견 — 모든 덱 공통)
+    const w = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest('svg, script, style, textarea, .player .stage, [data-roll-to]') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
     for (let t; (t = w.nextNode());) {
       const s = t.nodeValue; if (s.indexOf(' ') < 0 || glued.has(t)) continue;
       const v = s
@@ -758,7 +760,7 @@
   let wLock = 0, wAcc = 0, wLast = 0;
   /* (2026-11-20) 휠 간격은 입력 시각(e.timeStamp)으로 잰다 — 처리 시각(performance.now)으로 재면 장을 넘기느라 바쁜 사이 쌓인 휠이 한꺼번에
      늦게 처리되며 「손을 멈췄다 새로 굴림」으로 읽혀 한 손놀림에 두 장이 넘어갔다(헤드리스 연속 휠 시험). 입력 시각이 없으면 처리 시각.
-     다른 시안과 나란히 비교하도록 FLOW(paged.html)에서만 — 본판에 쓰게 되면 모두 이쪽으로 */
+     FLOW(본판 index.html)에서만 — 옛 시안(topics.html · toggle.html)은 예전 그대로 둔다 */
   const wheelTime = e => (FLOW && e.timeStamp > 0 ? e.timeStamp : performance.now());
   /* (FLOW · 좁은 화면) 세로 휠 — 판 안은 그대로 스크롤하고, 끝에 닿은 뒤 「새로」 굴린 휠(손을 한 번 멈춘 뒤)만 모아 다 차면 넘긴다(알약이 차오름).
      끝까지 굴러온 그 휠 · 트랙패드 관성 꼬리는 세지 않는다 — 읽다가 끝에 닿자마자 다음 주제로 튀지 않게. 위로는 이전 주제의 끝으로 */
@@ -979,6 +981,6 @@
     step(d) { if (deck) deck.step(d); },   // (2026-11-20) 안내 · 시험용
     info() { return deck ? deck.info() : null; },
   };
-  // 같은 페이지 안 전환 단추(#modeBtn — 안 B · paged.html)가 있으면 「스크롤로 보기」 링크(본판 index.html 로 가는 안 A)는 만들지 않는다
+  // 같은 페이지 안 전환 단추(#modeBtn — 본판 index.html · 안 B toggle.html)가 있으면 「스크롤로 보기」 링크(본판 index.html 로 가는 안 A)는 만들지 않는다
   if (root.classList.contains('tabmode')) window.TopicsDeck.start(document.getElementById('modeBtn') ? { back: false } : undefined);
 })();

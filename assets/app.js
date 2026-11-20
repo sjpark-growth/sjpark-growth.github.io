@@ -986,7 +986,7 @@
     $('#xdashTag').textContent = M.tag; $('#xdash-h').textContent = M.title; $('#xdashLede').innerHTML = M.lede;
     host.innerHTML = M.items.map((d, i) => `
       <article class="xd" id="xd-${d.id}" aria-labelledby="xdt-${d.id}">
-        ${d.demo ? `<a class="xd-shot" href="${d.demo}" target="_blank" rel="noopener" aria-label="${d.name} 데모 새 탭에서 열기"><img src="${d.shot}" alt="${d.name} 데모 첫 화면 — 숫자는 임의 값" width="800" height="450"><span class="xd-open">${ICON.ext}데모 열기</span></a>`
+        ${d.demo ? `<a class="xd-shot" href="${d.demo}" target="_blank" rel="noopener" aria-label="${d.name} 데모 새 탭에서 열기"><img src="${d.shot}" alt="${d.name} 데모 첫 화면 — 숫자는 임의 값" width="800" height="450" loading="lazy" decoding="async"><span class="xd-open">${ICON.ext}데모 열기</span></a>`
           : `<div class="xd-shot xd-none" role="img" aria-label="${d.name} — ${d.note}">${XD_ART}<span class="xd-badge">${d.note}</span></div>`}
         <div class="xd-body">
           <div class="xd-meta"><span class="xd-n">${String(i + 1).padStart(2, '0')}</span><span>${d.kind}</span>${d.pill ? `<span class="pill">${d.pill}</span>` : ''}</div>
