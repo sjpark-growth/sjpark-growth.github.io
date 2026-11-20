@@ -14,6 +14,7 @@
   const tenureIdx = S.months.indexOf(S.tenureStart);
   const lastIdx = S.months.length - 1;
   const N = S.months.length;
+  const LAST = mLabel(S.months[lastIdx]);   // 차트 끝 달 라벨(「26.10」) — 기준 달이 바뀌어도 손으로 고치지 않게 (2026-11-21)
 
   const ICON = {
     mail: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><path d="m2 4 6 5 6-5"/></svg>',
@@ -431,7 +432,7 @@
         txt(svg, lx, ly, `${n} ${nf(v, 0)}%`, 'dlab', 'end', 'font-size:11px');
       });
       const tx = m.l + step * tenureIdx; s('line', { x1: tx, x2: tx, y1: 0, y2: H - m.b, style: 'stroke:var(--accent);stroke-width:1.5' }, svg);
-      txt(svg, 0, H - 3, '25.1', 'tick'); txt(svg, tx, H - 3, '입사', 'tick strong', 'middle', 'fill:var(--accent-ink)'); txt(svg, W, H - 3, '26.9', 'tick', 'end');
+      txt(svg, 0, H - 3, '25.1', 'tick'); txt(svg, tx, H - 3, '입사', 'tick strong', 'middle', 'fill:var(--accent-ink)'); txt(svg, W, H - 3, LAST, 'tick', 'end');
       boardHover(svg, W, H, m.l, step, 'rect[data-i]', i => `<div class="t">${ymTitle(i)}</div>${[['쿠팡 1P', 'cp1', '--c-1p'], ['쿠팡 윙', 'cp3', '--c-3p'], ['네이버', 'naver', '--c-nv'], ['소액 4채널', 'small4', '--c-sm']].map(([n, k, c]) => `<div class="r"><span><i style="background:var(${c})"></i>${n}</span><b>${nf(S.mix[k][i], 1)}%</b></div>`).join('')}`, { get: i => S.mix.cp1[i], y: i => Y(S.mix.cp1[i]), fmt: v => `1P ${nf(v, 1)}%` });
       box.replaceChildren(svg);
       if (!box.nextElementSibling.classList.contains('mp-key')) box.insertAdjacentHTML('afterend', `<div class="mp-key">${[['쿠팡 1P', '--c-1p'], ['윙', '--c-3p'], ['네이버', '--c-nv'], ['소액', '--c-sm']].map(([n, c]) => `<span><i style="background:var(${c})"></i>${n}</span>`).join('')}</div>`);
@@ -452,7 +453,7 @@
       // 가장 최근 값은 마우스를 올리지 않아도 보이게
       const lv = S.brand.total[lastIdx];
       txt(svg, W - 1, Y(lv) - 6, `${nf(lv, 1)}%`, 'dlab', 'end', 'font-size:12.5px;fill:var(--accent-ink)');
-      txt(svg, 0, H - 3, '25.1', 'tick'); txt(svg, tx, H - 3, '입사', 'tick strong', 'middle', 'fill:var(--accent-ink)'); txt(svg, W, H - 3, '26.9', 'tick', 'end');
+      txt(svg, 0, H - 3, '25.1', 'tick'); txt(svg, tx, H - 3, '입사', 'tick strong', 'middle', 'fill:var(--accent-ink)'); txt(svg, W, H - 3, LAST, 'tick', 'end');
       boardHover(svg, W, H, 0, step, 'rect[data-i]', i => `<div class="t">${ymTitle(i)}</div><div class="r"><span>브랜드 키워드 의존도</span><b>${nf(S.brand.total[i], 1)}%</b></div><div class="f">입사 전 평균 ${nf(bB, 1)}%</div>`, { get: i => S.brand.total[i], y: i => Y(S.brand.total[i]), fmt: v => `${nf(v, 1)}%` });
       box.replaceChildren(svg); return svg;
     },
@@ -473,10 +474,11 @@
       s('line', { x1: 4, x2: X(h0) - step / 2, y1: hy, y2: hy, style: 'stroke:var(--good);stroke-width:1;stroke-dasharray:2 3;opacity:.6' }, svg);
       s('line', { x1: X(h0) - step / 2, x2: X(h1) + step / 2, y1: hy, y2: hy, style: 'stroke:var(--good);stroke-width:2.2;stroke-dasharray:4 3' }, svg);
       txt(svg, 4, hy - 5, `26 상반기 평균 ${nf(S.periods.H1.roas.total, 0)}%`, 'tick strong', 'start', 'fill:var(--good);font-size:10.5px');
-      let ly = Y(S.roas.total[lastIdx]) + 16; if (Math.abs(ly - (ry + 13)) < 12) ly = Y(S.roas.total[lastIdx]) - 9; // 「입사 전 평균」 라벨과 겹치면 점 위로
-      txt(svg, X(lastIdx) - 2, ly, `26.9 ${nf(S.roas.total[lastIdx], 0)}%`, 'tick', 'end', 'font-size:10px;paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round');
+      // 「입사 전 평균」 라벨과 겹치거나 끝이 오르막이면(앞 달 → 끝 달 선이 점 아래 라벨을 지나감 — 26.10 1,195%) 점 위로
+      let ly = Y(S.roas.total[lastIdx]) + 16; if (Math.abs(ly - (ry + 13)) < 12 || S.roas.total[lastIdx] > S.roas.total[lastIdx - 1]) ly = Y(S.roas.total[lastIdx]) - 9;
+      txt(svg, X(lastIdx) - 2, ly, `${LAST} ${nf(S.roas.total[lastIdx], 0)}%`, 'tick', 'end', 'font-size:10px;paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round');
       const tx = m.l + step * tenureIdx; s('line', { x1: tx, x2: tx, y1: 0, y2: H - m.b, style: 'stroke:var(--accent);stroke-width:1.5' }, svg);
-      txt(svg, 0, H - 3, '25.1', 'tick'); txt(svg, tx, H - 3, '입사', 'tick strong', 'middle', 'fill:var(--accent-ink)'); txt(svg, W, H - 3, '26.9', 'tick', 'end');
+      txt(svg, 0, H - 3, '25.1', 'tick'); txt(svg, tx, H - 3, '입사', 'tick strong', 'middle', 'fill:var(--accent-ink)'); txt(svg, W, H - 3, LAST, 'tick', 'end');
       boardHover(svg, W, H, m.l, step, null, i => `<div class="t">${ymTitle(i)}</div><div class="r"><span>통합 ROAS</span><b>${nf(S.roas.total[i], 0)}%</b></div><div class="f">입사 전 6개월 ${nf(rB, 0)}% 대비 ${S.roas.total[i] >= rB ? '+' : ''}${nf(S.roas.total[i] - rB, 0)}%p</div>`, { get: i => S.roas.total[i], y: i => Y(S.roas.total[i]), fmt: v => `${nf(v, 0)}%`, dot: true });
       box.replaceChildren(svg); return svg;
     },
@@ -715,7 +717,7 @@
     { id: 'roas', label: '통합 ROAS', title: '통합 ROAS', unit: '9개 매체 · 광고비 가중 · 순수 ROAS %',
       type: 'line', min: 700, max: 1700, ref: { v: P.B.roas.total, label: `입사 전 6개월 ${nf(P.B.roas.total, 0)}%` }, dec: 0, suffix: '%',
       series: [{ id: 'total', name: '통합 ROAS', color: 'var(--accent)', values: S.roas.total, emph: true }],
-      caption: '진단 구간(25.7–8)의 저점을 지난 뒤 <b>25년 9월부터 13개월 연속 입사 전 6개월 평균(962%) 위</b>. 26년 1월 1,556%로 최고치를 찍었고, 월 광고비를 입사 전의 1.9배로 늘린 확장 구간에서도 1,090% 이상을 지켰습니다.',
+      caption: '진단 구간(25.7–8)의 저점을 지난 뒤 <b>25년 9월부터 14개월 연속 입사 전 6개월 평균(962%) 위</b>. 26년 1월 1,556%로 최고치를 찍었고, 월 광고비를 입사 전의 1.9배로 늘린 확장 구간에서도 1,090% 이상을 지켰습니다.',
       cmp: { cols: [['ROAS', p => p.roas.total]], dec: 0, suffix: '%', note: '순수 ROAS · 광고비 가중', deltaCol: 0, deltaUnit: '%p' } },
     { id: 'channel', label: '채널별 ROAS', title: '주력 채널 ROAS', unit: '순수 ROAS %',
       type: 'line', min: 0, max: 2300, dec: 0, suffix: '%',
@@ -726,7 +728,7 @@
         { id: 'nv', name: '네이버 합계', color: 'var(--c-nv)', values: S.roas.naver },
       ],
       ref: { v: 1635, label: '1P 입사 전 최고 1,635%' },
-      caption: '쿠팡 1P 는 <b>25년 12월부터 10개월 연속 입사 전 최고치(1,635%) 위</b>. 윙은 25년 9월 이후 입사 전 저점(474%)을 다시 밟지 않았고, 네이버는 브랜드 키워드를 절반 이하로 걷어내면서도 26년 9월 669%로 입사 전 평균(592%)을 넘어섰습니다.',
+      caption: '쿠팡 1P 는 <b>25년 12월부터 11개월 연속 입사 전 최고치(1,635%) 위</b>. 윙은 25년 9월 이후 입사 전 저점(474%)을 다시 밟지 않았고, 네이버는 브랜드 키워드 비중을 크게 낮추면서도 26년 10월 628%로 입사 전 평균(592%)을 넘어섰습니다.',
       cmp: { cols: [['통합', p => p.roas.total], ['1P', p => p.roas.cp1], ['윙', p => p.roas.cp3], ['네이버', p => p.roas.naver]], dec: 0, suffix: '', note: '순수 ROAS %' } },
     { id: 'brand', label: '브랜드 의존도', title: '브랜드 키워드 의존도', unit: '광고비 중 브랜드 키워드 비중 %',
       type: 'line', min: 0, max: 100, dec: 1, suffix: '%',
@@ -737,7 +739,7 @@
         { id: 'nsa', name: '네이버 쇼핑검색', color: 'var(--c-nv)', values: S.brand.nsa },
         { id: 'npl', name: '네이버 파워링크', color: 'var(--c-sm)', values: S.brand.npl },
       ],
-      caption: '합계는 <b>41.8%(25.1) → 15.8%(26.9)</b>. 파워링크는 브랜드 비중이 99%에 달하던 채널이었고, 26년 7월에는 쿠팡 1P 브랜드 비중을 21.7%에서 8.8%로 한 번에 낮췄습니다. 같은 달 1P ROAS 는 오히려 1,795% → 1,923%로 올랐습니다.',
+      caption: '합계는 <b>41.8%(25.1) → 16.5%(26.10)</b>. 파워링크는 브랜드 비중이 99%에 달하던 채널이었고, 26년 7월에는 쿠팡 1P 브랜드 비중을 21.7%에서 8.8%로 한 번에 낮췄습니다. 같은 달 1P ROAS 는 오히려 1,795% → 1,923%로 올랐습니다.',
       cmp: { cols: [['합계', p => p.brand.total], ['1P', p => p.brand.cp1], ['파워링크', p => p.brand.npl]], dec: 1, suffix: '', note: '광고비 중 브랜드 키워드 비중 %', deltaCol: 0, deltaUnit: '%p', lowerIsBetter: true } },
     { id: 'mix', label: '매체 믹스', title: '매체별 광고비 비중', unit: '월별 100% 누적',
       type: 'stack', dec: 1, suffix: '%',
@@ -747,7 +749,7 @@
         { id: 'nv', name: '네이버', color: 'var(--c-nv)', values: S.mix.naver },
         { id: 'sm', name: '소액 4채널', color: 'var(--c-sm)', values: S.mix.small4 },
       ],
-      caption: '입사 후 1P 에 몰려 있던 집행(25.10 56.8%)을 네이버와 윙으로 분산했습니다. 26년 9월 기준 <b>1P 25% · 윙 30% · 네이버 42%</b> — 한 채널의 정책 변화에 흔들리지 않는 구성입니다.',
+      caption: '입사 후 1P 에 몰려 있던 집행(25.10 56.8%)을 네이버와 윙으로 분산했습니다. 26년 10월 기준 <b>1P 28% · 윙 30% · 네이버 37%</b> — 한 채널의 정책 변화에 흔들리지 않는 구성입니다.',
       cmp: { cols: [['1P', p => p.mix.cp1], ['윙', p => p.mix.cp3], ['네이버', p => p.mix.naver]], dec: 1, suffix: '', note: '광고비 비중 %' } },
   ];
   let curView = 'amount', showLabels = false;
@@ -857,7 +859,7 @@
       s('path', { d: pathD(pts.slice(0, tenureIdx + 1)), style: 'fill:none;stroke:var(--before);stroke-width:2;stroke-linejoin:round' }, marks);
       progLine(gr, pts, tenureIdx, 'var(--accent)', 2.2, 5);
       txt(marks, X(lastIdx) + 10, Yr(rev[lastIdx]) + 4, `${nf(rev[lastIdx], 0)}`, 'dlab', 'start');
-      if (!narrow) txt(marks, X(lastIdx) + 10, Yr(rev[lastIdx]) + 20, '9월 월 환산', 'plabel', 'start', 'font-weight:500;fill:var(--ink-3)');
+      if (!narrow) txt(marks, X(lastIdx) + 10, Yr(rev[lastIdx]) + 20, `${+S.months[lastIdx].slice(5)}월 월 환산`, 'plabel', 'start', 'font-weight:500;fill:var(--ink-3)');
       txt(marks, X(lastIdx) + 10, Ys(sp[lastIdx]) + 4, `${nf(sp[lastIdx], 0)}`, 'dlab', 'start');
       v.series.forEach(sr => { sr._dots = sr.values.map((val, i) => s('circle', { cx: X(i), cy: sr.id === 'rev' ? Yr(val) : Ys(val), r: 0, style: `fill:${sr.color};stroke:var(--surface);stroke-width:2;pointer-events:none` }, marks)); dots.push(sr); });
     } else if (v.type === 'stack') {
