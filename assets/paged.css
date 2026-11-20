@@ -1,0 +1,154 @@
+/* =========================================================================
+   페이지네이션 기본 시안(paged.html · 2026-11-20) — topics.css 위에 더한다. 색 · 글꼴 토큰은 style.css 그대로
+   · 좁은 화면 판 끝 「다음 주제」 띠(.tm-end) · 끝에서 더 스크롤 · 밀어 올릴 때 차오르는 알약(.tm-pull) — topics.js FLOW(html.tm-flow)
+   · 넘기는 법 안내 카드(.pg-coach) · 「?」 단추(.pg-help) — paged-guide.js
+   넓은 화면(html.tm-wide)은 원래 장 단위 넘김이라 띠 · 알약을 숨긴다. 인쇄 · 동작 줄이기도 아래에
+   ========================================================================= */
+
+/* ---------- 판 끝 「다음 주제」 띠 — 아래 막대 자리는 띠 아래 여백이 맡는다 */
+html.tm-flow:not(.tm-wide) .tm-inner { padding-bottom: 6px; }
+/* 아래 여백 = 아래 막대 + 끝에서 더 스크롤할 때 뜨는 알약(.tm-pull) 자리 — 판 끝까지 내리면 띠 아래 빈자리에 알약이 뜬다 */
+.tm-end { position: relative; z-index: 1; display: grid; justify-items: center; gap: 10px; padding: 26px var(--gut, 20px) calc(132px + env(safe-area-inset-bottom, 0px)); text-align: center; }
+.tm-end::before { content: ""; width: min(560px, 100%); height: 1px; margin-bottom: 8px; background: linear-gradient(90deg, transparent, var(--rule-2) 18%, var(--rule-2) 82%, transparent); }
+.tm-end-go { all: unset; box-sizing: border-box; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "k a" "t a" "s a";
+  align-items: center; column-gap: 14px; row-gap: 3px; width: min(560px, 100%); padding: 14px 14px 14px 18px; border: 1px solid var(--rule-2); border-radius: 16px;
+  background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; box-shadow: 0 10px 30px rgba(12, 26, 43, .08);
+  transition: border-color .2s, box-shadow .2s, transform .15s; }
+.tm-end-go:hover { border-color: var(--accent); box-shadow: 0 14px 34px rgba(12, 26, 43, .13); }
+.tm-end-go:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.tm-end-go:active { transform: scale(.985); }
+.tm-end-k { grid-area: k; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; color: var(--accent-ink); }
+.tm-end-t { grid-area: t; display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.tm-end-t .n { font-family: var(--f-num); font-stretch: 85%; font-size: 15px; font-weight: 600; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.tm-end-t b { font-size: 19px; font-weight: 750; letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tm-end-go small { grid-area: s; min-width: 0; font-size: 12.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tm-end-a { grid-area: a; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: var(--paper); transition: background-color .2s; }
+.tm-end-go:hover .tm-end-a { background: var(--accent); }
+.tm-end-a svg { width: 16px; height: 16px; animation: pgNudge 1.6s ease-in-out infinite; }
+.tm-end.last .tm-end-a svg { animation-name: pgNudgeUp; }
+.tm-end-tip { margin: 0; font-size: 12px; line-height: 1.5; color: var(--ink-3); text-wrap: balance; }
+html.tm-wide .tm-end { display: none; }
+
+/* ---------- 끝에서 더 스크롤할 때 차오르는 알약 — 다음(아래 막대 위) · 이전(판 위) */
+.tm-pull { position: absolute; z-index: 30; left: 50%; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: center; gap: 10px;
+  padding: 7px 16px 7px 8px; border-radius: 99px; background: var(--ink); color: var(--paper); white-space: nowrap; pointer-events: none;
+  box-shadow: 0 12px 32px rgba(12, 26, 43, .26); opacity: 0; transform: translate(-50%, 12px) scale(.96); transition: opacity .2s, transform .3s cubic-bezier(.2,.8,.2,1), background-color .2s; }
+.tm-pull.up { top: 12px; bottom: auto; transform: translate(-50%, -12px) scale(.96); }
+.tm-pull.on { opacity: 1; transform: translate(-50%, 0); }
+.tm-pull.ready { background: var(--accent); color: #fff; }
+.tm-pull-r { flex: none; width: 26px; height: 26px; transform: rotate(-90deg); }
+.tm-pull-r circle { fill: none; stroke-width: 2.6; stroke: currentColor; opacity: .25; }
+.tm-pull-r .fg { opacity: 1; stroke-dasharray: 100; stroke-dashoffset: 100; stroke-linecap: round; transition: stroke-dashoffset .12s linear; }
+.tm-pull .tx { display: grid; line-height: 1.25; }
+.tm-pull .v { font-size: 11px; font-weight: 600; opacity: .75; }
+.tm-pull b { font-size: 13.5px; font-weight: 700; }
+html.tm-wide .tm-pull { display: none; }
+
+/* ---------- 넘기는 법 안내 카드(첫 방문 · 「?」) — 모달이 아님: 띄운 채 그대로 넘겨 볼 수 있다.
+   카드 위에서 휠 · 드래그 · 스와이프 · 세로 스크롤을 해도 아래 화면이 받도록 카드는 누르기를 통과시키고 단추만 받는다
+   (처음 시험에서 카드 위 휠이 막혀 「휠을 굴려 보세요」가 안 됐다). 카드 위를 그냥 눌러 아래 링크가 열리는 것은 paged-guide.js 가 삼킨다 */
+.pg-coach { position: fixed; z-index: 66; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; width: min(540px, calc(100vw - 24px));
+  pointer-events: none;
+  padding: 18px 18px 16px; border: 1px solid var(--rule-2); border-radius: 20px; color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 95%, transparent); -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: 0 28px 70px rgba(12, 26, 43, .24), 0 2px 8px rgba(12, 26, 43, .06);
+  opacity: 0; transform: translate(-50%, 18px) scale(.98); transition: opacity .35s, transform .5s cubic-bezier(.16,1,.3,1); }
+.pg-coach.on { opacity: 1; transform: translate(-50%, 0); }
+.pg-coach.on button { pointer-events: auto; }
+.pg-coach.off { opacity: 0; transform: translate(-50%, 12px) scale(.98); transition-duration: .25s; }
+html.tm-wide .pg-coach { left: calc(var(--gnb-w) + (100vw - var(--gnb-w)) / 2); bottom: 38px; width: min(620px, calc(100vw - var(--gnb-w) - 56px)); padding: 22px 24px 18px; }
+.pg-x { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 10px;
+  background: transparent; color: var(--ink-3); cursor: pointer; transition: background-color .18s, color .18s; }
+.pg-x:hover { background: var(--sunk); color: var(--ink); }
+.pg-x svg { width: 14px; height: 14px; }
+.pg-eb { display: flex; align-items: center; gap: 7px; margin: 0 0 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .1em; color: var(--accent-ink); }
+.pg-eb i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pgPing 1.8s ease-out infinite; }
+.pg-t { margin: 0 36px 6px 0; font-size: 19px; line-height: 1.3; font-weight: 750; letter-spacing: -0.025em; text-wrap: balance; }
+html.tm-wide .pg-t { font-size: 21px; }
+.pg-d { margin: 0 0 14px; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+.pg-d b { color: var(--ink); }
+.pg-ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; }
+.pg-ways li { position: relative; display: grid; justify-items: center; align-content: start; gap: 2px; padding: 12px 8px 10px; border: 1px solid var(--rule); border-radius: 14px;
+  background: var(--paper); text-align: center; transition: border-color .3s, background-color .3s; }
+.pg-ic { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 4px; color: var(--ink); }
+.pg-ic svg { width: 44px; height: 44px; overflow: hidden; }
+.pg-ways b { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+.pg-ways small { font-size: 11.5px; line-height: 1.35; color: var(--ink-3); }
+.pg-ok { position: absolute; top: 7px; right: 7px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff;
+  font-size: 11px; font-style: normal; font-weight: 800; line-height: 1; opacity: 0; transform: scale(.4); transition: opacity .25s, transform .35s cubic-bezier(.3,1.6,.5,1); }
+.pg-ways li.done { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--paper)); }
+.pg-ways li.done .pg-ok { opacity: 1; transform: none; }
+.pg-try { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 12.5px; font-weight: 650; color: var(--ink-2); }
+.pg-pulse { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pgPing 1.6s ease-out infinite; }
+.pg-coach.good .pg-try { color: var(--accent-ink); }
+.pg-coach.good .pg-pulse { animation: none; }
+.pg-act { display: flex; flex-wrap: wrap; gap: 8px; }
+.pg-act button { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; height: 38px; padding: 0 16px; border-radius: 11px;
+  font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background-color .18s, border-color .18s, color .18s, transform .15s; }
+.pg-act .pg-go { background: var(--ink); color: var(--paper); }   /* .pg-act 를 붙여야 위 all: unset 보다 앞선다(처음엔 단추 바탕이 지워져 글자만 보였다) */
+.pg-act .pg-go:hover { background: var(--accent); color: #fff; }
+.pg-act .pg-sc { border: 1px solid var(--rule-2); color: var(--ink-2); }
+.pg-act .pg-sc:hover { border-color: var(--accent); color: var(--accent-ink); }
+.pg-act button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pg-act button:active { transform: scale(.97); }
+.pg-foot { margin: 10px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--ink-3); }
+html.pg-coaching .tm-hint { display: none; }   /* 카드가 떠 있는 동안 옛 손짓 안내는 겹치지 않게 */
+
+/* 「?」 단추 — 넓은 화면 GNB 장 넘기기 줄(그 줄 단추 모양 그대로) · 좁은 화면 아래 막대(목차 앞) */
+.pg-help svg { width: 15px; height: 15px; }
+.tm-dock .pg-help { padding: 0 10px; }
+html.tm-wide .tm-pager .pg-help { color: var(--ink-3); }
+html.tm-wide .tm-pager .pg-help:hover { color: var(--accent-ink); }
+
+/* 휴대폰 */
+@media (max-width: 600px) {
+  .tm-end { padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
+  .tm-end-t b { font-size: 17.5px; }
+  .tm-pull { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }
+  .pg-coach { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); padding: 16px 14px 14px; border-radius: 18px; }
+  .pg-t { font-size: 17px; }
+  .pg-d { font-size: 13px; margin-bottom: 12px; }
+  .pg-ways { gap: 6px; }
+  .pg-ways li { padding: 10px 4px 8px; }
+  .pg-ic { width: 40px; height: 40px; }
+  .pg-ic svg { width: 38px; height: 38px; }
+  .pg-ways b { font-size: 12.5px; }
+  .pg-ways small { font-size: 11px; }
+  .pg-act button { flex: 1 1 auto; height: 38px; }
+}
+/* 낮은 화면(가로로 든 휴대폰 · 낮은 창) — 카드는 스크롤되지 않으니(누르기 통과) 설명 · 꼬리 줄 · 칸 설명을 빼 한 화면에 */
+@media (max-height: 560px) {
+  .pg-coach { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); padding: 12px 14px; }
+  .pg-d, .pg-foot, .pg-ways small { display: none; }
+  .pg-t { margin-bottom: 8px; font-size: 16px; }
+  .pg-ways { margin-bottom: 8px; } .pg-ways li { padding: 6px 4px; } .pg-ic { width: 34px; height: 34px; margin-bottom: 0; } .pg-ic svg { width: 32px; height: 32px; }
+  .pg-try { margin-bottom: 8px; }
+}
+
+/* ---------- 움직이는 그림 */
+@keyframes pgPing { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); } 80%, 100% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 0%, transparent); } }
+@keyframes pgNudge { 0%, 100% { transform: none; } 50% { transform: translateX(3px); } }
+@keyframes pgNudgeUp { 0%, 100% { transform: none; } 50% { transform: translateY(-3px); } }
+.pg-ic .a-wheel { animation: pgWheel 1.6s cubic-bezier(.4,0,.2,1) infinite; }
+@keyframes pgWheel { 0% { transform: translateY(0); opacity: 1; } 60% { transform: translateY(7px); opacity: 0; } 61% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+.pg-ic .a-down { animation: pgDown 1.6s ease-in-out infinite; }
+@keyframes pgDown { 0%, 100% { transform: translateY(-1px); opacity: .45; } 50% { transform: translateY(2px); opacity: 1; } }
+.pg-ic .k-r rect { animation: pgKey 2.4s infinite; }
+.pg-ic .k-d rect { animation: pgKey 2.4s 1.2s infinite; }
+@keyframes pgKey { 0%, 45%, 100% { fill: transparent; } 8%, 26% { fill: color-mix(in srgb, var(--accent) 32%, transparent); } }
+.pg-ic .a-slide, .pg-ic .a-hand { animation: pgSlide 2.6s cubic-bezier(.3,0,.12,1) infinite; }
+@keyframes pgSlide { 0% { transform: translateX(0); opacity: 0; } 10%, 22% { transform: translateX(0); opacity: 1; } 62%, 84% { transform: translateX(-30px); opacity: 1; } 100% { transform: translateX(-30px); opacity: 0; } }
+.pg-ic .a-sw { animation: pgSw 1.9s ease-in-out infinite; }
+@keyframes pgSw { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 70% { transform: translateX(-10px); opacity: 1; } 100% { transform: translateX(-10px); opacity: 0; } }
+.pg-ic .a-swa { animation: pgDown 1.9s ease-in-out infinite; }
+.pg-ic .a-pu { animation: pgPu 1.9s ease-in-out infinite; }
+@keyframes pgPu { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 70% { transform: translateY(-11px); opacity: 1; } 100% { transform: translateY(-11px); opacity: 0; } }
+.pg-ic .a-nx { animation: pgNudge 1.4s ease-in-out infinite; }
+
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.pg-coach, .tm-pull, .tm-end-go) { box-shadow: 0 24px 60px rgba(0, 0, 0, .55); } }
+:root[data-theme="dark"] :is(.pg-coach, .tm-pull, .tm-end-go) { box-shadow: 0 24px 60px rgba(0, 0, 0, .55); }
+@media (prefers-reduced-motion: reduce) {
+  .pg-coach, .tm-pull, .tm-pull-r .fg { transition: none !important; }
+  .pg-ic *, .pg-pulse, .pg-eb i, .tm-end-a svg { animation: none !important; }
+}
+@media print { .tm-end, .tm-pull, .pg-coach, .pg-help { display: none !important; } }

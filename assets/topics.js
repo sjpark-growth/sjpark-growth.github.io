@@ -31,6 +31,11 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(hover: hover) and (pointer: fine)');
   const wideMQ = matchMedia('screen and (min-width: 1180px) and (min-height: 560px)');   // topics.css 의 html.tm-wide 와 같은 조건
+  /* (2026-11-20) 「기본은 페이지네이션 + 스크롤 · 방향키로도 넘김」 시안(paged.html — html[data-tm-flow="on"])에서만 켜는 것:
+     좁은 화면도 판 끝에서 한 번 더 스크롤 · ↓ / Space · 밀어 올리기로 다음 주제(위로는 이전 주제의 끝으로), 판 끝 「다음 주제」 띠, 차오르는 알약(.tm-pull).
+     다른 시안(topics.html · toggle.html · 게시본)은 예전 그대로. 넘길 때마다 document 에 tm:nav(어떻게 넘겼는지 via) · 켤 때 tm:ready · 배치가 바뀌면 tm:mode · 끌 때 tm:stop */
+  const FLOW = opts.flow != null ? !!opts.flow : root.dataset.tmFlow === 'on';
+  const emit = (type, detail) => { try { document.dispatchEvent(new CustomEvent(type, { detail })); } catch (e) {} };
   const el = (tag, attrs, html) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs || {})) if (v != null) e.setAttribute(k, v); if (html != null) e.innerHTML = html; return e; };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const txt = n => (n ? n.textContent.replace(/\s+/g, ' ').trim() : '');
@@ -243,6 +248,37 @@
   const hint = el('div', { class: 'tm-hint', 'aria-hidden': 'true' }, '<span class="h-drag"><i></i></span><span class="ht"></span>');
   document.body.appendChild(hint);
 
+  /* (2026-11-20 · FLOW) 좁은 화면 판 끝 — 「다음 주제」 띠(누르면 다음 주제, 마지막 판은 「처음으로」)와 넘기는 법 한 줄.
+     판(.tm-panel) 안 .tm-inner 다음에 둔다(넓은 화면 · 인쇄에서는 숨김 — paged.css). 끝에서 더 스크롤하면 알약(.tm-pull)이 차오르고 다 차면 넘어간다 */
+  const ends = FLOW ? panels.map((p, k) => {
+    const last = k === N - 1, j = last ? 0 : k + 1, t = TOPICS[j];
+    // 넘기는 법 한 줄은 띠 위에 — 아래에 두면 끝에서 더 스크롤할 때 뜨는 알약이 그 줄을 덮었다(띠 아래 빈자리는 알약 자리)
+    const e = el('div', { class: 'tm-end' + (last ? ' last' : '') },
+      `<p class="tm-end-tip">${last ? (fine.matches ? '← 키 · 위로 스크롤하면 이전 주제' : '오른쪽으로 밀면 이전 주제') : (fine.matches ? '끝에서 한 번 더 스크롤하거나 ↓ · → 키를 누르면 넘어갑니다' : '끝에서 한 번 더 밀어 올리거나 옆으로 밀면 넘어갑니다')}</p>` +
+      `<button type="button" class="tm-end-go"><span class="tm-end-k">${last ? '마지막 주제 · 처음으로' : '다음 주제'}</span>` +
+      `<span class="tm-end-t"><span class="n">${pad(j + 1)}</span><b>${esc(t.label)}</b></span>${last ? '' : `<small>${esc(t.desc || '')}</small>`}` +
+      `<i class="tm-end-a" aria-hidden="true">${ARR(last ? 'M3 10l5-5 5 5' : 'm6 3 5 5-5 5')}</i></button>`);
+    $('.tm-end-go', e).addEventListener('click', () => (last ? go(0, { page: 0, via: 'end' }) : step(1, { via: 'end' })));
+    p.appendChild(e); return e;
+  }) : [];
+  const pull = FLOW ? el('div', { class: 'tm-pull', 'aria-hidden': 'true' },
+    '<svg class="tm-pull-r" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle class="fg" cx="12" cy="12" r="9" pathLength="100"/></svg><span class="tx"><span class="v"></span><b></b></span>') : null;
+  if (pull) main.appendChild(pull);
+  let pullT = 0;
+  // d = 1 다음 · −1 이전 · 0 숨김, f = 차오른 정도(1 이면 넘어감), touch = 손가락(다 차면 「놓으면 넘어갑니다」)
+  function pullShow(d, f, touch) {
+    if (!pull) return;
+    clearTimeout(pullT);
+    const t = d ? TOPICS[cur + d] : null;
+    if (!t) { pull.classList.remove('on', 'ready'); return; }
+    f = clamp(f || 0, 0, 1);
+    pull.classList.toggle('up', d < 0); pull.classList.toggle('ready', f >= 1); pull.classList.add('on');
+    $('.fg', pull).style.strokeDashoffset = (100 * (1 - f)).toFixed(1);
+    $('.v', pull).textContent = f >= 1 && touch ? '놓으면 넘어갑니다' : (d > 0 ? (touch ? '더 밀어 올리면 다음 주제' : '계속 내리면 다음 주제') : (touch ? '더 끌어내리면 이전 주제' : '계속 올리면 이전 주제'));
+    $('b', pull).textContent = `${pad(cur + d + 1)} ${t.label}`;
+    if (!touch) pullT = setTimeout(() => pull.classList.remove('on', 'ready'), 900);
+  }
+
   /* ---------- 상태 · 장 나누기(넓은 화면) */
   let wide = false, cur = -1, pg = 0, pw = 0, ph = 0, hintOff = false, lastPush = 0, drag = null, savedPg = 0, savedCur = -1, lastSig = '', resetT = 0, sealT = 0;
   const restorePg = () => (savedCur === cur ? savedPg : 0);
@@ -442,7 +478,10 @@
       root.style.removeProperty('--tm-pw'); root.style.removeProperty('--tm-ph');
       npg.fill(1); pg = 0; subPg = TOPICS.map(() => []);
     }
-    $('.ht', hint).textContent = w ? '드래그 · 휠 · ← → 키로 넘기기' : (fine.matches ? '드래그 · ← → 키로 다음 주제' : '옆으로 밀어 다음 주제');
+    $('.ht', hint).textContent = FLOW ? (w ? '휠 · ← → ↑ ↓ 키 · 드래그로 한 장씩' : (fine.matches ? '끝에서 한 번 더 스크롤 · ← → 키로 다음 주제' : '옆으로 밀거나 끝에서 밀어 올려 다음 주제'))
+      : (w ? '드래그 · 휠 · ← → 키로 넘기기' : (fine.matches ? '드래그 · ← → 키로 다음 주제' : '옆으로 밀어 다음 주제'));
+    pullShow(0);
+    if (cur >= 0) emit('tm:mode', { wide: w });
     return true;
   }
 
@@ -613,7 +652,8 @@
     paint(!!dir && !o.first);
     if (dir && !o.first) kick(dir);
     if (changed || o.first) {
-      if (!wide && changedT && !o.target && !o.drag) panels[i].scrollTop = 0;
+      // (FLOW) 위로 스크롤 · ↑ 키 · 끌어내리기로 이전 주제에 가면 그 판의 끝에서(넓은 화면이 이전 주제의 마지막 장으로 가는 것과 같게)
+      if (!wide && changedT && !o.target && !o.drag) panels[i].scrollTop = o.toEnd ? panels[i].scrollHeight : 0;
       // (좁은 화면) 떠난 판은 화면 밖으로 나간 뒤 맨 위로 — 끌 때 옆 판이 예전 스크롤 자리로 보였다가 도착 순간 맨 위로 튀던 것
       if (!wide && changedT) { clearTimeout(resetT); resetT = setTimeout(() => panels.forEach((p, k) => { if (k !== cur && p.scrollTop) p.scrollTop = 0; }), 900); }
       if (!o.drag) replay(i, wide ? page : -1);
@@ -627,6 +667,7 @@
       document.title = `${TOPICS[i].label} · 박성준 · Growth Report 2026`;
       if (!o.first) killHint();
     }
+    if (dir && !o.first) { pullShow(0); emit('tm:nav', { via: o.via || 'button', key: o.key || '', dir, cur, pg, wide }); }
     if (o.target) {
       const t = o.target, p = panels[i], y = ty;
       setTimeout(() => {
@@ -650,7 +691,7 @@
   const scrollsX = n => { for (; n && n !== stage; n = n.parentElement) { if (n.scrollWidth > n.clientWidth + 1) { const ox = getComputedStyle(n).overflowX; if (ox === 'auto' || ox === 'scroll') return true; } } return false; };
   stage.addEventListener('pointerdown', e => {
     if ((e.pointerType === 'mouse' && e.button !== 0) || e.target.closest(NODRAG) || scrollsX(e.target)) return;
-    drag = { x: e.clientX, y: e.clientY, id: e.pointerId, on: false, w: wide ? pw : stage.clientWidth, dx: 0, sx: 0, off: 0, hist: [] };
+    drag = { x: e.clientX, y: e.clientY, id: e.pointerId, pt: e.pointerType, on: false, w: wide ? pw : stage.clientWidth, dx: 0, sx: 0, off: 0, hist: [] };
   });
   stage.addEventListener('dragstart', e => { if (wide) e.preventDefault(); });   // 링크 · 그림을 끌어 옮기는 브라우저 기본 동작 대신 장을 넘긴다
   /* (2026-11-16 본인 「모바일로 좌우로 넘길 때 자연스럽게」) 손을 뗀 뒤의 움직임 — 예전에는 늘 0.8초짜리 「천천히 출발 → 가속 → 감속」 곡선이라
@@ -705,7 +746,7 @@
     const target = can ? -dir * d.w : 0;   // 지금 장 기준 도착 위치
     ease(Math.abs(target - d.off), Math.abs(v));
     track.classList.remove('tm-instant');
-    if (can) step(dir, { drag: true }); else place();
+    if (can) step(dir, { drag: true, via: d.pt === 'touch' ? 'swipe' : 'drag' }); else place();
     const kill = ev => { ev.stopPropagation(); ev.preventDefault(); };
     addEventListener('click', kill, { capture: true, once: true }); setTimeout(() => removeEventListener('click', kill, true), 60);
   };
@@ -715,25 +756,83 @@
      안에서 스크롤되는 칸(대시보드 구축 내용 목록 등)이 그쪽으로 더 스크롤될 수 있으면 그 칸에 맡긴다. 좁은 화면은 가로 밀기만 */
   const scrollsY = (n, dy) => { for (; n && n !== stage; n = n.parentElement) { const oy = getComputedStyle(n).overflowY; if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1) { if (dy > 0 ? n.scrollTop + n.clientHeight < n.scrollHeight - 1 : n.scrollTop > 0) return true; } } return false; };
   let wLock = 0, wAcc = 0, wLast = 0;
+  /* (2026-11-20) 휠 간격은 입력 시각(e.timeStamp)으로 잰다 — 처리 시각(performance.now)으로 재면 장을 넘기느라 바쁜 사이 쌓인 휠이 한꺼번에
+     늦게 처리되며 「손을 멈췄다 새로 굴림」으로 읽혀 한 손놀림에 두 장이 넘어갔다(헤드리스 연속 휠 시험). 입력 시각이 없으면 처리 시각.
+     다른 시안과 나란히 비교하도록 FLOW(paged.html)에서만 — 본판에 쓰게 되면 모두 이쪽으로 */
+  const wheelTime = e => (FLOW && e.timeStamp > 0 ? e.timeStamp : performance.now());
+  /* (FLOW · 좁은 화면) 세로 휠 — 판 안은 그대로 스크롤하고, 끝에 닿은 뒤 「새로」 굴린 휠(손을 한 번 멈춘 뒤)만 모아 다 차면 넘긴다(알약이 차오름).
+     끝까지 굴러온 그 휠 · 트랙패드 관성 꼬리는 세지 않는다 — 읽다가 끝에 닿자마자 다음 주제로 튀지 않게. 위로는 이전 주제의 끝으로 */
+  const FLOW_TH = 200;   // 마우스 휠 두 칸 남짓(한 칸 100~120px) · 트랙패드 한 번 쓸기
+  const fw = { t: 0, d: 0, edge: false, acc: 0, at: 0, ad: 0 };
+  function flowWheel(e) {
+    const now = wheelTime(e), dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1), d = Math.sign(dy);
+    if (!d) return;
+    const fresh = now - fw.t > 160 || d !== fw.d;   // 새 손놀림(160ms 넘게 쉬었거나 방향이 바뀜)
+    fw.t = now; fw.d = d;
+    if (now < wLock) { wLock = Math.max(wLock, now + 180); return; }   // 막 넘긴 뒤의 관성 꼬리
+    const can = scrollsY(e.target, dy);
+    if (fresh) fw.edge = !can;   // 끝에서 시작한 손놀림만 센다
+    if (can) { fw.acc = 0; return; }
+    if (!fw.edge || (d > 0 ? cur >= N - 1 : cur <= 0)) return;
+    if (now - fw.at > 1200 || fw.ad !== d) fw.acc = 0;
+    fw.at = now; fw.ad = d; fw.acc += Math.abs(dy);
+    pullShow(d, fw.acc / FLOW_TH, false);
+    if (fw.acc >= FLOW_TH) { fw.acc = 0; wLock = now + 800; step(d, { via: 'wheel', toEnd: d < 0 }); }
+  }
   on(main, 'wheel', e => {
     if (e.ctrlKey || drag) return;
     const horiz = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+    if (FLOW && !wide && !horiz) { flowWheel(e); return; }
     if (!horiz && (!wide || scrollsY(e.target, e.deltaY))) return;
     if (horiz && scrollsX(e.target)) return;
-    const now = performance.now();
+    const now = wheelTime(e);
     if (now - wLast > 220) wAcc = 0;
     wLast = now;
     if (now < wLock) { wLock = Math.max(wLock, now + 180); return; }   // 관성 꼬리는 같은 동작으로 본다
     wAcc += (horiz ? e.deltaX : e.deltaY) * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1);   // 줄 · 쪽 단위 휠(Firefox 등)도 픽셀로
     if (Math.abs(wAcc) < 40) return;
-    step(wAcc > 0 ? 1 : -1); wAcc = 0; wLock = now + (wide ? 520 : 750);
+    step(wAcc > 0 ? 1 : -1, { via: 'wheel' }); wAcc = 0; wLock = now + (wide ? 520 : 750);
   }, { passive: true });
+
+  /* (FLOW · 좁은 화면) 손가락 — 판 끝(위 끝)에 닿은 채 더 밀어 올리면(끌어내리면) 알약이 차오르고, 다 찬 뒤 놓으면 다음(이전) 주제.
+     놓은 뒤 관성으로 끝에 닿은 것은 세지 않는다(손가락이 닿아 있는 동안만). 옆으로 미는 손놀림은 위 드래그가 받는다 */
+  const PULL_TH = 120;
+  const atBot = p => p.scrollTop + p.clientHeight >= p.scrollHeight - 2, atTop = p => p.scrollTop <= 1;
+  let tp = null;
+  if (FLOW) {
+    stage.addEventListener('touchstart', e => {
+      tp = null;
+      if (wide || e.touches.length !== 1 || (e.target.closest && e.target.closest(NODRAG))) return;
+      const t = e.touches[0], p = panels[cur];
+      tp = { x0: t.clientX, y0: t.clientY, yb: atBot(p) ? t.clientY : null, yt: atTop(p) ? t.clientY : null, v: false, d: 0, over: 0 };
+    }, { passive: true });
+    stage.addEventListener('touchmove', e => {
+      if (!tp) return;
+      if (wide || e.touches.length !== 1 || (drag && drag.on)) { tp = null; pullShow(0); return; }
+      const t = e.touches[0], p = panels[cur], x = t.clientX - tp.x0, y = t.clientY - tp.y0;
+      if (!tp.v) { if (Math.abs(x) < 8 && Math.abs(y) < 8) return; if (Math.abs(x) > Math.abs(y)) { tp = null; return; } tp.v = true; }
+      if (!atBot(p)) tp.yb = null; else if (tp.yb == null) tp.yb = t.clientY;   // 읽다가 끝에 닿은 그 자리부터 잰다
+      if (!atTop(p)) tp.yt = null; else if (tp.yt == null) tp.yt = t.clientY;
+      let d = 0, over = 0;
+      if (tp.yb != null && t.clientY < tp.yb && cur < N - 1) { d = 1; over = tp.yb - t.clientY; }
+      else if (tp.yt != null && t.clientY > tp.yt && cur > 0) { d = -1; over = t.clientY - tp.yt; }
+      tp.d = d; tp.over = over;
+      if (d && over > 6) pullShow(d, over / PULL_TH, true); else pullShow(0);
+    }, { passive: true });
+    const tEnd = e => {
+      if (!tp) return;
+      const { d, over } = tp; tp = null; pullShow(0);
+      if (e.type === 'touchend' && d && over >= PULL_TH && !(drag && drag.on)) step(d, { via: 'pull', toEnd: d < 0 });
+    };
+    stage.addEventListener('touchend', tEnd, { passive: true }); stage.addEventListener('touchcancel', tEnd, { passive: true });
+  }
 
   /* 키 — ← → (넓은 화면은 ↑ ↓ · PageUp/Down · Space 도). 입력 칸 · 표 · 대화 상자 안에서는 그대로 */
   on(document, 'keydown', e => {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
     if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable], .seg, .modal, .lightbox, .tablewrap')) return;
     const k = e.key, onBtn = e.target.closest && e.target.closest('button, a, summary');
+    if (FLOW && !wide && flowKey(e, k, onBtn)) return;
     let d = 0;
     if (k === 'ArrowRight') d = 1; else if (k === 'ArrowLeft') d = -1;
     else if (wide && (k === 'ArrowDown' || k === 'PageDown') && !e.target.closest('.tm-nav, .tm-drop')) d = 1;
@@ -741,8 +840,25 @@
     else if (wide && k === ' ' && !onBtn) d = e.shiftKey ? -1 : 1;
     if (!d) return;
     if (wide && scrollsY(e.target, d) && (k === 'ArrowDown' || k === 'ArrowUp' || k === 'PageDown' || k === 'PageUp')) return;
-    e.preventDefault(); step(d);
+    e.preventDefault(); step(d, { via: 'key', key: k });
   });
+  /* (FLOW · 좁은 화면) ↓ ↑ · PageDown/Up · Space — 판 안을 읽어 내려가다(화살표 약 ⅕ 화면 · 쪽 넘김 85%), 끝에서 한 번 더 누르면 다음 주제
+     (위로는 이전 주제의 끝으로). 누르고 있는 키(자동 반복)로는 넘기지 않는다. 판 안의 작은 스크롤 칸 · 주제 탭 · 목차에서는 그대로 */
+  const VK = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 };
+  const scrollsYIn = (n, dy, stop) => { for (; n && n !== stop && n !== stage; n = n.parentElement) { const oy = getComputedStyle(n).overflowY; if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 1 && (dy > 0 ? n.scrollTop + n.clientHeight < n.scrollHeight - 1 : n.scrollTop > 0)) return true; } return false; };
+  function flowKey(e, k, onBtn) {
+    if (e.target.closest && e.target.closest('.tm-nav, .tm-drop')) return false;
+    let d = VK[k] || 0;
+    if (k === ' ' && !onBtn) d = e.shiftKey ? -1 : 1;
+    if (!d) return false;
+    const p = panels[cur];
+    if (p.contains(e.target) && scrollsYIn(e.target, d, p)) return true;
+    e.preventDefault();
+    const can = d > 0 ? !atBot(p) : !atTop(p);
+    if (can) { const big = k === ' ' || k === 'PageDown' || k === 'PageUp'; p.scrollBy({ top: d * (big ? p.clientHeight * 0.85 : Math.max(80, p.clientHeight * 0.22)), behavior: reduce ? 'auto' : 'smooth' }); return true; }
+    if (!e.repeat && (d > 0 ? cur < N - 1 : cur > 0)) step(d, { via: 'key', key: k, toEnd: d < 0 });
+    return true;
+  }
   /* 넓은 화면 — 키보드 Tab 으로 다른 장의 단추 · 링크에 가면 그 장으로 */
   on(document, 'focusin', e => {
     // 판 자체(go 의 focus 옵션 — 항목으로 간 뒤 판에 초점)는 따라가지 않는다: 판의 장은 늘 0 이라 키보드로 고른 항목 장에서 첫 장으로 튕겼다(교차 검증 11-16)
@@ -818,6 +934,8 @@
   if (k0 < 0) { k0 = 0; q0 = 0; }
   go(k0, { instant: true, first: true, page: q0, target: t0 && t0 !== inners[k0].firstElementChild ? t0 : null });
   root.classList.add('tm-ready');
+  if (FLOW) root.classList.add('tm-flow');
+  setTimeout(() => { if (!dead) emit('tm:ready', { wide, flow: FLOW, cur }); }, 0);   // 안내(paged-guide.js)가 단추 · 첫 방문 카드를 붙인다
 
   /* 지금 보는 장(판)의 기준 요소 id — 「스크롤로 보기」 · 한 페이지 모드 전환이 본판의 같은 자리로 가게.
      넓은 화면: 지금 장에 첫 조각이 놓인 카드(.proj · .xd)나 절, 좁은 화면: 판 위쪽에 걸친 마지막 카드 · 절. 첫 화면(.hero)은 빈 값(맨 위) */
@@ -833,7 +951,8 @@
   /* 끄기 — 바깥 이벤트 · 시계를 떼고, 판 배치를 풀고, 절을 제자리로, 만든 것을 지우고, 상단 바 · 주소 · 제목을 되돌린다 */
   function stop() {
     if (dead) return; dead = true;
-    [layT, rzT, easeT, sealT, resetT, navT, dropT].forEach(t => clearTimeout(t)); clearInterval(pollI);
+    [layT, rzT, easeT, sealT, resetT, navT, dropT, pullT].forEach(t => clearTimeout(t)); clearInterval(pollI);
+    ends.forEach(n => n.remove()); if (pull) pull.remove();
     L.forEach(([t, ty, fn, o]) => t.removeEventListener(ty, fn, o)); L.length = 0;
     if (wide) setMode(false);
     $$('.tm-anim, .tm-flash').forEach(n => { n.classList.remove('tm-anim', 'tm-play', 'tm-flash'); n.style.removeProperty('--k'); });
@@ -842,12 +961,13 @@
     [stage, dock, hint, drop, edgeP, edgeN, pdots, phead, pager, copy, back].forEach(n => n && n.remove());
     if (oldNav) nav.replaceWith(oldNav); else nav.remove();
     if (deckBtn0) deckBtn0.hidden = false;
-    root.classList.remove('tabmode', 'tm-wide', 'tm-ready', 'tm-sheet');
+    root.classList.remove('tabmode', 'tm-wide', 'tm-ready', 'tm-sheet', 'tm-flow');
     main.classList.remove('tm-dragging', 'near-l', 'near-r');
     ['--tm-p', '--tm-pw', '--tm-ph', '--tm-z0', '--tm-avail', '--tm-dir'].forEach(k => root.style.removeProperty(k));
     document.title = title0;
+    emit('tm:stop', {});
   }
-  return { stop, anchorId };
+  return { stop, anchorId, step: d => step(d, { via: 'api' }), info: () => ({ wide, cur, pg, n: N, pages: wide ? npg[cur] : 1, at: wide ? offOf(cur) + pg : cur, total: wide ? total() : N, flow: FLOW, label: TOPICS[cur] ? TOPICS[cur].label : '' }) };
   }
 
   let deck = null;
@@ -856,6 +976,9 @@
     stop() { if (deck) { deck.stop(); deck = null; } },
     get active() { return !!deck; },
     anchorId() { return deck ? deck.anchorId() : ''; },
+    step(d) { if (deck) deck.step(d); },   // (2026-11-20) 안내 · 시험용
+    info() { return deck ? deck.info() : null; },
   };
-  if (root.classList.contains('tabmode')) window.TopicsDeck.start();
+  // 같은 페이지 안 전환 단추(#modeBtn — 안 B · paged.html)가 있으면 「스크롤로 보기」 링크(본판 index.html 로 가는 안 A)는 만들지 않는다
+  if (root.classList.contains('tabmode')) window.TopicsDeck.start(document.getElementById('modeBtn') ? { back: false } : undefined);
 })();
