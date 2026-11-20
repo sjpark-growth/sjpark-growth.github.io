@@ -288,7 +288,7 @@
   }
 
   /* ---------- 상태 · 장 나누기(넓은 화면) */
-  let wide = false, cur = -1, pg = 0, pw = 0, ph = 0, hintOff = false, lastPush = 0, drag = null, savedPg = 0, savedCur = -1, lastSig = '', resetT = 0, sealT = 0;
+  let wide = false, cur = -1, pg = 0, pw = 0, ph = 0, hintOff = false, lastPush = 0, drag = null, savedPg = 0, savedCur = -1, lastSig = '', resetT = 0, sealT = 0, dirNow = 0, navAt = 0, replayT = 0, replayList = null, playing = [];
   const restorePg = () => (savedCur === cur ? savedPg : 0);
   const npg = TOPICS.map(() => 1);
   let subPg = TOPICS.map(() => []);
@@ -558,7 +558,15 @@
     if (old) { old.className = 'out'; old.setAttribute('aria-hidden', 'true'); old.style.animationDelay = delay + 'ms'; setTimeout(() => old.remove(), 640 + delay); }
     n.style.animationDelay = delay + 'ms'; s.append(n);
   }
-  const accent = () => getComputedStyle(root).getPropertyValue('--accent').trim() || '#2f5bd3';
+  // 강조색 — 넘길 때마다 getComputedStyle(root) 를 부르면 문서 전체 스타일을 강제로 계산해 넘김 시작이 0.05~0.08초 늦었다(11-20 측정).
+  // 테마(data-theme · 시스템 어둡게)가 바뀔 때만 다시 읽는다
+  const darkQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  let accentK = null, accentV = '';
+  const accent = () => {
+    const k = (root.getAttribute('data-theme') || '') + (darkQ && darkQ.matches ? ':d' : ':l');
+    if (k !== accentK) { accentK = k; accentV = getComputedStyle(root).getPropertyValue('--accent').trim() || '#2f5bd3'; }
+    return accentV;
+  };
   function roll(box, v, anim, hit) {
     v = String(v);
     if (box.dataset.v === v) return;
@@ -600,10 +608,12 @@
     if (fresh) {
       pdFor = i + ':' + n;
       pdots.innerHTML = '<i></i>'.repeat(n);
-      if (anim && n && !reduce) { pdots.classList.remove('tm-pd-in'); void pdots.offsetWidth; pdots.classList.add('tm-pd-in'); }
+      if (anim && n && !reduce) { pdots.classList.remove('tm-pd-in'); requestAnimationFrame(() => requestAnimationFrame(() => pdots.classList.add('tm-pd-in'))); }   // 강제 배치(offsetWidth) 없이 다시 틀기
     }
     Array.from(pdots.children).forEach((d, q) => d.classList.toggle('on', q === pg));
-    worm(pdots, pg, anim, 16, fresh && anim);
+    // 점 위치 재기는 첫 프레임이 그려진 뒤에 — 그때는 배치가 깨끗해 강제 계산이 없다(넘김 첫 프레임에 약 14ms 끼던 것)
+    const q0 = pg, wa = anim, wg = fresh && anim;
+    afterFrame(() => { if (q0 === pg && cur === i) worm(pdots, pg, wa, 16, wg); });
   }
   // 장을 옮기면 그쪽 화살표(넓은 화면 GNB ‹ › · 좁은 화면 아래 막대)가 6px 밀렸다 돌아오고 단추 둘레에 강조색 링이 퍼진다 —
   // 키 · 휠 · 드래그로 넘겨도 어디로 갔는지 보이게. GNB 진행 점(.tm-phead)도 한 번 부풀었다 돌아온다
@@ -633,11 +643,11 @@
       $('.tm-pcount small', pager).textContent = TOPICS[i].label;
       $('.tm-pcount', pager).setAttribute('aria-label', `${TOPICS[i].label} ${pg + 1} / ${npg[i]}장`);
       paintPdots(i, anim);
-      const t = total(); root.style.setProperty('--tm-p', t > 1 ? ((offOf(i) + pg) / (t - 1)).toFixed(4) : '1');
+      const t = total(); setP(t > 1 ? ((offOf(i) + pg) / (t - 1)).toFixed(4) : '1');
       keepNav();
     } else {
       dots.forEach((b, k) => { b.classList.toggle('on', k === i); b.setAttribute('aria-current', String(k === i)); });
-      worm($('.tm-dots', dock), i, anim, 18); worm($('.tm-cdots', dock), i, anim, 13);   // 태블릿 아래 막대 점 · 휴대폰 숫자 밑 점(둘 중 보이는 쪽만)
+      afterFrame(() => { if (i !== cur) return; worm($('.tm-dots', dock), i, anim, 18); worm($('.tm-cdots', dock), i, anim, 13); });   // 태블릿 아래 막대 점 · 휴대폰 숫자 밑 점(둘 중 보이는 쪽만) — 첫 프레임 뒤에 잰다
       roll($('.tm-count b', dock), pad(i + 1), anim, true);
       $('.tm-count', dock).setAttribute('aria-label', `${TOPICS[i].label} ${i + 1} / ${N} — 목차`);   // 글자 칸으로 나뉘어 「0 2」 처럼 읽히지 않게
       $('.tm-pl', dock).textContent = i > 0 ? TOPICS[i - 1].label : '';
@@ -645,15 +655,37 @@
       $('.tm-prev', dock).disabled = i === 0; $('.tm-next', dock).disabled = i === N - 1;
       $('.tm-prev', dock).setAttribute('aria-label', '이전 주제' + (i > 0 ? ': ' + TOPICS[i - 1].label : ''));
       $('.tm-next', dock).setAttribute('aria-label', '다음 주제' + (i < N - 1 ? ': ' + TOPICS[i + 1].label : ''));
-      root.style.setProperty('--tm-p', (i / (N - 1)).toFixed(4));
+      setP((i / (N - 1)).toFixed(4));
     }
     moveInd();
   }
+  // 넘김 첫 프레임에 강제 배치 · 스타일 계산을 끼우지 않는다 — 다음 프레임이 그려진 뒤에 한다(11-20 측정: 키를 누른 뒤 미끄러짐 시작까지 평균 66 → 4ms)
+  function afterFrame(fn) { requestAnimationFrame(() => setTimeout(fn, 0)); }
+  // 차례 등장 다시 틀기 — 예전에는 떼기 → void track.offsetWidth(트랙 전체 강제 배치) → 붙이기로 넘김 시작이 늦었다(11-20 측정).
+  // 이제 처음 오는 요소는 tm-play 를 바로 붙이고(같은 프레임에 새로 시작 · 강제 계산 없음), 떠난 장의 tm-play 는 미끄러짐이 끝난 뒤
+  // unplay() 가 떼어 둔다(끝난 애니메이션이라 모양은 그대로). 0.78초 안에 되돌아와 아직 붙어 있는 것만 떼었다가 rAF 두 번 뒤에 다시 붙인다
   function replay(i, page) {
     if (reduce) return;
     const list = anims[i].filter(n => page < 0 || animPage.get(n) === page || n.classList.contains('tm-idx') && page === 0);
-    list.forEach(n => n.classList.remove('tm-play')); void track.offsetWidth; list.forEach(n => n.classList.add('tm-play'));
+    const again = [];
+    list.forEach(n => { if (n.classList.contains('tm-play')) again.push(n); else n.classList.add('tm-play'); });
+    // 빠르게 이어 넘겨 앞의 「다시 붙이기」가 아직이면 바로 붙여 둔다(빈 자리로 남지 않게)
+    if (replayList) { cancelAnimationFrame(replayT); replayList.forEach(n => n.classList.add('tm-play')); replayList = null; }
+    playing = list;
+    if (!again.length) return;
+    again.forEach(n => n.classList.remove('tm-play'));
+    replayList = again;
+    replayT = requestAnimationFrame(() => { replayT = requestAnimationFrame(() => { again.forEach(n => n.classList.add('tm-play')); replayList = null; }); });
   }
+  function unplay() {
+    if (replayList) return;   // 다시 붙이기를 기다리는 중이면 다음 기회에
+    const keep = new Set(playing);
+    anims.forEach(a => a && a.forEach(n => { if (!keep.has(n) && n.classList.contains('tm-play')) n.classList.remove('tm-play'); }));
+  }
+  // --tm-dir · --tm-p 는 <html> 대신 쓰는 곳(main · .mast · 아래 막대)에만 — <html> 의 사용자 정의 속성이 바뀌면 문서 전체(약 2,900개) 스타일을 다시 계산했다
+  // (dirNow · navAt · replayT · replayList 는 위 let 줄에 — 함수가 먼저 불려도 TDZ 오류가 나지 않게)
+  function setDir(d) { if (d === dirNow) return; dirNow = d; [main, mast, dock].forEach(n => n && n.style.setProperty('--tm-dir', String(d))); }
+  function setP(v) { if (mast) mast.style.setProperty('--tm-p', v); }
   function go(i, o = {}) {
     i = clamp(i, 0, N - 1);
     let page = 0;
@@ -666,20 +698,28 @@
     const changedT = i !== cur, changed = changedT || page !== pg;
     // 넘기는 방향(1 = 다음, −1 = 이전) — 절 머리 · 판 번호가 그쪽에서 옆으로 들어온다(topics.css tmSide)
     const dir = changed && cur >= 0 ? ((wide ? offOf(i) + page < offOf(cur) + pg : i < cur) ? -1 : 1) : 0;
-    if (dir) root.style.setProperty('--tm-dir', String(dir));
+    if (dir) setDir(dir);
     // (좁은 화면) 다른 판의 카드로 갈 때 — 위치는 차례 등장이 붙기 전에 잰다(붙은 뒤 재면 약 30px 위로 어긋났다)
     let ty = null;
     if (!wide && o.target) { const p = panels[i]; ty = o.target.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop - 14; }
     cur = i; pg = page;
+    if (changed) navAt = performance.now();
     if (!o.drag) settle();   // 손으로 놓은 뒤의 짧은 감속 곡선은 그 한 번만 — 키 · 탭 이동은 원래 곡선
     track.classList.toggle('tm-instant', !!o.instant || reduce);
     place();
     panels.forEach((p, k) => p.classList.toggle('on', k === i));
-    // 안 보이는 판 inert · aria-hidden — 판 전체 스타일을 다시 계산하는 무거운 일이라, 손으로 놓은 뒤에는 미끄러짐이 끝난 다음에 한다
-    // (놓는 순간 함께 하면 휴대폰에서 첫 프레임이 약 0.06초 멈칫했다)
-    const seal = () => panels.forEach((p, k) => { const on = k === cur; if (p.inert !== !on) p.inert = !on; p.setAttribute('aria-hidden', String(!on)); });
+    // 안 보이는 판 inert · aria-hidden — 판 전체 스타일을 다시 계산하는 무거운 일이라, 미끄러짐이 끝난 다음에 한다
+    // (놓는 순간 함께 하면 휴대폰에서 첫 프레임이 약 0.06초 멈칫했다 · 11-20 키 · 휠 · 단추 넘김도 같게). 처음 열 때 · 바로 옮김 · 동작 줄이기는 바로
+    // 가는 판은 지금(넘김 첫 프레임에) 그려 둔다 — 화면 밖이라 안 그려 둔 판이 미끄러지는 도중에 처음 그려지면 그 프레임이 멈춘다(topics.css .tm-near)
+    if (!panels[i].classList.contains('tm-near')) panels[i].classList.add('tm-near');
+    const seal = () => {
+      panels.forEach((p, k) => { const on = k === cur; if (p.inert !== !on) p.inert = !on; p.setAttribute('aria-hidden', String(!on)); });
+      unplay();
+      // 미끄러짐이 끝난 뒤 한가할 때 — 지금 판 · 바로 옆 판만 그려 두고 나머지는 다시 그리지 않는다
+      panels.forEach((p, k) => { const near = Math.abs(k - cur) <= 1; if (p.classList.contains('tm-near') !== near) p.classList.toggle('tm-near', near); });
+    };
     clearTimeout(sealT);
-    if (o.drag && !reduce) sealT = setTimeout(seal, 500); else seal();
+    if (!reduce && !o.first && !o.instant) sealT = setTimeout(seal, o.drag ? 500 : 780); else seal();
     paint(!!dir && !o.first);
     if (dir && !o.first) kick(dir);
     if (changed || o.first) {
@@ -707,7 +747,8 @@
         t.classList.remove('tm-flash'); void t.offsetWidth; t.classList.add('tm-flash'); setTimeout(() => t.classList.remove('tm-flash'), 1600);
       }, changed && !reduce ? (wide ? 520 : 380) : 0);
     }
-    if (o.focus) setTimeout(() => panels[i].focus({ preventScroll: true }), changed && !reduce ? 700 : 0);
+    // 목차 · 메뉴로 고른 판에 포커스 — 그 판이 아직 inert(앞 넘김의 seal 이 0.78초 뒤로 밀려 있음)면 focus() 가 무시되므로 seal 을 먼저 마친다(11-20 교차 검증)
+    if (o.focus) setTimeout(() => { if (cur === i) { clearTimeout(sealT); seal(); } panels[i].focus({ preventScroll: true }); }, changed && !reduce ? 700 : 0);
   }
   function step(d, o = {}) {
     if (!wide) return go(cur + d, Object.assign({ page: 0 }, o));
@@ -918,7 +959,7 @@
   // 흐리게 겹쳐 보였다(11-16). 0.8초마다 판 폭만 보고 바뀌었으면 다시 나눈다(같으면 아무것도 안 함 · 5초에 3번까지)
   let polls = [];
   const pollI = setInterval(() => {
-    if (!wide || drag || document.hidden || sig() === lastSig) return;
+    if (!wide || drag || document.hidden || performance.now() - navAt < 1000 || sig() === lastSig) return;   // 넘기는 중(1초)에는 재지 않는다 — sig() 가 판 배치를 강제로 계산
     const now = performance.now(); polls = polls.filter(t => now - t < 5000); if (polls.length >= 3) return;
     polls.push(now); layout();
   }, 800);
@@ -997,6 +1038,7 @@
     root.classList.remove('tabmode', 'tm-wide', 'tm-ready', 'tm-sheet', 'tm-flow');
     main.classList.remove('tm-dragging', 'near-l', 'near-r');
     ['--tm-p', '--tm-pw', '--tm-ph', '--tm-z0', '--tm-avail', '--tm-dir'].forEach(k => root.style.removeProperty(k));
+    [main, mast].forEach(n => { if (n) { n.style.removeProperty('--tm-dir'); n.style.removeProperty('--tm-p'); } });
     document.title = title0;
     emit('tm:stop', {});
   }

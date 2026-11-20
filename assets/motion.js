@@ -865,7 +865,7 @@
     const cap = host.querySelector('.cap'), pbtn = host.querySelector('.pbtn'), big = host.querySelector('.bigplay');
     const bar = host.querySelector('.bar'), fil = host.querySelector('.fil'), time = host.querySelector('.time');
 
-    const P = { host, playing: false, userPaused: false, t: 0, last: 0, raf: 0, visible: false, dur: scene ? scene.duration : 0 };
+    const P = { host, playing: false, userPaused: false, t: 0, last: 0, raf: 0, visible: false, inView: false, dur: scene ? scene.duration : 0 };
     let media = null, canvas = null, ctx = null, g = null, W = 0, H = 0, dpr = 1;
 
     if (isVideo) {
@@ -883,11 +883,21 @@
       P.t = scene.poster || 0;
     }
 
-    function resize() {
+    // r = ResizeObserver 가 준 크기(없으면 직접 잰다). 크기 · 배율이 그대로면 캔버스를 다시 만들지 않는다 — 다시 만들면 배치가 깨져
+    // 다음 플레이어의 측정이 강제 배치가 됐다(11-20 트레이스: 「주요 업무」 플레이어 9개가 한꺼번에 117ms)
+    let sizeKey = '', pend = null, pendT = 0;
+    function applySize(q) { sizeKey = q.k; dpr = q.d; W = q.w; H = q.h; canvas.width = W * dpr; canvas.height = H * dpr; render(); }
+    function flushSize() { if (pendT) { cancelIdleCallback(pendT); pendT = 0; } if (pend) { const q = pend; pend = null; if (q.k !== sizeKey) applySize(q); } }
+    function resize(r) {
       if (!canvas) return;
-      const r = stage.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1);
-      W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
-      canvas.width = W * dpr; canvas.height = H * dpr; render();
+      if (!r) r = stage.getBoundingClientRect();
+      const d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+      const q = { w, h, d, k: w + 'x' + h + '@' + d };
+      if (q.k === sizeKey) { pend = null; return; }
+      // 화면에 전혀 안 걸친 플레이어는 한가할 때 다시 그린다 — 장 넘김 도중 「주요 업무」 플레이어 10개가 한 프레임에 몰려 0.1초가 걸렸다(11-20).
+      // 그때까지 캔버스는 예전 그림을 늘려 보여 주고, 화면에 걸치는 순간(IntersectionObserver) 바로 다시 그린다
+      if (sizeKey && !P.inView && window.requestIdleCallback) { pend = q; if (!pendT) pendT = requestIdleCallback(() => { pendT = 0; flushSize(); }, { timeout: 2000 }); return; }
+      pend = null; applySize(q);
     }
     function render() {
       if (!ctx || !W) return;
@@ -902,15 +912,19 @@
       try { scene.draw(g, P.t); } catch (e) { console.error(e); }
       ui();
     }
+    // (11-20) 매 프레임 글자 · 단추 내용을 바꾸면 여러 단으로 나뉜 장 전체 배치를 다시 계산했다(프레임마다 9~25ms) — 바뀐 것만 쓰고, 막대는 transform 으로
+    let uiTxt = '', uiNow = -1, uiMax = -1, uiPlay = null;
     function ui() {
-      const d = P.dur || 1; fil.style.width = (clamp(P.t / d) * 100) + '%';
-      time.textContent = `${mmss(Math.min(P.t, d))} / ${mmss(d)}`;
-      bar.setAttribute('aria-valuemax', String(Math.round(d))); bar.setAttribute('aria-valuenow', String(Math.round(P.t)));
+      const d = P.dur || 1; fil.style.transform = `scaleX(${clamp(P.t / d).toFixed(4)})`;
+      const txt = `${mmss(Math.min(P.t, d))} / ${mmss(d)}`; if (txt !== uiTxt) { uiTxt = txt; time.textContent = txt; }
+      const mx = Math.round(d), nw = Math.round(P.t);
+      if (mx !== uiMax) { uiMax = mx; bar.setAttribute('aria-valuemax', String(mx)); }
+      if (nw !== uiNow) { uiNow = nw; bar.setAttribute('aria-valuenow', String(nw)); }
       if (scene) {
         let c = ''; for (const [ct, s] of scene.chapters) if (P.t >= ct) c = s;
         if (cap.textContent !== c) cap.textContent = c;
       }
-      pbtn.innerHTML = P.playing ? ICON_PAUSE : ICON_PLAY; pbtn.setAttribute('aria-label', P.playing ? '일시정지' : '재생');
+      if (uiPlay !== P.playing) { uiPlay = P.playing; pbtn.innerHTML = P.playing ? ICON_PAUSE : ICON_PLAY; pbtn.setAttribute('aria-label', P.playing ? '일시정지' : '재생'); }
       host.classList.toggle('playing', P.playing || P.t > 0.05 && !isVideo && P.started);
     }
     function frame(now) {
@@ -954,10 +968,16 @@
       else if (e.key === 'ArrowLeft') { e.preventDefault(); seek(P.t - 2); }
     });
 
-    if ('ResizeObserver' in window) new ResizeObserver(() => resize()).observe(stage);
+    // (11-20) 크기는 ResizeObserver 가 준 값으로(직접 재면 강제 배치) — 0(장 넘김에서 화면 밖 판을 그리지 않는 동안)이면 넘어가고, 같으면 resize 가 넘어간다
+    if ('ResizeObserver' in window) new ResizeObserver(es => {
+      const r = es[es.length - 1].contentRect;
+      if (!r.width || !r.height) return;
+      resize(r);
+    }).observe(stage);
     resize();
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(es => es.forEach(e => {
+        P.inView = e.isIntersecting; if (P.inView) flushSize();   // 미뤄 둔 크기 바꿈이 있으면 지금
         P.visible = e.intersectionRatio >= 0.55;
         if (P.visible && !P.userPaused && !reduceMotion && document.visibilityState === 'visible') play(false);
         if (e.intersectionRatio < 0.2) pause(false);

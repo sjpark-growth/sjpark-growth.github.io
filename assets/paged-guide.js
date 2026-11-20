@@ -84,7 +84,11 @@
     clearTimeout(closeT);
     if (card) card.remove();
     card = build(); sy0 = null;
-    document.body.appendChild(card);
+    // 카드는 화면 전체 고정 칸(.pg-layer · contain: strict = 배치 경계) 안에 — 카드 그림이 움직일 때마다 문서 전체 배치(약 10ms)를
+    // 다시 돌려, 가만히 있어도 프레임의 약 39% 를 버렸다(11-20 측정 · 2초 배치 808 → 101ms)
+    let layer = document.querySelector('.pg-layer');
+    if (!layer) { layer = document.createElement('div'); layer.className = 'pg-layer'; document.body.appendChild(layer); }
+    layer.appendChild(card);
     root.classList.add('pg-coaching');
     requestAnimationFrame(() => requestAnimationFrame(() => { if (card) card.classList.add('on'); }));
   }

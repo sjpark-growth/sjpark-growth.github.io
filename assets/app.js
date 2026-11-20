@@ -615,8 +615,31 @@
         return;
       }
       if (!('IntersectionObserver' in window)) return loadFrame();
-      const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); loadFrame(); } }, { rootMargin: '200px 0px' });
-      io.observe($('#dash'));
+      const watchIO = () => {
+        const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { io.disconnect(); loadFrame(); } }, { rootMargin: '200px 0px' });
+        io.observe($('#dash'));
+      };
+      /* (2026-11-20) 장 넘김(tabmode)에서는 판이 미끄러져 들어오는 순간 3MB 데모를 읽으면 0.78초짜리 멈춤이 됐다(같은 출처 iframe = 같은 메인 스레드).
+         대시보드 판에 0.8초 넘게 머물 때 · 한가할 때만 읽는다(그동안은 썸네일). 그냥 지나가면 읽지 않는다. 「스크롤로 보기」로 바꾸면 예전 방식(IO) */
+      if (document.documentElement.classList.contains('tabmode')) {
+        showPoster();
+        let t = 0, done = false;
+        const panel = () => $('#dash').closest('.tm-panel');
+        const here = () => { const pn = panel(); return !!pn && pn.classList.contains('on'); };
+        const idle = window.requestIdleCallback ? f => requestIdleCallback(f, { timeout: 1000 }) : f => setTimeout(f, 0);
+        const arm = () => { clearTimeout(t); if (frameLoaded || done) return; if (here()) t = setTimeout(() => { if (here()) idle(loadFrame); }, 800); };
+        const off = () => {
+          if (done) return; done = true; clearTimeout(t);
+          document.removeEventListener('tm:nav', arm); document.removeEventListener('tm:ready', arm);
+          if (!frameLoaded) watchIO();
+        };
+        document.addEventListener('tm:nav', arm); document.addEventListener('tm:ready', arm);
+        document.addEventListener('tm:stop', off, { once: true });
+        setTimeout(() => { if (!panel()) off(); }, 3000);   // 장 넘김이 끝내 안 섰으면(스크립트 오류 등) 예전 방식으로
+        arm();
+        return;
+      }
+      watchIO();
     };
     if (document.readyState === 'complete') watchFrame(); else addEventListener('load', watchFrame, { once: true });
     // 축소판 박스가 오른쪽 설명 높이만큼 늘어나면, 늘어난 만큼 대시보드를 더 보여 준다

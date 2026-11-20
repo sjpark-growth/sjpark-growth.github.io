@@ -29,6 +29,12 @@ html.tabmode { --tm-dur: .7s; --tm-ease: cubic-bezier(.3,0,.12,1); }
 .tm-panel { position: relative; flex: 0 0 100%; min-width: 0; height: 100%; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
   touch-action: pan-y; outline: none; scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; transition: opacity var(--tm-dur, .7s) var(--tm-ease, ease); }
 .tm-panel:not(.on) { opacity: .4; }
+/* 화면에서 먼 판은 그리지 않는다(11-20 측정) — 트랙이 움직이는 동안 크롬이 트랙 전체(28장 · 약 3만 px)를 한 번에 다시 그려 0.2~0.5초 멈췄다.
+   판 크기는 위에서 정해져(flex 100% · height 100%) 바깥 배치는 그대로, Ctrl+F 찾기 · 링크 이동도 auto 라 된다. 인쇄는 아래 print 에서 visible */
+.tm-panel { content-visibility: auto; contain-intrinsic-size: auto 100vw auto 100vh; }
+/* 지금 판 · 바로 옆 판 · 가는 판은 미리 그려 둔다(topics.js near) — 무대가 overflow: clip 이라 옆 판도 화면에 실제로 들어오는 순간에야 그려져,
+   무거운 판(성과 추이)은 미끄러지는 도중 한 프레임이 0.4초 걸렸다(11-20 측정) */
+.tm-panel.tm-near { content-visibility: visible; }
 main.tm-dragging .tm-panel:not(.on) { opacity: .6; }
 .tm-inner { position: relative; z-index: 1; padding-bottom: 112px; }
 .tm-inner > .sec:first-child, .tm-inner > .growth:first-child { padding-top: clamp(26px, 4.2vh, 52px); }
@@ -64,8 +70,9 @@ main.tm-dragging .tm-panel:not(.on) { opacity: .6; }
 .tm-sl > i.out { animation: tmRollOut .45s cubic-bezier(.25,.6,.35,1) both; }   /* 바로 출발 — 느리게 출발하면 처음 0.1초 들어오는 숫자와 겹쳐 굵게 보였다 */
 /* 움직이는 거리 = 칸 높이 + 4px — 칸이 글자 높이(text-box)로 줄어든 뒤 105% 만 움직이면 나가는 숫자 · 들어오는 숫자 조각이 칸 위아래에 함께 남아
    지저분했다(휴대폰 0.09 · 0.33초 멈춘 화면). 나가는 숫자는 60% 에서 이미 다 사라진다 */
-@keyframes tmRollIn { from { opacity: 0; filter: blur(1.5px); transform: translate3d(0, calc(var(--tm-dir, 1) * (100% + 4px)), 0) skewY(calc(var(--tm-dir, 1) * -8deg)); } 55% { filter: none; } to { opacity: 1; transform: none; } }
-@keyframes tmRollOut { from { opacity: 1; transform: none; } 60% { opacity: 0; } to { opacity: 0; filter: blur(1.5px); transform: translate3d(0, calc(var(--tm-dir, 1) * -1 * (100% + 4px)), 0) skewY(calc(var(--tm-dir, 1) * 8deg)); } }
+/* (11-20) blur 필터를 뺐다 — 필터가 있으면 크롬이 합성(GPU) 대신 메인 스레드에서 매 프레임 다시 그렸다 */
+@keyframes tmRollIn { from { opacity: 0; transform: translate3d(0, calc(var(--tm-dir, 1) * (100% + 4px)), 0) skewY(calc(var(--tm-dir, 1) * -8deg)); } to { opacity: 1; transform: none; } }
+@keyframes tmRollOut { from { opacity: 1; transform: none; } 60% { opacity: 0; } to { opacity: 0; transform: translate3d(0, calc(var(--tm-dir, 1) * -1 * (100% + 4px)), 0) skewY(calc(var(--tm-dir, 1) * 8deg)); } }
 /* 지렁이 알약 — 점 위에 하나(topics.js worm). 앞쪽 끝이 먼저, 뒤쪽 끝이 늦게(지연은 JS 가 방향 보고 transition-delay 로).
    곡선은 빨리 출발하는 쪽 — 느리게 출발하는 곡선은 키를 빠르게 이어 누를 때마다 처음부터 다시 느리게 출발해 알약이 제자리에 머물렀다(11-16 실측) */
 .tm-worm { position: absolute; z-index: 1; top: 50%; height: var(--wh, 6px); margin-top: calc(var(--wh, 6px) / -2); border-radius: 99px; background: var(--accent); pointer-events: none;
@@ -429,7 +436,7 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   html.tabmode main { position: static; }
   .tm-stage { position: static; overflow: visible; }
   .tm-track { display: block; transform: none !important; }
-  .tm-panel { height: auto; overflow: visible; opacity: 1 !important; }
+  .tm-panel { height: auto; overflow: visible; opacity: 1 !important; content-visibility: visible; }
   .tm-inner { padding-bottom: 0; }
   .tm-idx, .tm-dock, .tm-drop, .tm-hint, .tm-back, .tm-nav, .tm-pager, .tm-copy, .tm-edge, .tm-pdots, .tm-phead { display: none !important; }
   .tm-anim { animation: none !important; }
