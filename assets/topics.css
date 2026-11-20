@@ -254,7 +254,30 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
 .xd .how strong { color: var(--accent-ink); }
 .xd-note { padding: 5px 10px; border: 1px dashed var(--rule-2); border-radius: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
 .tm-xlink span { margin-left: 2px; }
-@media (max-width: 860px) { .xd { grid-template-columns: minmax(0, 1fr); align-items: start; } }
+/* (2026-11-20 셋째, 본인 「한 개 한 개 항목이 너무 휑 — 구성을 앞 대시보드와 같이, 시트의 역할 · 주요 기능도 우측 아래에(핵심 기능 혹은 활용)」)
+   .xd-full = 03 대시보드 판과 같은 틀: 왼쪽 데모 그림(4:3 — 960×720, _work/artifact/shot-demos-43.js · webp-43.py) | 오른쪽 .dash-side 모양 그대로
+   (이름 · 한 줄 역할 · 데모 단추 · 사실 칸 3 · 활용 · 「핵심 기능」 칩 → 아래 펼침). 문구 data.js moreDash facts · uses · features */
+.xd.xd-full { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; }
+.xd.xd-full .xd-shot { aspect-ratio: 4 / 3; }
+.xd.xd-full .xd-body { align-items: stretch; gap: clamp(8px, 1.4vh, 13px); }
+.xd.xd-full .xd-meta, .xd.xd-full h3 { align-self: flex-start; }
+.xd.xd-full .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.xd.xd-full .actions .btn { flex: 1 1 auto; justify-content: center; }
+.xd.xd-full .actions .xd-note { align-self: center; }
+.xd.xd-full .facts .fv { font-family: var(--f-sans); font-stretch: normal; font-size: clamp(15px, 2.3vh, 19px); font-weight: 800; letter-spacing: -0.02em; }
+.xd.xd-full .facts .fk { font-size: 11.5px; line-height: 1.4; }
+.xd-uses { padding: 10px 12px; border-radius: 12px; background: var(--sunk); }
+.xd-uh { margin: 0 0 5px; font-size: 13px; font-weight: 800; color: var(--ink); }
+.xd-uses ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.xd-uses li { position: relative; padding-left: 14px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.xd-uses li::before { content: ""; position: absolute; left: 1px; top: .62em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.xd.xd-full .how-box, .xd.xd-full .how-panel { flex: none; }
+.xd.xd-full h3.how-h { font-size: 15.5px; line-height: 1.3; letter-spacing: -0.02em; align-self: auto; }   /* 카드 이름(.xd h3) 크기를 받지 않게 */
+.xd.xd-full .how.how-tips > li { padding-left: 0; }
+.xd.xd-full .how.how-tips > li::before { content: none; display: none; }   /* 예전 줄 목록(.xd .how li)의 점이 칩 앞에 붙지 않게 */
+.xd.xd-full .how-pd { min-height: calc(2 * 1.7em); font-size: 14px; }
+.xd.xd-full .how-head { padding-top: 10px; }
+@media (max-width: 860px) { .xd { grid-template-columns: minmax(0, 1fr); align-items: start; } .xd.xd-full { grid-template-columns: minmax(0, 1fr); } }
 @media print { .xd { break-inside: avoid; } .xd-open { display: none; } }
 
 /* =========================================================================
@@ -392,6 +415,20 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   /* 기타 대시보드 카드 — 넓은 화면에서는 데모 화면을 더 크게(눈에 띄게) */
   html.tm-wide .xd { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: clamp(20px, 2.4vw, 40px); padding: clamp(16px, 1.8vw, 26px); }
   html.tm-wide .xd .hook { font-size: 17px; }
+  /* (11-20 셋째) 대시보드 판과 같은 틀 — 그림 4:3 | 오른쪽 정보(높이를 창에 맞춰 촘촘히) */
+  html.tm-wide .xd.xd-full { grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr); gap: clamp(16px, 2vw, 32px); padding: clamp(10px, 1.2vw, 16px); }
+  html.tm-wide .xd.xd-full .hook { font-size: clamp(14px, 2.1vh, 16px); line-height: 1.55; }
+  /* 카드 하나가 한 장(고정 머리 아래 높이)에 들어가게 — 넘치면 layout() 이 카드를 두 장으로 나눠 4장이 7장이 됐다(1463×800) */
+  html.tm-wide .xd.xd-full .xd-body { gap: clamp(6px, 1.1vh, 11px); }
+  html.tm-wide .xd.xd-full .xd-body > h3 { font-size: clamp(22px, 3.4vh, 30px); }
+  html.tm-wide .xd.xd-full .actions .btn { height: clamp(30px, 4.6vh, 38px); padding: 0 12px; font-size: 13px; }
+  html.tm-wide .xd.xd-full .facts li { padding: clamp(5px, .9vh, 9px) 10px; }
+  html.tm-wide .xd.xd-full .xd-uses { padding: 8px 11px; }
+  html.tm-wide .xd.xd-full .xd-uses li { font-size: 12.5px; line-height: 1.45; }
+  html.tm-wide .xd.xd-full .tip-chip { min-height: clamp(30px, 4.4vh, 40px); padding: 5px 8px; font-size: 13.5px; }
+  html.tm-wide .xd.xd-full .how-pin { padding: 10px 14px; }
+  html.tm-wide .xd.xd-full .how-pd { font-size: 13.5px; line-height: 1.6; min-height: calc(2 * 1.6em); }
+  html.tm-wide .xd.xd-full .xd-shot { width: 100%; max-height: calc(var(--tm-avail, 640px) / var(--tm-z0, 1) - 190px); justify-self: center; }
   /* 참고 자료 — 여섯 칸으로(머리 + 두 줄이 한 장에) */
   html.tm-wide .archive { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 

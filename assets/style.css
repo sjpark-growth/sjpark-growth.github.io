@@ -2292,21 +2292,25 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
 
 /* (2026-11-20) 첫 화면 좌우 균형 — 본인 「핵심 성과를 좌측 아래로 내려서 좌우 크기 밸런스」.
    넓은 화면(≥1101px · 화면만)에서 오른쪽 틀(.hero-r)을 풀어(display: contents — 휴대폰 배치와 같은 방법) 첫 화면을 2단 격자로 다시 놓는다:
-   왼쪽 = 소개 + 그 아래 「핵심 성과」 2×2, 오른쪽 = 「핵심 과업」 머리 + 대시보드 · 차트 2×2 가 높이를 꽉 채움(차트는 칸 높이를 따라 커진다 — app.js boardH).
-   폭은 1 : 1.08 — 핵심 성과가 왼쪽 칸으로 오면서 1 : 1.34 로는 숫자 칸이 좁았다. 태블릿 · 휴대폰 · 인쇄 배치는 그대로 */
+   왼쪽 = 소개 + 그 아래 「핵심 성과」 2×2, 오른쪽 = 「핵심 과업」 머리 + 대시보드 · 차트 2×2.
+   (같은 날 둘째, 본인 「차트 깨지는 거 별로 — 이전처럼 정사각형 수준 크기로」) 오른쪽 네 칸은 **정사각형**(aspect-ratio 1)으로 고정한다 —
+   높이를 꽉 채우게 두었더니 칸이 세로로 길어져(1920 에서 325×476 · 2560 에서 325×653) 차트 높이 상한(260px, app.js boardH) 아래가 37~212px 비었다.
+   두 단은 위에서부터 맞추고 남는 높이는 위아래 가운데(align-content). 폭 1 : 1.16(칸 한 변 약 295px — 예전 315×265 와 비슷). 태블릿 · 휴대폰 · 인쇄 배치는 그대로 */
 @media screen and (min-width: 1101px) {
   .hero .shell {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.16fr); grid-template-rows: auto auto 1fr;
     grid-template-areas: "l h" "l b" "k b"; column-gap: clamp(20px, 2.6vw, 44px); row-gap: clamp(8px, 1.3vh, 14px);
+    align-content: center;
     min-height: clamp(540px, calc(100vh - var(--mast-h, 55px) - 41px - var(--hp-t) - var(--hp-b)), 840px);
     min-height: clamp(540px, calc(100svh - var(--mast-h, 55px) - 41px - var(--hp-t) - var(--hp-b)), 840px);
   }
   html.tm-wide .hero .shell { min-height: 0; }   /* 장 넘김에서는 topics.css 가 높이를 장 높이로 정한다 */
   .hero .shell > .hero-r { display: contents; }
-  .hero-l { grid-area: l; align-self: center; }
-  .hero-r > .mb-h { grid-area: h; align-self: end; }
-  .hero-r > .mboard { grid-area: b; }
-  .hero-r > .hkey { grid-area: k; align-self: end; }
+  .hero-l { grid-area: l; align-self: start; }
+  .hero-r > .mb-h { grid-area: h; align-self: start; }
+  .hero-r > .mboard { grid-area: b; align-self: start; flex: none; grid-template-rows: auto auto; }
+  .hero-r > .mboard > .mp { aspect-ratio: 1 / 1; }
+  .hero-r > .hkey { grid-area: k; align-self: start; }
   .hero .hk { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hero .hk .kpi { border-radius: 0 !important; }
   .hero .hk .kpi:nth-child(1) { border-top-left-radius: 11px !important; }
@@ -2322,4 +2326,81 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
   .hero-l .herosum span { font-size: 12.7px; line-height: 1.4; }
   .hero .hk .kpi { padding: clamp(7px, 1.1vh, 11px) 13px clamp(8px, 1.2vh, 12px); }
   .hero .hk .kpi .v { font-size: clamp(22px, 3.4vh, 34px); }
+}
+
+/* (2026-11-20 셋째) 03 대시보드 — 본인 「아래 박스 비는 거 이상 — 길이를 줄이고 우측 항목 전체를 가운데 정렬」.
+   「구축 내용」 펼침 칸이 남은 높이를 채우게 두었더니 큰 화면(1920×1080)에서 두 줄 글 아래로 400px 가까이 비었다 →
+   펼침 칸은 글 높이만(세 줄 자리 — 칩을 바꿔 눌러도 높이가 거의 그대로), 오른쪽 묶음 전체는 위아래 가운데(auto 여백 — 넘치면 0 이 돼 스크롤이 위를 자르지 않는다) */
+@media screen and (min-width: 861px) {
+  #dash .dash-side .how-box, #dash .dash-side .how-panel { flex: none; }
+  #dash .dash-side .how-pd { min-height: calc(3 * 1.7em); }
+  #dash .dash-side > :first-child { margin-top: auto; }
+  #dash .dash-side > :last-child { margin-bottom: auto; }
+}
+
+/* (2026-11-20 셋째) 주요 성과 — 본인 「컬러 차이 · 입체감 · 애니메이션을 더해 눈에 들어오게, 공헌이익은 첫 화면 네 칸처럼 별표 · 글자 효과」.
+   왼쪽 큰 칸: 강조색 빛 번짐 배경 · 공헌이익 숫자는 .shine(빛 지나감 + ✦ 반짝, 강조색) · 공헌이익 막대는 그라데이션 + 빛.
+   오른쪽 카드: 묶음마다 색(data.js tone — roas 효율 · sales 매출 · cost 비용 · ops 자동화) — 위 띠 · 옅은 색 바탕 · 그림자, 마우스를 올리면 떠오름.
+   처음 보일 때(app.js onFirstView → .rs-play) 막대가 0 에서 자라고(transform 만 — 합성) 숫자가 굴러간다. 동작 줄이기 · 인쇄는 그대로 */
+.results .rs-lead {
+  position: relative; overflow: hidden;
+  background: radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 62%),
+    radial-gradient(70% 60% at 0% 100%, color-mix(in srgb, #22a06b 7%, transparent), transparent 60%), var(--surface);
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--rule));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 7%, transparent), 0 14px 38px rgba(12, 26, 43, .10), 0 2px 6px rgba(12, 26, 43, .05);
+}
+.rs-big.hot { position: relative; padding: 6px 14px 8px; margin: -6px 0 -8px; border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent) inset, 0 8px 26px color-mix(in srgb, var(--accent) 18%, transparent); }
+.rs-hotk { font-weight: 800; color: var(--accent-ink); }
+.rs-big.hot .shine { background-image: linear-gradient(105deg, var(--accent-ink) 0%, var(--accent-ink) 42%, var(--shine) 50%, var(--accent-ink) 58%, var(--accent-ink) 100%); }
+.rs-big.hot .shine::after { font-size: .36em; right: -.62em; top: -.12em; }
+.rs-big:not(.hot) .rs-v { color: color-mix(in srgb, var(--ink) 82%, var(--ink-3)); }
+.rs-irow.hot .rs-itrack i, .rs-bar.contrib i {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 55%, #9fb6ff), var(--accent));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.rs-irow:not(.hot) .rs-itrack i, .rs-bar.sales i { background: linear-gradient(90deg, color-mix(in srgb, #22a06b 30%, var(--ink-3)), color-mix(in srgb, #22a06b 55%, var(--ink-3))); opacity: .75; }
+.rs-legend .sales::before { background: color-mix(in srgb, #22a06b 45%, var(--ink-3)); }
+.rs-legend .contrib::before { background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent); }
+/* 오른쪽 카드 — 묶음 색 */
+.rs-card { --tone: var(--accent); position: relative; overflow: hidden;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--tone) 11%, var(--surface)) 0%, var(--surface) 64%);
+  border-color: color-mix(in srgb, var(--tone) 30%, var(--rule));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent), 0 6px 18px rgba(12, 26, 43, .08);
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s, border-color .22s; }
+.rs-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--tone), color-mix(in srgb, var(--tone) 20%, transparent)); }
+.rs-card[data-tone="sales"] { --tone: #22a06b; }
+.rs-card[data-tone="cost"] { --tone: #e8873a; }
+.rs-card[data-tone="ops"] { --tone: #8b6cf6; }
+.rs-card .rs-cd { color: color-mix(in srgb, var(--tone) 72%, var(--ink)); }
+.rs-card .rs-mini i.now { background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 55%, transparent), var(--tone)); }
+a.rs-card:hover { transform: translateY(-3px); border-color: var(--tone); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent), 0 14px 30px rgba(12, 26, 43, .16), 0 0 0 1px color-mix(in srgb, var(--tone) 40%, transparent); }
+/* 처음 보일 때 자라기 */
+.rs-itrack i, .rs-bar i, .rs-mini i { transform-origin: 0 50%; }
+.results.rs-wait :is(.rs-itrack i, .rs-bar i, .rs-mini i) { transform: scaleX(0); }
+.results.rs-wait :is(.rs-bar b, .rs-irow b) { opacity: 0; }
+@keyframes rsGrow { from { transform: scaleX(0); } to { transform: none; } }
+@keyframes rsFade { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+.results.rs-play .rs-itrack i { animation: rsGrow 1s cubic-bezier(.2,.8,.2,1) backwards; }
+.results.rs-play .rs-irow.hot .rs-itrack i { animation-delay: .18s; }
+.results.rs-play .rs-irow b { animation: rsFade .5s .7s cubic-bezier(.2,.8,.2,1) backwards; }
+.results.rs-play .rs-months li .rs-bar i { animation: rsGrow .9s cubic-bezier(.2,.8,.2,1) backwards; }
+.results.rs-play .rs-months li .rs-bar b { animation: rsFade .45s cubic-bezier(.2,.8,.2,1) backwards; }
+.results.rs-play .rs-months li:nth-child(1) .rs-bar.sales :is(i, b) { animation-delay: .35s; }
+.results.rs-play .rs-months li:nth-child(1) .rs-bar.contrib :is(i, b) { animation-delay: .45s; }
+.results.rs-play .rs-months li:nth-child(2) .rs-bar.sales :is(i, b) { animation-delay: .5s; }
+.results.rs-play .rs-months li:nth-child(2) .rs-bar.contrib :is(i, b) { animation-delay: .6s; }
+.results.rs-play .rs-months li:nth-child(3) .rs-bar.sales :is(i, b) { animation-delay: .65s; }
+.results.rs-play .rs-months li:nth-child(3) .rs-bar.contrib :is(i, b) { animation-delay: .75s; }
+.results.rs-play .rs-mini i { animation: rsGrow .9s .5s cubic-bezier(.2,.8,.2,1) backwards; }
+.results.rs-play .rs-mini i.now { animation-delay: .65s; }
+@media (prefers-reduced-motion: reduce) {
+  .results.rs-wait :is(.rs-itrack i, .rs-bar i, .rs-mini i) { transform: none; }
+  .results.rs-wait :is(.rs-bar b, .rs-irow b) { opacity: 1; }
+  .results :is(.rs-itrack i, .rs-bar i, .rs-mini i, .rs-bar b, .rs-irow b) { animation: none !important; }
+  a.rs-card:hover { transform: none; }
+}
+@media print {
+  .results :is(.rs-itrack i, .rs-bar i, .rs-mini i) { transform: none !important; animation: none !important; box-shadow: none !important; }
+  .results :is(.rs-bar b, .rs-irow b) { opacity: 1 !important; animation: none !important; }
 }

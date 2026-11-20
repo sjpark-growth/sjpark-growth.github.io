@@ -539,11 +539,11 @@
      본인 「우측 하단 설명이 너무 장황해 — 핵심 위주로」 → (같은 날 둘째) 「좌측 아래가 너무 비어 보여 — 블록 위 제목 하나 더, 블록 간격 · 글자 살짝 키우고,
      클릭 시 아래에 내용이 펼쳐지게」. how 줄(「<b>이름</b> — 설명」)의 이름만 칩으로 보이고, 고른 칩의 설명을 칩 아래 칸(.how-panel)에 펼친다.
      처음엔 첫 칩이 열려 있다(아래가 비어 보이지 않게) · 열린 칩을 다시 누르면 접힘. 칩마다 설명 원문(.tip-src)은 숨겨 두고 인쇄 때만 「이름 — 설명」 줄로(style.css) */
-  function howTips(list, pre) {
+  function howTips(list, pre, title = '구축 내용') {
     const items = list.map(x => { const m = String(x).match(/^<b>([\s\S]*?)<\/b>\s*—\s*([\s\S]+)$/); return m ? { t: m[1], d: m[2] } : null; });
     if (!items.length || items.some(x => !x)) return `<ul class="how">${list.map(x => `<li>${x}</li>`).join('')}</ul>`;
     return `<section class="how-box" aria-labelledby="${pre}-h">
-        <div class="how-head"><h3 class="how-h" id="${pre}-h">구축 내용</h3><span class="how-sub">항목을 누르면 아래에 설명이 펼쳐집니다</span></div>
+        <div class="how-head"><h3 class="how-h" id="${pre}-h">${title}</h3><span class="how-sub">항목을 누르면 아래에 설명이 펼쳐집니다</span></div>
         <ul class="how how-tips">${items.map((x, i) => `<li><button type="button" class="tip-chip" aria-expanded="${i === 0}" aria-controls="${pre}-panel">${x.t}</button><span class="tip-src" hidden>${x.d}</span></li>`).join('')}</ul>
         <div class="how-panel" id="${pre}-panel" role="region" aria-live="polite" aria-labelledby="${pre}-pt"><div class="how-pin"><b class="how-pt" id="${pre}-pt">${items[0].t}</b><p class="how-pd">${items[0].d}</p></div></div>
       </section>`;
@@ -1032,18 +1032,27 @@
   function renderMoreDash() {
     const host = $('#moreDash'), M = R.moreDash; if (!host || !M) return;
     $('#xdashTag').textContent = M.tag; $('#xdash-h').textContent = M.title; $('#xdashLede').innerHTML = M.lede;
-    host.innerHTML = M.items.map((d, i) => `
-      <article class="xd" id="xd-${d.id}" aria-labelledby="xdt-${d.id}">
-        ${d.demo ? `<a class="xd-shot" href="${d.demo}" target="_blank" rel="noopener" aria-label="${d.name} 데모 새 탭에서 열기"><img src="${d.shot}" alt="${d.name} 데모 첫 화면 — 숫자는 임의 값" width="800" height="450" loading="lazy" decoding="async"><span class="xd-open">${ICON.ext}데모 열기</span></a>`
+    /* (2026-11-20 셋째, 본인 「한 개 한 개 항목이 너무 휑 — 구성을 앞 대시보드와 같이, 시트의 역할 · 주요 기능도 우측 아래에(핵심 기능 혹은 활용)」)
+       03 대시보드 판과 같은 틀: 왼쪽 큰 데모 그림 | 오른쪽(.dash-side 모양 그대로) 이름 · 한 줄 역할 · 데모 단추 · 사실 칸 3개 · 활용 · 「핵심 기능」 칩(누르면 아래 펼침).
+       facts · uses · features 가 없는 항목은 예전처럼 how 줄로 */
+    host.innerHTML = M.items.map((d, i) => {
+      const feats = Array.isArray(d.features) && d.features.length ? d.features.map(f => `<b>${f.name}</b> — ${f.desc}`) : null;
+      const facts = Array.isArray(d.facts) && d.facts.length ? `<ul class="facts">${d.facts.map(f => `<li><span class="fv">${f.v}</span><span class="fk">${f.k}</span></li>`).join('')}</ul>` : '';
+      const uses = Array.isArray(d.uses) && d.uses.length ? `<div class="xd-uses"><h4 class="xd-uh">활용</h4><ul>${d.uses.map(u => `<li>${u}</li>`).join('')}</ul></div>` : '';
+      return `
+      <article class="xd${feats ? ' xd-full' : ''}" id="xd-${d.id}" aria-labelledby="xdt-${d.id}">
+        ${d.demo ? `<a class="xd-shot" href="${d.demo}" target="_blank" rel="noopener" aria-label="${d.name} 데모 새 탭에서 열기"><img src="${d.shot}" alt="${d.name} 데모 첫 화면 — 숫자는 임의 값" width="960" height="720" loading="lazy" decoding="async"><span class="xd-open">${ICON.ext}데모 열기</span></a>`
           : `<div class="xd-shot xd-none" role="img" aria-label="${d.name} — ${d.note}">${XD_ART}<span class="xd-badge">${d.note}</span></div>`}
-        <div class="xd-body">
+        <div class="xd-body${feats ? ' dash-side' : ''}">
           <div class="xd-meta"><span class="xd-n">${String(i + 1).padStart(2, '0')}</span><span>${d.kind}</span>${d.pill ? `<span class="pill">${d.pill}</span>` : ''}</div>
           <h3 id="xdt-${d.id}">${d.name}</h3>
           <p class="hook">${d.hook}</p>
-          <ul class="how">${d.how.map(x => `<li>${x}</li>`).join('')}</ul>
-          ${d.demo ? `<a class="btn" href="${d.demo}" target="_blank" rel="noopener">${ICON.ext}데모 열기</a>` : `<span class="xd-note">${d.note}</span>`}
+          ${feats ? `<div class="actions">${d.demo ? `<a class="btn" href="${d.demo}" target="_blank" rel="noopener">${ICON.ext}데모 열기 · 직접 조작</a>` : `<span class="xd-note">${d.note}</span>`}</div>
+          ${facts}${uses}${howTips(feats, 'xtip-' + d.id, '핵심 기능')}`
+          : `<ul class="how">${d.how.map(x => `<li>${x}</li>`).join('')}</ul>
+          ${d.demo ? `<a class="btn" href="${d.demo}" target="_blank" rel="noopener">${ICON.ext}데모 열기</a>` : `<span class="xd-note">${d.note}</span>`}`}
         </div>
-      </article>`).join('');
+      </article>`; }).join('');
   }
 
   /* ------------------------------------------------------------ 주요 성과 (2026-11-20 · data.js results)
@@ -1066,9 +1075,13 @@
     const L = S.lead, top = Math.max(...L.months.map(m => Math.max(m.s, m.c))) / 0.62;
     const bar = (v, cls, label) => `<span class="rs-bar ${cls}" style="--w:${(v / top * 100).toFixed(1)}%"><i></i><b>${label}</b></span>`;
     const num = t => parseFloat(String(t).replace(/[^\d.]/g, '')) || 0;
+    /* (2026-11-20 본인 「컬러 차이 · 입체감 · 애니메이션으로 더 눈에 들어오게, 공헌이익은 첫 화면 네 칸처럼 별표 · 글자 효과」)
+       숫자만인 값은 처음 보일 때 굴린다(rollNumbers — 「41억」 · 「최대 −95」처럼 글자가 섞인 값은 그대로). 공헌이익은 .shine(빛 지나감 + ✦) */
+    const pure = v => /^[+\-−]?[\d,]+(\.\d+)?$/.test(String(v).trim());
+    const rollv = (v, from, u, cls = 'rs-num') => pure(v) ? `<span class="${cls}" data-roll-from="${from}" data-roll-to="${v}">${v}<small>${u}</small></span>` : `${v}<small>${u}</small>`;
     $('#rsLead').innerHTML = `
       <p class="rs-label"><span>${L.label}</span><span class="rs-period">${L.period}</span></p>
-      <div class="rs-pair">${L.pair.map(p => `<div class="rs-big${p.hot ? ' hot' : ''}"><span class="rs-k">${p.k}</span><span class="rs-v">${p.v}<small>${p.u}</small></span></div>`).join('<span class="rs-plus" aria-hidden="true">&amp;</span>')}</div>
+      <div class="rs-pair">${L.pair.map(p => `<div class="rs-big${p.hot ? ' hot' : ''}"><span class="rs-k">${p.hot ? `<b class="rs-hotk">${p.k}</b>` : p.k}</span><span class="rs-v">${rollv(p.v, '0', p.u, p.hot ? 'shine rs-num' : 'rs-num')}</span></div>`).join('<span class="rs-plus" aria-hidden="true">&amp;</span>')}</div>
       ${indexBlock(L)}
       <p class="rs-sub">달마다 — 전년 같은 달 대비</p>
       <ul class="rs-months" aria-label="달마다 전년 같은 달 대비 증가율">${L.months.map(m => `
@@ -1081,10 +1094,18 @@
       const pair = c.from ? (() => { const a = num(c.from), b = num(c.v), m = Math.max(a, b) || 1;
         return `<span class="rs-mini" aria-hidden="true"><i class="was" style="--w:${(a / m * 100).toFixed(1)}%"></i><i class="now" style="--w:${(b / m * 100).toFixed(1)}%"></i></span>`; })() : '';
       const body = `<span class="rs-ck">${c.k}</span>
-        <span class="rs-cv">${c.from ? `<s>${c.from}</s><span aria-hidden="true"> → </span>` : ''}${c.v}<small>${c.u}</small></span>
+        <span class="rs-cv">${c.from ? `<s>${c.from}</s><span aria-hidden="true"> → </span>` : ''}${rollv(c.v, c.from ? String(c.from).replace(/[^\d.]/g, '') : '0', c.u)}</span>
         ${c.d ? `<span class="rs-cd">${c.d}</span>` : ''}${pair}${c.s ? `<span class="rs-cs">${c.s}</span>` : ''}`;
-      return `<li>${c.to ? `<a class="rs-card" href="${c.to}">${body}</a>` : `<div class="rs-card">${body}</div>`}</li>`;
+      const tone = c.tone ? ` data-tone="${c.tone}"` : '';
+      return `<li>${c.to ? `<a class="rs-card"${tone} href="${c.to}">${body}</a>` : `<div class="rs-card"${tone}>${body}</div>`}</li>`;
     }).join('');
+    // 처음 보일 때 — 막대가 0 에서 자라고(transform — 합성) 숫자가 굴러간다. 그 전에는 막대를 0 으로 접어 두어(rs-wait) 한 번 다 보였다 줄어드는 깜빡임이 없게
+    const sec = host.closest('.results') || host;
+    if (!reduceMotion) sec.classList.add('rs-wait');
+    onFirstView($('#rsLead'), () => {
+      sec.classList.remove('rs-wait'); sec.classList.add('rs-play');
+      setTimeout(() => { rollNumbers($('#rsLead')); rollNumbers($('#rsCards')); }, reduceMotion ? 0 : 280);
+    }, 0.2);
     $('#rsPrev').innerHTML = `<h3 class="rs-ph">이전 직장</h3><ul>${S.prev.map(p => `<li><b>${p.co}</b><span class="rs-when">${p.when}</span><span class="rs-pt">${p.t}</span></li>`).join('')}</ul>`;
   }
 
