@@ -28,6 +28,9 @@ html.tm-flow:not(.tm-wide) .tm-inner { padding-bottom: 6px; }
 .tm-end.last .tm-end-a svg { animation-name: pgNudgeUp; }
 .tm-end-tip { margin: 0; font-size: 12px; line-height: 1.5; color: var(--ink-3); text-wrap: balance; }
 html.tm-wide .tm-end { display: none; }
+/* 대시보드 판 오른쪽 — 설명을 칩으로 줄인 뒤(2026-11-20) 넓은 화면에서 아래가 비어 보이지 않게 칩을 3칸 격자의 큰 단추로 */
+html.tm-wide .dash-side .how.how-tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+html.tm-wide .dash-side .tip-chip { justify-content: center; width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 12px; text-align: center; font-size: 13px; }
 /* 주요 성과 — 넓은 화면 덱에서 카드 · 막대 상자를 장 사이에서 자르지 않는다 */
 html.tm-wide .tm-inner :is(.rs-lead, .rs-cards > li, .rs-prev) { break-inside: avoid; }
 

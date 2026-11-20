@@ -51,7 +51,7 @@
       sub: () => [['매출 · 공헌이익', '#rsLead'], ['현 직장 핵심 숫자', '#rsCards'], ['이전 직장', '#rsPrev']] },
     { id: 'dash', label: '대시보드', en: 'Dashboard', desc: '직접 만든 운영 도구 — 화면의 숫자는 모두 임의 값', secs: ['#dash'],
       sub: () => [['대시보드 데모', '.dash-frame'], ['구축 내용', '.dash-side']] },
-    { id: 'xdash', label: '기타 대시보드', en: 'More dashboards', desc: '브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커 — 대시보드 옆에 붙인 운영 도구', secs: ['#xdash'],
+    { id: 'xdash', label: '기타 대시보드', en: 'More dashboards', desc: '브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커 — 데이터 고도화를 위해 붙인 툴 4개', secs: ['#xdash'],
       sub: () => $$('#moreDash .xd').map(c => [txt($('h3', c)), c]) },
     // (2026-11-20) 「주요 성과」 탭과 헷갈리지 않게 「성과」 → 「성과 추이」
     { id: 'perf', label: '성과 추이', en: 'Performance', desc: '16개월, 네 단계로 바꾼 숫자', secs: ['#perf'],

@@ -535,6 +535,45 @@
     if (X && ex) { ex.hidden = false; ex.innerHTML = `<h3>${X.title}</h3><ul>${X.items.map(([e, k]) => `<li><span aria-hidden="true">${e}</span>${k}</li>`).join('')}${X.tail ? `<li class="tail">${X.tail}</li>` : ''}</ul>`; }
   }
 
+  /* ------------------------------------------------------------ 설명 칩 + 마우스를 올리면(누르면) 설명 (2026-11-20)
+     본인 「우측 하단 설명이 너무 장황해 — 핵심 위주로 줄이고 마우스 오버했을 때 주요 설명이 나오게」.
+     how 줄(「<b>이름</b> — 설명」)을 이름만 칩으로 보이고, 설명은 숨긴 원문(.tip-src — 읽기 프로그램은 aria-describedby 로 읽음)을
+     body 에 하나 둔 떠 있는 상자(.tipbox)에 띄운다 — 판 · 칸의 overflow 에 잘리지 않게(넓은 화면 덱의 대시보드 오른쪽 칸은 스스로 스크롤된다).
+     마우스 = 올리면 보이고 떼면 닫힘, 키보드 = 초점이 가면, 손가락 = 누르면 보이고 다른 곳을 누르면 닫힘. 인쇄는 예전처럼 「이름 — 설명」 줄로(style.css) */
+  function howTips(list, pre) {
+    return `<p class="how-hint">항목에 마우스를 올리거나 누르면 설명이 나옵니다</p><ul class="how how-tips">${list.map((x, i) => {
+      const m = String(x).match(/^<b>([\s\S]*?)<\/b>\s*—\s*([\s\S]+)$/);
+      if (!m) return `<li>${x}</li>`;
+      return `<li><button type="button" class="tip-chip" aria-describedby="${pre}-${i}" aria-expanded="false">${m[1]}</button><span class="tip-src" id="${pre}-${i}" hidden>${m[2]}</span></li>`;
+    }).join('')}</ul>`;
+  }
+  (function wireTips() {
+    const box = document.createElement('div'); box.className = 'tipbox'; box.setAttribute('aria-hidden', 'true'); box.hidden = true;
+    document.body.appendChild(box);
+    let cur = null;
+    const chipOf = e => (e.target && e.target.closest ? e.target.closest('.tip-chip') : null);
+    function show(b) {
+      const src = document.getElementById(b.getAttribute('aria-describedby')); if (!src) return;
+      if (cur && cur !== b) cur.setAttribute('aria-expanded', 'false');
+      cur = b; box.innerHTML = src.innerHTML; box.hidden = false;
+      const r = b.getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight;
+      let y = r.top - bh - 10; if (y < 8) y = r.bottom + 10;
+      box.style.left = Math.round(Math.min(Math.max(8, r.left + r.width / 2 - bw / 2), innerWidth - bw - 8)) + 'px';
+      box.style.top = Math.round(Math.min(y, innerHeight - bh - 8)) + 'px';
+      requestAnimationFrame(() => box.classList.add('on'));
+      b.setAttribute('aria-expanded', 'true');
+    }
+    function hide() { if (!cur) return; box.classList.remove('on'); box.hidden = true; cur.setAttribute('aria-expanded', 'false'); cur = null; }
+    document.addEventListener('pointerover', e => { const b = chipOf(e); if (b && e.pointerType === 'mouse') show(b); });
+    document.addEventListener('pointerout', e => { const b = chipOf(e); if (b && e.pointerType === 'mouse' && !(e.relatedTarget && b.contains(e.relatedTarget))) hide(); });
+    document.addEventListener('focusin', e => { const b = chipOf(e); if (b && b.matches(':focus-visible')) show(b); });
+    document.addEventListener('focusout', e => { if (chipOf(e)) hide(); });
+    document.addEventListener('click', e => { const b = chipOf(e); if (b) show(b); else if (cur) hide(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+    addEventListener('scroll', hide, true); addEventListener('resize', hide);
+    document.addEventListener('tm:nav', hide); addEventListener('beforeprint', hide);
+  })();
+
   /* ------------------------------------------------------------ 대시보드 쇼케이스 */
   function renderShowcase() {
     const p = R.projects.find(x => x.featured); if (!p) return;
@@ -560,7 +599,7 @@
       </div>
       <div class="actions"><button class="btn" type="button" data-big>${ICON.expand}크게 보기 · 직접 조작</button><a class="btn ghost" href="${p.demo}" target="_blank" rel="noopener">${ICON.ext}새 창</a>${(Array.isArray(p.demo2) ? p.demo2 : p.demo2 ? [p.demo2] : []).map(d => `<a class="btn ghost" href="${d.href}" target="_blank" rel="noopener">${ICON.ext}${d.label}</a>`).join('')}</div>
       <ul class="facts">${facts}</ul>
-      <ul class="how">${p.how.map(x => `<li>${x}</li>`).join('')}</ul>`;
+      ${howTips(p.how, 'dtip')}`;
 
     const view = $('.dash-view', frame), ifr = $('iframe', view), shield = $('.dash-shield', view);
     const bar = $('.dash-bar', frame), cap = $('.cap', bar), pbtn = $('.pbtn', bar), fil = $('.fil', bar), time = $('.time', bar), track = $('.bar', bar);
@@ -969,7 +1008,7 @@
   }
 
   /* ------------------------------------------------------------ 기타 대시보드 (2026-11-16)
-     주제별 보기(topics.html)에만 있는 절(#xdash) — 본판 index.html 에는 없어서 그리지 않는다. 내용 data.js moreDash.
+     절(#xdash)이 있는 틀에서만 그린다 — 2026-11-20 부터 본판 index.html 에도 있다(인쇄 제외). 내용 data.js moreDash.
      데모가 없는 판매가 트래커는 숫자 없는 그림(가격 선 · 변동 표시) */
   const XD_ART = `<svg viewBox="0 0 320 180" fill="none" aria-hidden="true">
     <rect x="1" y="1" width="318" height="178" rx="12" fill="var(--surface)" stroke="var(--rule-2)"/>
@@ -1001,6 +1040,16 @@
   /* ------------------------------------------------------------ 주요 성과 (2026-11-20 · data.js results)
      현 직장 중심 — 왼쪽(넓은 화면) = 담당 외부몰 매출 · 공헌이익 전년 같은 달 대비(두 숫자 + 달마다 막대 두 줄),
      오른쪽 = 현 직장 핵심 숫자 카드(전 → 후 막대), 아래 = 이전 직장 두 줄(보조). 막대는 증가율 · 전후 값만 — 금액 축 없음 */
+  /* (2026-11-20 본인 「이익 개선 부분이 너무 휑해 — 채워줘」) 같은 기간 지수 — 25년 같은 석 달 = 100 으로 두고 매출 · 공헌이익이 어디까지 왔는지 막대로.
+     숫자는 lead.pair 의 증가율에서 바로 계산(100 + 증가율) — 새 숫자 아님. 점선 = 100(작년) */
+  function indexBlock(L) {
+    if (!L.indexLabel) return '';
+    const rows = L.pair.map(p => ({ k: p.k, v: 100 + parseFloat(p.v), hot: p.hot }));
+    const top = Math.max(...rows.map(r => r.v)) / 0.8, w = v => (v / top * 100).toFixed(1);
+    return `<div class="rs-index" style="--b:${w(100)}%"><p class="rs-sub">${L.indexLabel}</p>${rows.map(r => `
+      <div class="rs-irow${r.hot ? ' hot' : ''}"><span class="rs-ik">${r.k}</span><span class="rs-itrack"><i style="--w:${w(r.v)}%"></i></span><b>${r.v.toFixed(1)}</b></div>`).join('')}
+      <p class="rs-ibase" aria-hidden="true"><span></span><span class="rs-ibt"><span>작년 = 100</span></span></p></div>`;
+  }
   function renderResults() {
     const host = $('#results'), S = R.results; if (!host || !S) return;
     $('#resultsTag').textContent = S.tag; $('#results-h').textContent = S.title; $('#resultsLede').innerHTML = S.lede;
@@ -1011,10 +1060,13 @@
     $('#rsLead').innerHTML = `
       <p class="rs-label"><span>${L.label}</span><span class="rs-period">${L.period}</span></p>
       <div class="rs-pair">${L.pair.map(p => `<div class="rs-big${p.hot ? ' hot' : ''}"><span class="rs-k">${p.k}</span><span class="rs-v">${p.v}<small>${p.u}</small></span></div>`).join('<span class="rs-plus" aria-hidden="true">&amp;</span>')}</div>
+      ${indexBlock(L)}
+      <p class="rs-sub">달마다 — 전년 같은 달 대비</p>
       <ul class="rs-months" aria-label="달마다 전년 같은 달 대비 증가율">${L.months.map(m => `
         <li><span class="rs-m">${m.m}</span><span class="rs-bars">${bar(m.s, 'sales', `매출 +${m.s.toFixed(1)}%`)}${bar(m.c, 'contrib', `공헌이익 +${m.c.toFixed(1)}%`)}</span></li>`).join('')}
       </ul>
       <p class="rs-legend" aria-hidden="true"><span class="sales">매출</span><span class="contrib">공헌이익</span></p>
+      ${Array.isArray(L.read) && L.read.length ? `<div class="rs-read"><p class="rs-sub">이렇게 읽어요</p><ul>${L.read.map(t => `<li>${t}</li>`).join('')}</ul></div>` : ''}
       <p class="rs-note">${L.note}</p>`;
     $('#rsCards').innerHTML = S.cards.map(c => {
       const pair = c.from ? (() => { const a = num(c.from), b = num(c.v), m = Math.max(a, b) || 1;
