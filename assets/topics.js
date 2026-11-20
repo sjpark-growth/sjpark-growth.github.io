@@ -474,7 +474,7 @@
       const lw = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest('svg, script, style, textarea, .player .stage, [data-roll-to]') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
       for (let t; (t = lw.nextNode());) {
         const s = t.nodeValue; if (s.indexOf(' ') < 0) continue;
-        const v = s.replace(/ (?=→)/g, NB).replace(/→ /g, '→' + NB).replace(/ (?=\([+\-−]?\d)/g, NB);
+        const v = s.replace(/ (?=→)/g, NB).replace(/→ /g, '→' + NB).replace(/(\S) (?=\([+\-−]?\d)/g, '$1' + NB);
         if (v !== s) { glued.set(t, s); t.nodeValue = v; }
       }
       return;
@@ -487,7 +487,7 @@
       const v = s
         .replace(/ (?=[·—→÷×)\]」』])/g, NB)              // 구분점 · 줄표 · 화살표 · 닫는 괄호 앞
         .replace(/([→÷×(「『]) /g, '$1' + NB)              // 화살표 · 여는 괄호 뒤
-        .replace(/ (?=\([+\-−]?\d)/g, NB)                  // 「1,893% (+468%p)」
+        .replace(/(\S) (?=\([+\-−]?\d)/g, '$1' + NB)        // 「1,893% (+468%p)」 — 같은 글 덩어리 안에서만(굵은 글씨 바로 뒤 「 (+33.1%)」까지 붙이면 닫는 괄호가 줄 머리로 갔다 · 11-20 모바일 점검)
         .replace(/([가-힣A-Za-z%]) (?=[+\-−]?\d)/g, '$1' + NB);   // 낱말 + 숫자
       if (v !== s) { glued.set(t, s); t.nodeValue = v; }
     }

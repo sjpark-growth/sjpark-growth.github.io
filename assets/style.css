@@ -20,7 +20,7 @@
   --accent:     #2743d4;
   --accent-ink: #1c34b0;
   --accent-soft:#e6eafc;
-  --before:     #a3aebd;      /* 입사 전 수치 */
+  --before:     #8592a5;      /* 입사 전 수치 — (2026-11-20 모바일 점검) #a3aebd 는 흰 바탕 대비 2.25:1 이라 3.1:1 로 진하게 */
 
   /* 차트 시리즈 — dataviz 검증 팔레트 1~4번 (색 = 채널 고정) */
   --c-1p:   #2a78d6;
@@ -2274,6 +2274,15 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
   .tip-chip::after { content: " — "; font-weight: 400; }
   .how.how-tips .tip-src[hidden] { display: inline !important; }
   #dash .dash-side > .how-box { grid-column: 1 / -1; margin-top: 6pt; }   /* 예전 .how 자리(인쇄 2단 격자의 전체 폭) */
+}
+/* (2026-11-20 모바일 점검) ① 그로스 카드 — ≤1000px 의 그림 칸 38% 규칙이 휴대폰 세로 배치에도 남아 카드 아래 줄이 테두리에 붙어 잘렸다
+   ② 대시보드 사실 띠 — 420px 이하에서 세 칸이 좁아 「외부몰 15 · / 자사몰 10개 / …」 네 줄로 꺾여 한 줄씩 쌓는다 */
+@media screen and (max-width: 600px) { .gcard .gill { flex: none; } }
+@media (max-width: 420px) {
+  .dash-side .facts { grid-template-columns: minmax(0, 1fr) !important; }
+  .dash-side .facts li { display: grid; grid-template-columns: 5.2em minmax(0, 1fr); column-gap: 10px; align-items: baseline; }
+  .dash-side .facts li:first-child { border-radius: 9px 9px 0 0; }
+  .dash-side .facts li:last-child { border-radius: 0 0 9px 9px; }
 }
 /* 대시보드 한 화면 배치(861px 이상 · 스크롤판)의 「설명 칸 스스로 스크롤 · 아래 흐림」은 칩 목록에는 쓰지 않는다 — 펼침 칸이 남은 높이를 채운다 */
 @media screen and (min-width: 861px) {

@@ -182,6 +182,33 @@ html.tm-wide .mast .tools .pg-help:hover { color: var(--accent-ink); }
   .pg-coach, .tm-pull, .tm-pull-r .fg { transition: none !important; }
   .pg-ic *, .pg-pulse, .pg-eb i, .tm-end-a svg { animation: none !important; }
 }
+/* ---------- (2026-11-20 본인 「모바일에서도 화면 최적화 전체적으로」 — 조사 에이전트 측정값 기준) */
+/* 휴대폰(≤760px) 상단 바 한 줄 줄이기 — 「스크롤로 보기」 글자만 남기고 다른 도구는 아이콘만(135 → 109px, 사파리 보이는 높이에서 핵심 성과 둘째 줄 48 → 67%) */
+@media (max-width: 760px) {
+  html.tabmode .mast .shell { row-gap: 6px; }
+  html.tabmode .mast .tools { gap: 4px; }
+  html.tabmode .mast .tools .iconbtn:not(#enBtn):not(#modeBtn) { font-size: 0; gap: 0; padding: 0 10px; }
+  html.tabmode .mast .tools .iconbtn:not(#modeBtn) span { display: none; }
+}
+/* 손가락 화면 — 누르는 높이(상단 도구 · 주제 탭 · 아래 막대 · 영상 재생 · 링크)를 40~44px 로. 아래 막대가 커진 만큼 차오르는 알약도 올림 */
+@media (pointer: coarse) {
+  html.tabmode .mast .tools .iconbtn { height: 40px; min-width: 40px; justify-content: center; }
+  .mast .tm-nav .tm-tab { min-height: 40px; align-items: center; }
+  .tm-dock button { height: 44px; }
+  .player .pbtn { width: 40px; height: 40px; }
+  .mb-dots button { height: 40px; }
+  .pillar .ev a, .job-main .see a { min-height: 32px; }
+  #footLine a { display: inline-block; padding-block: 11px; margin-block: -11px; }
+  .tm-pull { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}
+/* 가로로 든 휴대폰(높이 500px 이하) — 띠배너 · 점 · 손짓 안내를 빼고 아래 막대를 낮춰 보이는 높이 227 → 281px */
+@media (orientation: landscape) and (max-height: 500px) {
+  html.tabmode:not(.tm-wide) .ticker { display: none; }
+  html.tabmode:not(.tm-wide) .tm-dock { bottom: calc(6px + env(safe-area-inset-bottom, 0px)); padding: 3px; }
+  html.tabmode:not(.tm-wide) .tm-dock button { height: 34px; }
+  html.tabmode:not(.tm-wide) .tm-dots, html.tabmode:not(.tm-wide) .tm-hint { display: none; }
+}
+
 /* 인쇄(전체 · 요약 PDF) — 안내 · 띠 · 알약 · 「?」는 빼고, 본판이 된 뒤에도 PDF 는 예전 스크롤판과 같게(기타 대시보드 절 #xdash 는 화면 전용 · 판 아래 여백 0) */
 @media print {
   .tm-end, .tm-pull, .pg-coach, .pg-help, #xdash, #results { display: none !important; }
