@@ -2237,30 +2237,46 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
 .rs-read b, .rs-read strong { color: var(--ink); }
 @media (max-width: 860px) { .rs-lead { align-self: auto; } }
 
-/* ============================================================ 설명 칩 + 마우스를 올리면 설명 (2026-11-20 · app.js howTips · wireTips)
-   본인 「광고 채널 25개 — 우측 하단 설명이 너무 장황해. 핵심 위주로 줄이고 마우스 오버했을 때 주요 설명이 나오게」.
-   화면: 짧은 이름 칩만, 설명은 body 의 떠 있는 상자(.tipbox). 인쇄: 예전처럼 「이름 — 설명」 줄 */
-.how-hint { margin: 2px 0 8px; font-size: 12px; color: var(--ink-3); }
-@media (hover: none) { .how-hint { font-size: 0; } .how-hint::after { content: "항목을 누르면 설명이 나옵니다"; font-size: 12px; } }
+/* ============================================================ 구축 내용 — 칩을 누르면 아래에 설명이 펼쳐짐 (2026-11-20 · app.js howTips)
+   본인 「우측 하단 설명이 너무 장황해 — 핵심 위주로」 → 「좌측 아래가 너무 비어 보여 — 블록 위 제목 하나 더, 블록별 간격 · 텍스트 살짝 키우고, 클릭 시 아래에 내용이 펼쳐지게」.
+   화면: 제목(구축 내용) · 칩(짧은 이름) · 그 아래 펼침 칸(고른 칩의 설명 — 처음엔 첫 칩), 펼침 칸이 남은 높이를 채운다. 인쇄: 예전처럼 「이름 — 설명」 줄 */
+.how-box { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.how-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.how-h { margin: 0; font-size: 15.5px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
+.how-sub { font-size: 12.5px; color: var(--ink-3); }
 @media screen {
-  .how.how-tips { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; margin: 0; padding: 0; list-style: none; }   /* 칸이 남아도 줄을 벌리지 않게 */
+  .how.how-tips { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; margin: 0; padding: 0; list-style: none; }   /* 칸이 남아도 줄을 벌리지 않게 */
   .how.how-tips > li { margin: 0; padding: 0; border: 0; background: none; }
   .how.how-tips > li::before, .how.how-tips > li::marker { content: none; }
-  .tip-chip { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; min-height: 32px; padding: 5px 12px; border: 1px solid var(--rule-2); border-radius: 99px;
-    background: var(--surface); color: var(--ink-2); font-size: 12.5px; font-weight: 650; line-height: 1.3; cursor: help; transition: border-color .15s, color .15s, background-color .15s; }
-  .tip-chip:hover, .tip-chip[aria-expanded="true"] { border-color: var(--accent); color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
+  .tip-chip { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; min-height: 38px; padding: 7px 14px; border: 1px solid var(--rule-2); border-radius: 99px;
+    background: var(--surface); color: var(--ink-2); font-size: 14px; font-weight: 650; line-height: 1.3; cursor: pointer; transition: border-color .15s, color .15s, background-color .15s, box-shadow .15s; }
+  .tip-chip:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .tip-chip[aria-expanded="true"] { border-color: var(--accent); color: var(--accent-ink); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); box-shadow: 0 0 0 1px var(--accent) inset; }
   .tip-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .tip-chip b, .tip-chip strong { font-weight: inherit; color: inherit; }
+  /* 펼침 칸 — 접힘은 높이 0(grid 0fr), 펼침은 내용 높이 이상(남은 높이를 채움 — 대시보드 한 화면 칸에서는 flex) */
+  .how-panel { display: grid; grid-template-rows: 1fr; flex: 1 1 auto; min-height: 0; border: 1px solid var(--rule); border-radius: 14px; background: var(--sunk);
+    transition: grid-template-rows .32s cubic-bezier(.2,.8,.2,1), opacity .25s, border-color .25s; }
+  .how-panel.closed { grid-template-rows: 0fr; flex: 0 0 auto; opacity: 0; border-color: transparent; }
+  .how-pin { min-height: 0; overflow: hidden; padding: 14px 16px; }
+  .how-panel.closed .how-pin { padding-block: 0; }
+  .how-pt { display: block; margin-bottom: 6px; font-size: 15px; font-weight: 800; color: var(--accent-ink); }
+  .how-pd { margin: 0; font-size: 14.5px; line-height: 1.7; color: var(--ink-2); text-wrap: pretty; }
+  @keyframes howIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .how-pin.swap > * { animation: howIn .32s cubic-bezier(.2,.8,.2,1) backwards; }
+  .how-pin.swap > .how-pd { animation-delay: .04s; }
 }
-.tipbox { position: fixed; z-index: 95; left: 0; top: 0; box-sizing: border-box; max-width: min(340px, calc(100vw - 16px)); padding: 10px 13px; border-radius: 11px;
-  background: var(--ink); color: var(--paper); font-size: 13px; line-height: 1.55; box-shadow: 0 14px 34px rgba(12, 26, 43, .28); pointer-events: none;
-  opacity: 0; transform: translateY(4px); transition: opacity .14s, transform .14s; }
-.tipbox.on { opacity: 1; transform: none; }
-.tipbox b, .tipbox strong { color: inherit; }
-@media (prefers-reduced-motion: reduce) { .tipbox { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .how-panel, .how-pin.swap > * { transition: none; animation: none; } }
 @media print {
-  .tipbox, .how-hint { display: none !important; }
+  .how-head .how-sub, .how-panel { display: none !important; }
+  .how-head { padding-top: 0; border-top: 0; }
   .tip-chip { all: unset; font-weight: 700; }
   .tip-chip::after { content: " — "; font-weight: 400; }
   .how.how-tips .tip-src[hidden] { display: inline !important; }
+  #dash .dash-side > .how-box { grid-column: 1 / -1; margin-top: 6pt; }   /* 예전 .how 자리(인쇄 2단 격자의 전체 폭) */
+}
+/* 대시보드 한 화면 배치(861px 이상 · 스크롤판)의 「설명 칸 스스로 스크롤 · 아래 흐림」은 칩 목록에는 쓰지 않는다 — 펼침 칸이 남은 높이를 채운다 */
+@media screen and (min-width: 861px) {
+  #dash .dash-side .how-box { flex: 1 1 auto; }
+  #dash .dash-side .how.how-tips { flex: none; min-height: 0; overflow: visible; padding: 0; -webkit-mask-image: none; mask-image: none; }
 }

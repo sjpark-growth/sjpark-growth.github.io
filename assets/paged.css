@@ -29,8 +29,18 @@ html.tm-flow:not(.tm-wide) .tm-inner { padding-bottom: 6px; }
 .tm-end-tip { margin: 0; font-size: 12px; line-height: 1.5; color: var(--ink-3); text-wrap: balance; }
 html.tm-wide .tm-end { display: none; }
 /* 대시보드 판 오른쪽 — 설명을 칩으로 줄인 뒤(2026-11-20) 넓은 화면에서 아래가 비어 보이지 않게 칩을 3칸 격자의 큰 단추로 */
+/* (같은 날 둘째) 블록 간격 · 글자 살짝 키움 — 칸 사이 16px · 요약 16px · 칩 14px · 높이 46px */
+html.tm-wide #dash .dash-side { gap: clamp(10px, 1.7vh, 16px); }
+html.tm-wide #dash .dash-side .hook { font-size: clamp(14px, 2.2vh, 16px); line-height: 1.6; }
+html.tm-wide #dash .dash-side .facts .fk { font-size: 12px; }
 html.tm-wide .dash-side .how.how-tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-html.tm-wide .dash-side .tip-chip { justify-content: center; width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 12px; text-align: center; font-size: 13px; }
+html.tm-wide .dash-side .tip-chip { justify-content: center; width: 100%; min-height: clamp(40px, 5.6vh, 46px); padding: 8px 10px; border-radius: 12px; text-align: center; font-size: 14px; }
+/* 핵심 요약 — 마지막 주제(원칙 · 연락처 사이)로 옮긴 뒤(2026-11-20 본인 「최하단 원칙 / 연락처 부근으로 가공해서」) 넓은 화면 한 장이 비어 보이지 않게 글자 · 칩을 키움 */
+html.tm-wide #summary .lede { font-size: clamp(17px, 2.6vh, 20px); line-height: 1.75; }
+html.tm-wide #summary .nowbox { font-size: 15px; row-gap: 10px; }
+html.tm-wide #summary .more h2 { font-size: 17px; margin-bottom: 12px; }
+html.tm-wide #summary .more li { font-size: 14.5px; padding: 9px 15px; }
+html.tm-wide #summary .more ul { gap: 10px; }
 /* 주요 성과 — 넓은 화면 덱에서 카드 · 막대 상자를 장 사이에서 자르지 않는다 */
 html.tm-wide .tm-inner :is(.rs-lead, .rs-cards > li, .rs-prev) { break-inside: avoid; }
 

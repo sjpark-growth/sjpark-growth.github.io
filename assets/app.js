@@ -535,44 +535,30 @@
     if (X && ex) { ex.hidden = false; ex.innerHTML = `<h3>${X.title}</h3><ul>${X.items.map(([e, k]) => `<li><span aria-hidden="true">${e}</span>${k}</li>`).join('')}${X.tail ? `<li class="tail">${X.tail}</li>` : ''}</ul>`; }
   }
 
-  /* ------------------------------------------------------------ 설명 칩 + 마우스를 올리면(누르면) 설명 (2026-11-20)
-     본인 「우측 하단 설명이 너무 장황해 — 핵심 위주로 줄이고 마우스 오버했을 때 주요 설명이 나오게」.
-     how 줄(「<b>이름</b> — 설명」)을 이름만 칩으로 보이고, 설명은 숨긴 원문(.tip-src — 읽기 프로그램은 aria-describedby 로 읽음)을
-     body 에 하나 둔 떠 있는 상자(.tipbox)에 띄운다 — 판 · 칸의 overflow 에 잘리지 않게(넓은 화면 덱의 대시보드 오른쪽 칸은 스스로 스크롤된다).
-     마우스 = 올리면 보이고 떼면 닫힘, 키보드 = 초점이 가면, 손가락 = 누르면 보이고 다른 곳을 누르면 닫힘. 인쇄는 예전처럼 「이름 — 설명」 줄로(style.css) */
+  /* ------------------------------------------------------------ 구축 내용 — 칩을 누르면 아래에 설명이 펼쳐짐 (2026-11-20)
+     본인 「우측 하단 설명이 너무 장황해 — 핵심 위주로」 → (같은 날 둘째) 「좌측 아래가 너무 비어 보여 — 블록 위 제목 하나 더, 블록 간격 · 글자 살짝 키우고,
+     클릭 시 아래에 내용이 펼쳐지게」. how 줄(「<b>이름</b> — 설명」)의 이름만 칩으로 보이고, 고른 칩의 설명을 칩 아래 칸(.how-panel)에 펼친다.
+     처음엔 첫 칩이 열려 있다(아래가 비어 보이지 않게) · 열린 칩을 다시 누르면 접힘. 칩마다 설명 원문(.tip-src)은 숨겨 두고 인쇄 때만 「이름 — 설명」 줄로(style.css) */
   function howTips(list, pre) {
-    return `<p class="how-hint">항목에 마우스를 올리거나 누르면 설명이 나옵니다</p><ul class="how how-tips">${list.map((x, i) => {
-      const m = String(x).match(/^<b>([\s\S]*?)<\/b>\s*—\s*([\s\S]+)$/);
-      if (!m) return `<li>${x}</li>`;
-      return `<li><button type="button" class="tip-chip" aria-describedby="${pre}-${i}" aria-expanded="false">${m[1]}</button><span class="tip-src" id="${pre}-${i}" hidden>${m[2]}</span></li>`;
-    }).join('')}</ul>`;
+    const items = list.map(x => { const m = String(x).match(/^<b>([\s\S]*?)<\/b>\s*—\s*([\s\S]+)$/); return m ? { t: m[1], d: m[2] } : null; });
+    if (!items.length || items.some(x => !x)) return `<ul class="how">${list.map(x => `<li>${x}</li>`).join('')}</ul>`;
+    return `<section class="how-box" aria-labelledby="${pre}-h">
+        <div class="how-head"><h3 class="how-h" id="${pre}-h">구축 내용</h3><span class="how-sub">항목을 누르면 아래에 설명이 펼쳐집니다</span></div>
+        <ul class="how how-tips">${items.map((x, i) => `<li><button type="button" class="tip-chip" aria-expanded="${i === 0}" aria-controls="${pre}-panel">${x.t}</button><span class="tip-src" hidden>${x.d}</span></li>`).join('')}</ul>
+        <div class="how-panel" id="${pre}-panel" role="region" aria-live="polite" aria-labelledby="${pre}-pt"><div class="how-pin"><b class="how-pt" id="${pre}-pt">${items[0].t}</b><p class="how-pd">${items[0].d}</p></div></div>
+      </section>`;
   }
-  (function wireTips() {
-    const box = document.createElement('div'); box.className = 'tipbox'; box.setAttribute('aria-hidden', 'true'); box.hidden = true;
-    document.body.appendChild(box);
-    let cur = null;
-    const chipOf = e => (e.target && e.target.closest ? e.target.closest('.tip-chip') : null);
-    function show(b) {
-      const src = document.getElementById(b.getAttribute('aria-describedby')); if (!src) return;
-      if (cur && cur !== b) cur.setAttribute('aria-expanded', 'false');
-      cur = b; box.innerHTML = src.innerHTML; box.hidden = false;
-      const r = b.getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight;
-      let y = r.top - bh - 10; if (y < 8) y = r.bottom + 10;
-      box.style.left = Math.round(Math.min(Math.max(8, r.left + r.width / 2 - bw / 2), innerWidth - bw - 8)) + 'px';
-      box.style.top = Math.round(Math.min(y, innerHeight - bh - 8)) + 'px';
-      requestAnimationFrame(() => box.classList.add('on'));
-      b.setAttribute('aria-expanded', 'true');
-    }
-    function hide() { if (!cur) return; box.classList.remove('on'); box.hidden = true; cur.setAttribute('aria-expanded', 'false'); cur = null; }
-    document.addEventListener('pointerover', e => { const b = chipOf(e); if (b && e.pointerType === 'mouse') show(b); });
-    document.addEventListener('pointerout', e => { const b = chipOf(e); if (b && e.pointerType === 'mouse' && !(e.relatedTarget && b.contains(e.relatedTarget))) hide(); });
-    document.addEventListener('focusin', e => { const b = chipOf(e); if (b && b.matches(':focus-visible')) show(b); });
-    document.addEventListener('focusout', e => { if (chipOf(e)) hide(); });
-    document.addEventListener('click', e => { const b = chipOf(e); if (b) show(b); else if (cur) hide(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
-    addEventListener('scroll', hide, true); addEventListener('resize', hide);
-    document.addEventListener('tm:nav', hide); addEventListener('beforeprint', hide);
-  })();
+  document.addEventListener('click', e => {
+    const b = e.target && e.target.closest ? e.target.closest('.how-box .tip-chip') : null; if (!b) return;
+    const box = b.closest('.how-box'), panel = $('.how-panel', box), pin = $('.how-pin', panel), src = b.nextElementSibling;
+    const wasOpen = b.getAttribute('aria-expanded') === 'true';
+    $$('.tip-chip', box).forEach(c => c.setAttribute('aria-expanded', 'false'));
+    if (wasOpen) { panel.classList.add('closed'); return; }   // 열린 칩을 다시 누르면 접힘
+    b.setAttribute('aria-expanded', 'true');
+    $('.how-pt', panel).innerHTML = b.innerHTML; $('.how-pd', panel).innerHTML = src ? src.innerHTML : '';
+    panel.classList.remove('closed');
+    pin.classList.remove('swap'); void pin.offsetWidth; pin.classList.add('swap');   // 바뀐 설명이 살짝 떠오르며 들어옴
+  });
 
   /* ------------------------------------------------------------ 대시보드 쇼케이스 */
   function renderShowcase() {

@@ -44,8 +44,10 @@
 
   /* 주제 — 판에 넣을 절(secs)과 항목(sub: [이름, 대상]) */
   const TOPICS0 = [
-    { id: 'intro', label: '소개', en: 'Intro', desc: '첫인상 — 성과 리포트 · 핵심 성과 · 핵심 요약', secs: ['.hero', '#summary'],
-      sub: () => [['성과 리포트', '.mboard-wrap'], ['핵심 성과', '.hkey'], ['핵심 요약', '#summary .sum-l'], ['그 밖의 개선', '#summary .more']] },
+    // (2026-11-20 본인 「핵심 요약이 없어지거나 최하단 원칙 / 연락처 부근으로 가공해서 들어가도 될 것 같아」) 본판(FLOW)은 핵심 요약을 마지막 주제로 —
+    // 장 넘김에서만 옮기고 스크롤판 · 인쇄 순서는 그대로(PDF 16 · 7장). 옛 시안(topics · toggle)은 예전대로 소개 안에
+    { id: 'intro', label: '소개', en: 'Intro', desc: FLOW ? '첫인상 — 성과 리포트 · 핵심 성과' : '첫인상 — 성과 리포트 · 핵심 성과 · 핵심 요약', secs: FLOW ? ['.hero'] : ['.hero', '#summary'],
+      sub: () => [['성과 리포트', '.mboard-wrap'], ['핵심 성과', '.hkey']].concat(FLOW ? [] : [['핵심 요약', '#summary .sum-l'], ['그 밖의 개선', '#summary .more']]) },
     // (2026-11-20) 주요 성과 — 현 직장 중심(본판 index.html 에만 있는 절 — 없는 틀에서는 빠진다)
     { id: 'results', label: '주요 성과', en: 'Key results', desc: '현 직장 — 매출과 공헌이익을 함께 키운 숫자', secs: ['#results'],
       sub: () => [['매출 · 공헌이익', '#rsLead'], ['현 직장 핵심 숫자', '#rsCards'], ['이전 직장', '#rsPrev']] },
@@ -64,8 +66,8 @@
       sub: () => $$('#pillarGrid .pillar').map(c => [txt($('h3', c)), c]).concat([['툴', '#toolRow']]) },
     { id: 'career', label: '경력', en: 'Career', desc: '상품 매칭 · 가격비교로 시작해 그로스까지', secs: ['#career', '#archive'],
       sub: () => [['경력 타임라인', '#gantt']].concat($$('#jobs .job').map(j => [j.dataset.co || txt($('.co', j)), j])).concat($('#archive') && !$('#archive').hidden ? [['참고 자료', '#archive']] : []) },
-    { id: 'contact', label: '원칙 · 연락처', en: 'Contact', desc: '일하는 원칙 네 가지와 연락처 · 직무 점수', secs: ['#beliefs', '#contact', '.foot'],
-      sub: () => [['일하는 원칙', '#beliefs'], ['연락처', '#contact .sec-h'], ['직무 점수', '.scorebox'], ['인적 사항', '#factGrid']] },
+    { id: 'contact', label: '원칙 · 연락처', en: 'Contact', desc: FLOW ? '일하는 원칙 · 핵심 요약 · 연락처 · 직무 점수' : '일하는 원칙 네 가지와 연락처 · 직무 점수', secs: FLOW ? ['#beliefs', '#summary', '#contact', '.foot'] : ['#beliefs', '#contact', '.foot'],
+      sub: () => [['일하는 원칙', '#beliefs']].concat(FLOW ? [['핵심 요약', '#summary']] : []).concat([['연락처', '#contact .sec-h'], ['직무 점수', '.scorebox'], ['인적 사항', '#factGrid']]) },
   ];
   /* (2026-11-16) 다른 틀(프리랜서판 등)은 페이지에서 window.TOPICS_CONFIG = [{ id, secs: [절 선택자…], label?, en?, desc?, nav? }, …] 로 주제를 준다.
      빈 칸은 채운다 — 이름 = 상단 메뉴(.mast nav a[href="#nav 또는 id"]) 글자 → 절 제목, 영문 = 절 꼬리표(.tag), 설명 = 절 제목, 항목 = 절 안 카드(제목 h3) */
@@ -491,6 +493,11 @@
     }
   }
 
+  // 손짓 안내 문구 — 배치가 바뀔 때와 처음에 한 번(2026-11-20: 좁은 화면으로 시작하면 setMode 가 바로 빠져 문구가 비고 그림만 보였다)
+  function hintText() {
+    $('.ht', hint).textContent = FLOW ? (wide ? '휠 · ← → ↑ ↓ 키 · 드래그로 한 장씩' : (fine.matches ? '끝에서 한 번 더 스크롤 · ← → 키로 다음 주제' : '옆으로 밀거나 끝에서 밀어 올려 다음 주제'))
+      : (wide ? '드래그 · 휠 · ← → 키로 넘기기' : (fine.matches ? '드래그 · ← → 키로 다음 주제' : '옆으로 밀어 다음 주제'));
+  }
   function setMode(w) {
     if (w === wide) return false;
     wide = w; root.classList.toggle('tm-wide', w);
@@ -503,8 +510,7 @@
       root.style.removeProperty('--tm-pw'); root.style.removeProperty('--tm-ph');
       npg.fill(1); pg = 0; subPg = TOPICS.map(() => []);
     }
-    $('.ht', hint).textContent = FLOW ? (w ? '휠 · ← → ↑ ↓ 키 · 드래그로 한 장씩' : (fine.matches ? '끝에서 한 번 더 스크롤 · ← → 키로 다음 주제' : '옆으로 밀거나 끝에서 밀어 올려 다음 주제'))
-      : (w ? '드래그 · 휠 · ← → 키로 넘기기' : (fine.matches ? '드래그 · ← → 키로 다음 주제' : '옆으로 밀어 다음 주제'));
+    hintText();
     pullShow(0);
     if (cur >= 0) emit('tm:mode', { wide: w });
     return true;
@@ -952,7 +958,7 @@
 
   // 처음 — #/주제(/장) 가 없으면 본판식 주소(#perf · #p-cp1)도 받아 그 판 · 그 자리로
   setMode(wideMQ.matches);
-  glueFor();   // 처음이 좁은 화면이면 setMode 가 바로 빠지므로(이미 좁은 배치) 여기서 한 번
+  glueFor(); hintText();   // 처음이 좁은 화면이면 setMode 가 바로 빠지므로(이미 좁은 배치) 여기서 한 번
   layout();
   let [k0, q0] = fromHash(), t0 = null;
   if (opts.target) { t0 = opts.target; k0 = panels.findIndex(p => p.contains(t0)); q0 = 0; if (k0 < 0) t0 = null; }
