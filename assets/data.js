@@ -197,7 +197,7 @@ window.RESUME = {
      「기타 대시보드」 절(#xdash) — 2026-11-20 부터 본판 index.html 에도 있다(장 넘김 04 · 인쇄 제외). 그리기 app.js renderMoreDash.
      문구는 대시보드 구축 내용(projects.dashboard how)과 같은 사실만 쓰고 새 숫자를 만들지 않는다(18 · 8 · PMC −95% 는 이미 공개한 숫자).
      shot = 데모 첫 화면(숫자 임의 값 · 이름 코드) 800×450 — 쇼핑 인사이트는 합성 데이터 탭(전 몰 키워드 인사이트)을 찍고 검색칸 예시는 흐리게.
-     판매가 트래커(옛 PMC 트래커)는 공개 데모가 없어 숫자 없는 그림 + 「사내 전용 · 데모 없음」 */
+     판매가 트래커(옛 PMC 트래커)는 2026-11-20 합성 데모 pmc-demo.html 로 잇는다(구조만 살리고 상품 · 코드 · 금액은 모두 새로 지은 값 — 생성 _work\data\pmc-demo). 그 전엔 「사내 전용 · 데모 없음」 */
   /* (2026-11-20 셋째) facts · uses · features = 카드 오른쪽 사실 칸 · 활용 · 「핵심 기능」 칩 — 공개 데모 4종 · 설명서(guide-demo.html) · 이 파일의 공개 문구에서만 뽑고
      도구마다 독립 검토(새 숫자 · 데모 임의 숫자 · 실명 금지, 「자료원 7」 · 「4개 몰」 · 18 → 8 · −95% 는 이미 공개된 값). how 는 인쇄 · 예전 틀용으로 남김 */
   moreDash: {
@@ -268,7 +268,7 @@ window.RESUME = {
           '<b>확장 후보</b> — 후보 <strong>18개</strong>를 점수화해 제품 설계 <strong>8개</strong>까지',
           '<b>대시보드와 연결</b> — 대시보드의 상품에서 바로 키워드 · 재고로 넘어갑니다',
         ] },
-      { id: 'price', name: '판매가 트래커', kind: '가격 · PMC', demo: null, shot: null, note: '사내 전용 · 데모 없음',
+      { id: 'price', name: '판매가 트래커', kind: '가격 · PMC', demo: 'pmc-demo.html', shot: 'assets/xd-pmc.webp',
         hook: '쿠팡 가격 매칭 비용(PMC)이 생긴 <b>원인 상품 · 몰 노출가 · 판매가 변동</b>을 따로 추적합니다.',
         facts: [{ v: "최대 −95%", k: "쿠팡 PMC (25.9 → 26.2) · 쿠폰 분리 설계와 함께" }, { v: "한 날짜", k: "PMC 를 네이버 광고비와 같은 날짜로 겹쳐 봄" }, { v: "상품 × 몰", k: "원인을 상품코드 · 몰별 노출가 · 판매가로" }],
         uses: [
@@ -360,6 +360,8 @@ window.RESUME = {
         { href: 'stock-demo.html', label: '재고 신호판 데모' },
         /* (2026-11-14) 쇼핑 인사이트 — 우리 광고 · 매출 숫자는 합성 값, 상품 · 브랜드 · 광고주 이름은 코드(몰 탭 시장 값은 원본, 본인 「내부 매출만 없도록 · 내용만 워싱」)(_work\data\insight-demo) */
         { href: 'insight-demo.html', label: '쇼핑 인사이트 데모' },
+        /* (2026-11-20) 판매가 트래커(옛 PMC 트래커) — 구조만 살린 합성 데모, 상품 · 코드 · 금액은 모두 새로 지은 값(_work\data\pmc-demo) */
+        { href: 'pmc-demo.html', label: '판매가 트래커 데모' },
         /* (2026-10-31) 연계 화면 다섯 개를 읽는 법 — 숫자 없는 사내 설명서의 사본(_work\data\wash-guide.js) */
         { href: 'guide-demo.html', label: '설명서' },
       ],

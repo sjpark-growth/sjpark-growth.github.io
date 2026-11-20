@@ -109,12 +109,12 @@
   // 항목 대상은 한 번 찾아 둔다(app.js 가 다 그린 뒤라 카드가 있다)
   const subsOf = TOPICS.map(t => (t.sub() || []).filter(x => x && x[0]).map(([name, tg]) => [name, typeof tg === 'string' ? $(tg) : tg]).filter(x => x[1]));
 
-  /* 대시보드 판 — 데모 세 개(브리핑룸 · 재고 신호판 · 쇼핑 인사이트) 단추는 「기타 대시보드」 판으로 옮겼으니 그 판으로 가는 단추 하나로.
+  /* 대시보드 판 — 데모 네 개(브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커(11-20 pmc-demo)) 단추는 「기타 대시보드」 판으로 옮겼으니 그 판으로 가는 단추 하나로.
      설명서 단추는 그대로(본인 11-16 「설명서는 그대로 두고」). 본판(index.html)은 data.js demo2 그대로 */
   let undoXlink = null;
   (() => {
     const acts = $('#dashSide .actions'); if (!acts || !$('#xdash')) return;
-    const moved = $$('a.btn', acts).filter(a => /(briefing|stock|insight)-demo\.html/.test(a.getAttribute('href') || ''));
+    const moved = $$('a.btn', acts).filter(a => /(briefing|stock|insight|pmc)-demo\.html/.test(a.getAttribute('href') || ''));
     if (!moved.length) return;
     const link = el('a', { class: 'btn ghost tm-xlink', href: '#xdash' }, '기타 대시보드 4개 <span aria-hidden="true">→</span>');
     moved[0].before(link); moved.forEach(a => a.remove());
