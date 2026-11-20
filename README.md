@@ -11,6 +11,7 @@
 | `assets/data.js` | **모든 문구·수치** — 이력서를 고칠 때는 보통 이 파일만 바꿉니다 |
 | `assets/series.js` | 성과 차트용 월별 시계열 (비율·지수 — 절대 금액 없음). 대시보드 월별 데이터에서 자동 생성, 손으로 고치지 않음 |
 | `assets/app.js` · `assets/style.css` · `assets/motion.js` | 화면 구성 · 디자인 · 모션 영상 |
+| `assets/topics.js` · `assets/topics.css` · `assets/paged.css` · `assets/paged-guide.js` · `assets/mode-toggle.js` | 장 넘김(페이지네이션) — 기본 보기. 휠 · 방향키 · 드래그 · 스와이프로 한 장씩 넘기고, 처음 보는 사람에게 넘기는 법을 안내한다. 상단 「스크롤로 보기」로 한 페이지 보기 |
 | `dashboard-demo.html` · `briefing-demo.html` · `stock-demo.html` | 데모 3종 — 퍼포먼스 대시보드 · 브리핑룸 · 재고 신호판. **모든 숫자는 임의 값**이고 품목 · 상품 이름도 코드로 가린 사본 |
 | `favicon.ico` | 데모 3종이 쓰는 탭 아이콘(본판 · 영문판은 페이지 안 SVG 아이콘) |
 | `tools/` | 관리 도구 — `demo-wash.js`(데모 · 본문의 품목 · 상품 실명 가림, `--check` 는 검사만) · `demo-wash.json`(대응표, 실명은 해시로만) |
