@@ -205,6 +205,18 @@
         <span class="s">${k.s}</span>
       </li>`).join('');
     $('#moreWins').innerHTML = (R.moreWins || []).map(w => `<li>${w}</li>`).join('');
+    /* (2026-11-20 넷째, 본인 「핵심 요약도 다른 맥락으로 — 주요 · 기타 스킬 위주로 나열」) 화면에서는 「그 밖의 개선」(성과 — 주요 성과 · 역량과 겹침) 대신
+       주요 스킬(data.js tools) · 기타 스킬(toolsMore)을 나열한다 — 역량 절 아래 도구 칩을 옮겨 온 것(화면에서 그쪽은 숨김). 인쇄 · PDF 는 예전 그대로.
+       묶음 옆 한 줄은 이미 공개된 문구만(역량 · 주요 업무) */
+    const chipsOf = list => list.map(t => t[0] === '*' ? `<span class="hot">${t.slice(1)}</span>` : `<span>${t}</span>`).join('');
+    const SK_NOTE = { '광고': '9개 매체 · 대부분 대행 없이 직접 운영', '커머스': '30여 개 몰 상품 · 가격 · 기획전', '데이터': '백데이터 취합 · 분석 · 리포트', '자동화 · AI': '자동화 8건 · Claude Code 로 직접 구축' };
+    if ($('#sumMain') && R.tools) $('#sumMain').innerHTML = `<h3 class="sk-h">주요 스킬</h3>` + R.tools.map(([h, list]) =>
+      `<div class="sk-grp"><div class="sk-top"><b>${h}</b>${SK_NOTE[h] ? `<span>${SK_NOTE[h]}</span>` : ''}</div><div class="tools">${chipsOf(list)}</div></div>`).join('');
+    if ($('#sumOther') && R.toolsMore) {
+      const cnt = R.toolsMore.reduce((n, [, l]) => n + l.length, 0);
+      $('#sumOther').innerHTML = `<h3 class="sk-h">기타 스킬 <span>${cnt}</span></h3>` + R.toolsMore.map(([h, list]) =>
+        `<div class="sk-row"><b>${h}</b><div class="tools">${chipsOf(list)}</div></div>`).join('');
+    }
   }
 
   /* ------------------------------------------------------------ 첫 화면 성과 리포트 (대시보드 1칸 + 차트 3칸)
