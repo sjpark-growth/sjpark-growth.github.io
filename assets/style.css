@@ -2344,8 +2344,7 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
    처음 보일 때(app.js onFirstView → .rs-play) 막대가 0 에서 자라고(transform 만 — 합성) 숫자가 굴러간다. 동작 줄이기 · 인쇄는 그대로 */
 .results .rs-lead {
   position: relative; overflow: hidden;
-  background: radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 62%),
-    radial-gradient(70% 60% at 0% 100%, color-mix(in srgb, #22a06b 7%, transparent), transparent 60%), var(--surface);
+  background: radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 62%), var(--surface);
   border-color: color-mix(in srgb, var(--accent) 26%, var(--rule));
   box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 7%, transparent), 0 14px 38px rgba(12, 26, 43, .10), 0 2px 6px rgba(12, 26, 43, .05);
 }
@@ -2359,8 +2358,9 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 55%, #9fb6ff), var(--accent));
   box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
 }
-.rs-irow:not(.hot) .rs-itrack i, .rs-bar.sales i { background: linear-gradient(90deg, color-mix(in srgb, #22a06b 30%, var(--ink-3)), color-mix(in srgb, #22a06b 55%, var(--ink-3))); opacity: .75; }
-.rs-legend .sales::before { background: color-mix(in srgb, #22a06b 45%, var(--ink-3)); }
+/* 매출(전년 같은 달 대비) 막대는 회색 — 본인 11-20 「매출 바를 회색으로」(초록은 공헌이익과 겨루는 색처럼 보였다). 공헌이익만 강조색 */
+.rs-irow:not(.hot) .rs-itrack i, .rs-bar.sales i { background: linear-gradient(90deg, color-mix(in srgb, var(--ink-3) 40%, transparent), color-mix(in srgb, var(--ink-3) 62%, transparent)); }
+.rs-legend .sales::before { background: color-mix(in srgb, var(--ink-3) 55%, transparent); }
 .rs-legend .contrib::before { background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent); }
 /* 오른쪽 카드 — 묶음 색 */
 .rs-card { --tone: var(--accent); position: relative; overflow: hidden;
