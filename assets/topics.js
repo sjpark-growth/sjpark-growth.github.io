@@ -977,8 +977,14 @@
     if (kk >= 0) go(kk, { push: false, target: t === inners[kk].firstElementChild ? null : t, page: 0 });
   };
   on(window, 'popstate', onHash); on(window, 'hashchange', onHash);
-  let rzT = 0;
+  let rzT = 0, rzW = innerWidth, rzH = innerHeight, rzShow = 0;
+  /* (11-21, 본인 「화면 크기를 늘리거나 줄였을 때 창이 뭉개지는 경우」) 크기를 바꾸는 동안에는 장 나누기 · 배율 · 단 높이를 다시 계산하기 전(0.2~0.4초)의
+     예전 배치가 옆 장으로 넘치거나 겹쳐 보였다 — 그동안은 본문(.tm-stage)을 잠깐 숨기고, 다시 나눈 뒤 0.2초에 걸쳐 다시 보인다(topics.css html.tm-resizing).
+     휴대폰은 스크롤 중 주소창이 들어가고 나오며 높이만 바뀌므로, 폭이 그대로이고 높이 변화가 작으면 숨기지 않는다 */
+  const rzEnd = () => { cancelAnimationFrame(rzShow); rzShow = requestAnimationFrame(() => { rzShow = requestAnimationFrame(() => root.classList.remove('tm-resizing')); }); };
   on(window, 'resize', () => {
+    const dw = Math.abs(innerWidth - rzW), dh = Math.abs(innerHeight - rzH); rzW = innerWidth; rzH = innerHeight;
+    if (dw > 2 || (wideMQ.matches && dh > 40)) root.classList.add('tm-resizing');
     const changed = setMode(wideMQ.matches);
     if (wide) {   // 장 폭을 바로 맞추고(어긋남 방지), 나누기는 손을 멈춘 뒤
       pw = stage.clientWidth; ph = stage.clientHeight; root.style.setProperty('--tm-pw', pw + 'px'); root.style.setProperty('--tm-ph', ph + 'px');
@@ -987,7 +993,7 @@
     track.classList.add('tm-instant'); place(); requestAnimationFrame(() => track.classList.remove('tm-instant'));
     const restore = changed && wide;
     // 차트는 폭이 바뀐 뒤(ResizeObserver 60ms) 다시 그려지므로 한 번 더 나눈다 — 안 하면 좁게 → 넓게 돌아온 뒤 성과가 두 장으로 남았다
-    clearTimeout(rzT); rzT = setTimeout(() => { if (dead) return; layout(); go(cur, { page: restore ? restorePg() : pg, instant: true, push: false }); relayout(500); }, changed ? 0 : 160);
+    clearTimeout(rzT); rzT = setTimeout(() => { if (dead) return; layout(); go(cur, { page: restore ? restorePg() : pg, instant: true, push: false }); rzEnd(); relayout(500); }, changed ? 0 : 160);
     moveInd();
   });
   document.fonts && document.fonts.ready.then(() => { if (dead) return; moveInd(); relayout(0); });
@@ -1036,7 +1042,7 @@
     [stage, dock, hint, drop, edgeP, edgeN, pdots, phead, pager, copy, back].forEach(n => n && n.remove());
     if (oldNav) nav.replaceWith(oldNav); else nav.remove();
     if (deckBtn0) deckBtn0.hidden = false;
-    root.classList.remove('tabmode', 'tm-wide', 'tm-ready', 'tm-sheet', 'tm-flow');
+    root.classList.remove('tabmode', 'tm-wide', 'tm-ready', 'tm-sheet', 'tm-flow', 'tm-resizing'); cancelAnimationFrame(rzShow);
     main.classList.remove('tm-dragging', 'near-l', 'near-r');
     ['--tm-p', '--tm-pw', '--tm-ph', '--tm-z0', '--tm-avail', '--tm-dir'].forEach(k => root.style.removeProperty(k));
     [main, mast].forEach(n => { if (n) { n.style.removeProperty('--tm-dir'); n.style.removeProperty('--tm-p'); } });

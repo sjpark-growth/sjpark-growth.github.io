@@ -2425,11 +2425,24 @@ a.rs-card:hover { transform: translateY(-3px); border-color: var(--tone); box-sh
 .sk-row .tools { gap: 4px; }
 .sk-row .tools span { font-size: 11.5px; padding: 2px 7px; background: transparent; border: 1px solid var(--rule); color: var(--ink-2); }
 .tools-moved { margin: 18px 0 0; font-size: 13.5px; }
-.tools-moved a { color: var(--accent-ink); font-weight: 700; text-decoration: none; }
+.tools-moved a { display: inline-block; padding: 10px 0; color: var(--accent-ink); font-weight: 700; text-decoration: none; }   /* 누르는 높이 40px(휴대폰 점검 11-21 — 20px 이었다) */
 .tools-moved a:hover { text-decoration: underline; }
 @media (max-width: 600px) { .sk-main { grid-template-columns: minmax(0, 1fr); } .sk-row { grid-template-columns: minmax(0, 1fr); } }
 @media screen {
   .summary .sum-r .more { display: none; }
   #pillars .toolrow, #pillars .toolmore { display: none !important; }
+}
+/* (11-21, 본인 「핵심 요약 — 헤드 카피 아래 좌/우 블록이 같은 높이에 정렬되게」) 넓은 화면은 두 틀(.sum-l · .sum-r)을 풀어 한 격자로:
+   첫 줄 = 제목 · 문단 | 현재 · 이전(아래 끝 맞춤), 둘째 줄 = 주요 스킬 | 기타 스킬 — 두 블록이 같은 높이에서 시작한다 */
+@media screen and (min-width: 1101px) {
+  .summary .shell { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "h n" "l n" "m o"; row-gap: 0; align-items: start; }
+  .summary .shell > .sum-l, .summary .shell > .sum-r { display: contents; }
+  .summary #sum-h { grid-area: h; }
+  .summary #h-lede { grid-area: l; }
+  .summary .sum-r .nowbox { grid-area: n; align-self: end; margin: 0; padding: 0 0 2px; border-bottom: 0; }
+  .summary #sumMain { grid-area: m; }
+  .summary #sumOther { grid-area: o; }
+  .summary :is(#sumMain, #sumOther) > .sk-h { margin-top: 24px; }
+  .summary #sumMain { align-content: start; }
 }
 @media print { .sk-main, .sk-other, .tools-moved { display: none !important; } }
