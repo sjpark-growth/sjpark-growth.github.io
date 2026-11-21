@@ -699,6 +699,7 @@
     if ('ResizeObserver' in window) { const ro = new ResizeObserver(() => fitDash()); ro.observe(wrap); ro.observe(bar); }
     if (wideQ) wideQ.addEventListener ? wideQ.addEventListener('change', fitDash) : wideQ.addListener(fitDash);
     { let rq = 0; addEventListener('resize', () => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => requestAnimationFrame(fitDash)); }, { passive: true }); }   // 창 크기를 바꿀 때 장 넘김 ↔ 세로 흐름이 바뀌는 사이 값이 남지 않게(1536 → 1000 에서 예전 폭이 남았다)
+    addEventListener('psj-masth', fitDash);   // (2026-11-22) 상단 바 높이가 바뀌면 절 최소 높이도 바뀐다 — 절이 이미 내용으로 늘어 있으면 판 크기가 그대로라 위 관찰자가 안 불려 다시 잰다
     /* (2026-09-30) 넓은 화면에서 구역을 한 화면 높이로 고정하면서 「구축 내용」 목록이 칸 안에서 스크롤된다 — 끝까지 내리면(또는 다 보이면) 아래 흐림을 없앤다 */
     const how = $('.how', side);
     const howEnd = () => how.classList.toggle('at-end', how.scrollTop + how.clientHeight >= how.scrollHeight - 4);
@@ -1500,11 +1501,15 @@
     const setMastH = () => {
       mast.classList.remove('tight');
       if (innerWidth > 1100 && mast.offsetHeight > 64) mast.classList.add('tight');
-      document.documentElement.style.setProperty('--mast-h', mast.offsetHeight + 'px');
+      const v = mast.offsetHeight + 'px', rs = document.documentElement.style;
+      if (rs.getPropertyValue('--mast-h') !== v) { rs.setProperty('--mast-h', v); dispatchEvent(new Event('psj-masth')); }
     };
     /* (2026-11-21) 창을 줄여 장 넘김(넓은 화면 — 상단 바가 왼쪽 세로 막대) → 세로 흐름으로 바뀌는 순간에는 막대 높이(창 높이)를 재서
        --mast-h 가 700px 로 남았다 → 대시보드 절 높이(창 높이 − 상단 바)가 최소 380px 로 눌림. topics.js 가 배치를 바꾼 다음 프레임에 한 번 더 잰다 */
     setMastH(); addEventListener('resize', () => { setMastH(); requestAnimationFrame(() => requestAnimationFrame(setMastH)); });
+    /* (2026-11-22) 장 넘김 중 창 크기를 바꾸면 세로 막대 높이(650px)를 재 두고, 그대로 「스크롤로 보기」로 바꾸면(창 크기 그대로라 resize 없음)
+       --mast-h 가 남아 대시보드 절이 380px 최소로 잡혀 데모가 판 폭 가득 커지고 절이 아래로 늘었다 — 상단 바 크기가 바뀔 때마다 다시 잰다(rAF 로 미뤄 고리 경고 없음) */
+    if ('ResizeObserver' in window) new ResizeObserver(() => requestAnimationFrame(setMastH)).observe(mast);
     /* (2026-10-31) 상단 바 접기 · 오른쪽 목차 레일 — 본인 「GNB 를 화면을 내리면 우측으로」
        · 아래로 내리면 상단 바를 위로 접고(휴대폰 두 줄 약 92px = 390×664 화면의 14%), 위로 조금 올리면 다시 내린다. 접혀도 아래 진행 막대(2px)는 남는다
        · PC(861px 이상 · 높이 501px 이상)는 첫 화면을 지나면 오른쪽 끝에 세로 목차(섹션 점 · 지금 섹션 이름)가 나온다(style.css .rail)
