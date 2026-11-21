@@ -557,7 +557,7 @@
     const items = list.map(x => { const m = String(x).match(/^<b>([\s\S]*?)<\/b>\s*—\s*([\s\S]+)$/); return m ? { t: m[1], d: m[2] } : null; });
     if (!items.length || items.some(x => !x)) return `<ul class="how">${list.map(x => `<li>${x}</li>`).join('')}</ul>`;
     return `<section class="how-box" aria-labelledby="${pre}-h">
-        <div class="how-head"><h3 class="how-h" id="${pre}-h">${title}</h3><span class="how-sub">항목을 누르면 아래에 설명이 펼쳐집니다</span></div>
+        <div class="how-head"><h3 class="how-h" id="${pre}-h">${title}</h3><span class="how-sub">항목을 누르면 설명이 펼쳐집니다</span></div>
         <ul class="how how-tips">${items.map((x, i) => `<li><button type="button" class="tip-chip" aria-expanded="${i === 0}" aria-controls="${pre}-panel">${x.t}</button><span class="tip-src" hidden>${x.d}</span></li>`).join('')}</ul>
         <div class="how-panel" id="${pre}-panel" role="region" aria-live="polite" aria-labelledby="${pre}-pt"><div class="how-pin"><b class="how-pt" id="${pre}-pt">${items[0].t}</b><p class="how-pd">${items[0].d}</p></div></div>
       </section>`;
@@ -590,7 +590,9 @@
         <div class="ctl"><button class="pbtn" type="button" aria-label="재생">${ICON.play}</button><div class="bar"><div class="trk"><div class="fil"></div></div></div><span class="time">0:00</span></div>
       </div>`;
     const facts = p.facts.map(f => `<li><span class="fv">${f.v}<small>${f.u}</small></span><span class="fk">${f.k}</span></li>`).join('');
+    /* (2026-11-21) 소개 · 보기 방식 · 버튼 · 숫자 3칸을 .dash-intro 한 칸으로 묶는다 — 넓은 화면 2×2 배치에서 데모 오른쪽 한 칸(style.css 「03 대시보드 2×2」) */
     side.innerHTML = `
+      <div class="dash-intro">
       <div class="proj-meta">${p.pill ? `<span class="pill ${p.pill.c}">${p.pill.t}</span>` : ''}${p.meta.map(x => `<span>${x}</span>`).join('<span aria-hidden="true">·</span>')}</div>
       <p class="hook">${p.hook}</p>
       <div class="modesw" role="group" aria-label="보기 방식">
@@ -599,6 +601,7 @@
       </div>
       <div class="actions"><button class="btn" type="button" data-big>${ICON.expand}크게 보기 · 직접 조작</button><a class="btn ghost" href="${p.demo}" target="_blank" rel="noopener">${ICON.ext}새 창</a>${(Array.isArray(p.demo2) ? p.demo2 : p.demo2 ? [p.demo2] : []).map(d => `<a class="btn ghost" href="${d.href}" target="_blank" rel="noopener">${ICON.ext}${d.label}</a>`).join('')}</div>
       <ul class="facts">${facts}</ul>
+      </div>
       ${howTips(p.how, 'dtip')}`;
 
     const view = $('.dash-view', frame), ifr = $('iframe', view), shield = $('.dash-shield', view);
@@ -660,6 +663,42 @@
     const fitScale = () => { const w = view.clientWidth, h = view.clientHeight, sc = w / 1440; ifr.style.transform = `scale(${sc})`; ifr.style.height = Math.max(810, Math.ceil(h / sc)) + 'px'; };
     fitScale();
     if ('ResizeObserver' in window) new ResizeObserver(() => fitScale()).observe(view);
+    /* (2026-11-21) 본인 「대시보드 부분 화면 비율 · 텍스트 배치가 약간 부자연스러워」 — 넓은 화면(861px 이상)은 2×2 배치이고 데모 칸은 늘 16:9.
+       데모 칸 폭(--dash-fw) = 「판 폭 − 오른쪽 소개 칸 최소(판 폭 × --dash-intro, 372px 이상 — 더 좁으면 숫자 3칸 설명이 네 줄로 꺾인다)」과 「(판 높이 − 아래 줄(구축 내용 머리 · 칩 · 펼침 칸) − 영상 막대) × 16/9」 중 작은 값.
+       높이가 넉넉하면 데모가 커지고(1920×950 약 890px), 창이 낮으면 비율을 지킨 채 줄어 그만큼 소개 칸이 넓어진다(대시보드는 fitScale 이 1440×810 으로 그린다) */
+    const wrap = frame.parentElement, wideQ = window.matchMedia ? matchMedia('screen and (min-width: 861px)') : null;
+    const fitDash = () => {
+      const unset = () => { wrap.style.removeProperty('--dash-fw'); wrap.style.removeProperty('--dash-iw'); };
+      if (!wideQ || !wideQ.matches) return unset();
+      /* 판 높이 H — 장 넘김은 절 높이가 장에 고정(topics.css)이라 지금 높이. 스크롤 보기 · 세로 흐름은 절이 min-height(한 화면)라
+         내용이 길면 절이 늘어나므로, 늘어난 높이가 아니라 「한 화면 − 절 머리 · 여백」으로 잰다(그래야 칸 → 높이 → 칸 고리가 생기지 않는다) */
+      const tmWide = document.documentElement.classList.contains('tm-wide'), sec = wrap.closest('section') || wrap.parentElement;
+      const msh = tmWide ? 0 : parseFloat(getComputedStyle(sec).minHeight) || 0;
+      const H = msh > 0 ? msh - (sec.clientHeight - wrap.clientHeight) : wrap.clientHeight;
+      if (H < 260) return unset();   // 판 높이가 아직 안 정해짐(장 넘김 layout 전) — ResizeObserver · resize 가 다시 부른다
+      const cs = getComputedStyle(wrap), cg = parseFloat(cs.columnGap) || 0, rg = parseFloat(cs.rowGap) || 0;
+      const introMin = Math.max(372, wrap.clientWidth * (parseFloat(cs.getPropertyValue('--dash-intro')) || 0.3));
+      /* 아래 줄 높이는 지금 칸 폭과 상관없는 값으로 어림한다 — 실제 칩 높이를 재면 칸이 작을 때 칩 글자가 두 줄로 꺾여 아래 줄이 높아지고,
+         그 높이로 칸이 다시 작아지는 고리에 갇혔다(1280×800 첫 로드에 360px). 칩 = 줄 수 × 한 줄 높이(min-height), 펼침 칸 = 지금 글 높이 */
+      const head = $('.how-head', side), tips = $('.how-tips', side), pin = $('.how-pin', side), chip = $('.tip-chip', side);
+      const rows = tips ? Math.ceil(tips.children.length / 3) : 0, chipH = chip ? parseFloat(getComputedStyle(chip).minHeight) || 40 : 0;
+      const tipsH = rows ? rows * chipH + (rows - 1) * (parseFloat(getComputedStyle(tips).rowGap) || 8) : 0;
+      const low = (head ? head.offsetHeight + rg : 0) + Math.max(tipsH, pin ? pin.scrollHeight + 2 : 0) + rg;
+      const byH = (H - low - (bar.hidden ? 0 : bar.offsetHeight) - 2) * 16 / 9, byW = wrap.clientWidth - cg - introMin;
+      /* 스크롤 보기 · 세로 흐름에서 한 화면에 맞추려면 데모가 480px 아래(그리고 폭 몫의 70% 아래)로 작아질 만큼 창이 낮으면(125% 노트북 1093×520 — 360px 까지 줄고도 84px 넘침)
+         한 화면 맞춤을 놓고 데모를 폭 몫대로 둔다 — 절이 조금 길어진다(1366×650 은 553px 로 한 화면에 맞춤). 장 넘김은 장 높이가 정해져 있어 늘 맞춘다(배율 --tm-z0 덕에 1180×600 도 들어감) */
+      const fw = Math.floor(Math.max(360, !tmWide && byH < Math.min(480, byW * 0.7) ? byW : Math.min(byW, byH)));
+      /* 데모가 높이에 막혀 작아지면 남는 폭을 소개 칸이 다 먹지 않게 상한(판 폭 42% · 540px) — 두 칸은 가운데로 모인다(style.css justify-content) */
+      const iw = Math.floor(Math.max(introMin, Math.min(wrap.clientWidth - cg - fw, 540, wrap.clientWidth * 0.42)));
+      /* 4px 미만 차이는 무시 — 펼침 칸 글 높이(pin)가 소개 칸 폭(iw ← fw)에 따라 바뀌어, 줄바꿈 경계에서 두 값을 오가며 ResizeObserver(영상 막대)를 다시 부를 수 있다(11-21 교차 검증) */
+      const near = (k, v) => Math.abs((parseFloat(wrap.style.getPropertyValue(k)) || -99) - v) < 4;
+      if (near('--dash-fw', fw) && near('--dash-iw', iw)) return;
+      wrap.style.setProperty('--dash-fw', fw + 'px'); wrap.style.setProperty('--dash-iw', iw + 'px');
+    };
+    fitDash();
+    if ('ResizeObserver' in window) { const ro = new ResizeObserver(() => fitDash()); ro.observe(wrap); ro.observe(bar); }
+    if (wideQ) wideQ.addEventListener ? wideQ.addEventListener('change', fitDash) : wideQ.addListener(fitDash);
+    { let rq = 0; addEventListener('resize', () => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => requestAnimationFrame(fitDash)); }, { passive: true }); }   // 창 크기를 바꿀 때 장 넘김 ↔ 세로 흐름이 바뀌는 사이 값이 남지 않게(1536 → 1000 에서 예전 폭이 남았다)
     /* (2026-09-30) 넓은 화면에서 구역을 한 화면 높이로 고정하면서 「구축 내용」 목록이 칸 안에서 스크롤된다 — 끝까지 내리면(또는 다 보이면) 아래 흐림을 없앤다 */
     const how = $('.how', side);
     const howEnd = () => how.classList.toggle('at-end', how.scrollTop + how.clientHeight >= how.scrollHeight - 4);
@@ -1463,7 +1502,9 @@
       if (innerWidth > 1100 && mast.offsetHeight > 64) mast.classList.add('tight');
       document.documentElement.style.setProperty('--mast-h', mast.offsetHeight + 'px');
     };
-    setMastH(); addEventListener('resize', setMastH);
+    /* (2026-11-21) 창을 줄여 장 넘김(넓은 화면 — 상단 바가 왼쪽 세로 막대) → 세로 흐름으로 바뀌는 순간에는 막대 높이(창 높이)를 재서
+       --mast-h 가 700px 로 남았다 → 대시보드 절 높이(창 높이 − 상단 바)가 최소 380px 로 눌림. topics.js 가 배치를 바꾼 다음 프레임에 한 번 더 잰다 */
+    setMastH(); addEventListener('resize', () => { setMastH(); requestAnimationFrame(() => requestAnimationFrame(setMastH)); });
     /* (2026-10-31) 상단 바 접기 · 오른쪽 목차 레일 — 본인 「GNB 를 화면을 내리면 우측으로」
        · 아래로 내리면 상단 바를 위로 접고(휴대폰 두 줄 약 92px = 390×664 화면의 14%), 위로 조금 올리면 다시 내린다. 접혀도 아래 진행 막대(2px)는 남는다
        · PC(861px 이상 · 높이 501px 이상)는 첫 화면을 지나면 오른쪽 끝에 세로 목차(섹션 점 · 지금 섹션 이름)가 나온다(style.css .rail)

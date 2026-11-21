@@ -53,7 +53,7 @@
     { id: 'results', label: '주요 성과', en: 'Key results', desc: '현 직장 — 매출과 공헌이익을 함께 키운 숫자', secs: ['#results'],
       sub: () => [['매출 · 공헌이익', '#rsLead'], ['현 직장 핵심 숫자', '#rsCards'], ['이전 직장', '#rsPrev']] },
     { id: 'dash', label: '대시보드', en: 'Dashboard', desc: '직접 만든 운영 도구 — 화면의 숫자는 모두 임의 값', secs: ['#dash'],
-      sub: () => [['대시보드 데모', '.dash-frame'], ['구축 내용', '.dash-side']] },
+      sub: () => [['대시보드 데모', '.dash-frame'], ['구축 내용', '#dash .how-head']] },   /* (11-21) .dash-side 는 넓은 화면에서 display: contents(칸 없음 — 2×2 배치) */
     { id: 'xdash', label: '기타 대시보드', en: 'More dashboards', desc: '브리핑룸 · 재고 신호판 · 쇼핑 인사이트 · 판매가 트래커 — 데이터 고도화를 위해 붙인 툴 4개', secs: ['#xdash'],
       sub: () => $$('#moreDash .xd').map(c => [txt($('h3', c)), c]) },
     // (2026-11-20) 「주요 성과」 탭과 헷갈리지 않게 「성과」 → 「성과 추이」
@@ -122,7 +122,7 @@
   })();
 
   /* 장(판)에 들어올 때 차례로 떠오를 덩어리 — 순번(--k)은 장마다 다시 센다(layout) */
-  const ANIM = '.tm-idx, .hero-l > *, .hero-r > *, #summary .shell > *, .rs-lead, .rs-cards > li, .rs-prev, .sec-h > *, .growth-h > *, .dash-wrap > *, .xdash > .xd, .perf > *, .phases > li, .gcards > *, .gextra, .projects > .proj, .pillars > *, .toolrow, .gantt, .cnote, .jobs > *, .archive > *, .beliefs > *, .contact.big, .scorebox, .factgrid > *, .foot .shell > *';
+  const ANIM = '.tm-idx, .hero-l > *, .hero-r > *, #summary .shell > *, .rs-lead, .rs-cards > li, .rs-prev, .sec-h > *, .growth-h > *, .dash-wrap > *, .dash-intro, #dash .how-box > *, .xdash > .xd, .perf > *, .phases > li, .gcards > *, .gextra, .projects > .proj, .pillars > *, .toolrow, .gantt, .cnote, .jobs > *, .archive > *, .beliefs > *, .contact.big, .scorebox, .factgrid > *, .foot .shell > *';
   const anims = panels.map(p => $$(ANIM, p).filter(n => !n.closest('[hidden]')));
   anims.forEach(list => list.forEach((n, k) => { n.classList.add('tm-anim'); n.style.setProperty('--k', Math.min(k, 8)); }));
   const animPage = new Map();

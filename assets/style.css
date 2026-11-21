@@ -2446,3 +2446,50 @@ a.rs-card:hover { transform: translateY(-3px); border-color: var(--tone); box-sh
   .summary #sumMain { align-content: start; }
 }
 @media print { .sk-main, .sk-other, .tools-moved { display: none !important; } }
+/* =========================================================================
+   (2026-11-21) 03 대시보드 2×2 — 본인 「대시보드 부분 화면 비율이나 텍스트 배치가 약간 부자연스러운데 전체적으로 개선」.
+   예전(09-30 「한 화면 맞춤」 · 11-20 장 넘김): 왼쪽 축소판이 오른쪽 설명 높이만큼 세로로 늘어나(1280×800 598×670 · 1920×950 797×806 —
+   노트북 화면이 아니라 세로로 긴 종이처럼 보임), 오른쪽 칸은 소개 · 버튼 · 숫자 · 칩 9개 · 펼침 설명이 한 줄로 쌓여 칸 안에서 스크롤되고 끝이 잘렸다.
+   지금(861px 이상 · 화면만 · 장 넘김과 스크롤 보기 같게):
+     위 = 데모(16:9 고정, 폭은 app.js fitDash 의 --dash-fw — 소개 칸에 판 폭의 30%(861~1100px 40%) 이상을 남기고 높이가 허락하는 만큼) | 소개 · 보기 방식 · 버튼 2열 · 숫자 3칸(.dash-intro, 데모 높이 가운데)
+     가운데 = 「구축 내용」 머리(두 칸 폭 · 위 구분선)   아래 = 칩 3×3 | 펼침 설명(칩 묶음과 같은 높이)
+   .dash-side · .how-box 는 display: contents(인쇄 배치와 같은 방법) — DOM 은 그대로라 .dash-side … 선택자 · 칩 동작 · 인쇄는 바뀌지 않는다.
+   topics.css(html.tm-wide #dash …)보다 앞서야 해서 머리를 :root #dash.showcase 로 둔다. 머리 오른쪽 보조 문구는 틀 위 빨간 표시와 같은 말이라 뺀다 */
+.dash-intro { display: flex; flex-direction: column; gap: inherit; min-width: 0; }
+@media print { #dash .dash-intro { gap: 5pt; } }
+@media screen and (min-width: 861px) {
+  :root #dash.showcase .sec-h .aside { display: none; }
+  :root #dash.showcase .dash-wrap {
+    --dash-intro: .3;
+    grid-template-columns: var(--dash-fw, minmax(0, 1.6fr)) var(--dash-iw, minmax(0, 1fr)); justify-content: center;
+    grid-template-rows: auto auto auto;
+    grid-template-areas: "frame intro" "head head" "tips panel";
+    align-content: center; align-items: start;
+    column-gap: clamp(16px, 2vw, 32px); row-gap: clamp(10px, 1.9vh, 18px);
+  }
+  :root #dash.showcase .dash-frame { grid-area: frame; display: block; min-height: 0; }
+  :root #dash.showcase .dash-view { flex: none; aspect-ratio: 16 / 9; min-height: 0; }
+  :root #dash.showcase .dash-side, :root #dash.showcase .dash-side .how-box { display: contents; }
+  :root #dash.showcase .dash-intro { grid-area: intro; align-self: center; margin: 0; gap: clamp(8px, 1.5vh, 14px); }
+  :root #dash.showcase .dash-intro { container-type: inline-size; }
+  :root #dash.showcase .dash-intro .hook { font-size: clamp(14px, 2.1vh, 16px); line-height: 1.6; }
+  /* 버튼 — 두 개씩 같은 폭, 홀수로 남는 마지막 하나는 한 줄을 다 쓴다(장 넘김 4개 = 2×2 · 스크롤 보기 7개 = 2 · 2 · 2 · 1) */
+  :root #dash.showcase .dash-intro .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  :root #dash.showcase .dash-intro .actions .btn { flex: 1 1 calc(50% - 3px); min-width: 0; justify-content: center; white-space: nowrap; }
+  @container (min-width: 470px) { :root #dash.showcase .dash-intro .actions:has(> :nth-child(5)) .btn { flex-basis: calc(33.333% - 4px); } }   /* 버튼이 5개 이상(스크롤 보기 7개)이고 소개 칸이 넓으면 세 개씩 — 3 · 3 · 1. 장 넘김 4개는 늘 2×2 */
+  :root #dash.showcase .how-head { grid-area: head; margin: 0; padding-top: clamp(8px, 1.4vh, 14px); }
+  :root #dash.showcase .how.how-tips { grid-area: tips; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; flex: none; overflow: visible; padding: 0; -webkit-mask-image: none; mask-image: none; }
+  :root #dash.showcase .how.how-tips .tip-chip { width: 100%; justify-content: center; text-align: center; border-radius: 12px; min-height: clamp(38px, 5.4vh, 46px); padding: 6px 10px; }
+  :root #dash.showcase .how-panel { grid-area: panel; align-self: stretch; flex: none; margin: 0; }
+  :root #dash.showcase .how-panel.closed { align-self: start; }
+  :root #dash.showcase .how-pd { min-height: calc(3 * 1.7em); }
+}
+@media screen and (min-width: 861px) and (max-width: 1100px) { :root #dash.showcase .dash-wrap { --dash-intro: .4; } }
+/* 스크롤 보기 · 세로 흐름(장 넘김이 아닌 861px 이상)은 절 높이를 고정(09-30 height)하지 않고 한 화면을 「최소」로 — 아주 낮은 창(125% 노트북 1093×520)에서
+   2×2 가 한 화면에 안 들어가면 넘치지 않고 절이 늘어난다(app.js fitDash 가 그때 데모를 폭 몫대로 둔다). 장 넘김은 topics.css 가 장 높이로 고정 */
+@media screen and (min-width: 861px) {
+  html:not(.tm-wide) #dash.showcase { height: auto; min-height: clamp(380px, calc(100vh - var(--mast-h, 55px)), 940px); min-height: clamp(380px, calc(100svh - var(--mast-h, 55px)), 940px); }
+  html:not(.tm-wide) #dash.showcase > .shell, html:not(.tm-wide) #dash.showcase .dash-wrap { flex: 1 0 auto; }   /* 기준 크기 0 이면 내용이 길어도 절이 안 늘어난다 */
+}
+/* 장 넘김 차례 등장(topics.js ANIM) — 넓은 화면은 .dash-side 가 칸이 없어 .dash-intro · 구축 내용 조각이 각자 떠오른다. 좁은 화면은 .dash-side 가 통째로 떠오르니 안쪽은 겹쳐 움직이지 않게 */
+@media (max-width: 860px) { .dash-intro.tm-anim.tm-play, #dash .how-box > .tm-anim.tm-play { animation: none; } }
