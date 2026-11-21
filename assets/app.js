@@ -1207,7 +1207,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeDemo(); });
 
   /* ------------------------------------------------------------ pillars */
-  function shortTitle(id) { const p = R.projects.find(x => x.id === id); return p ? p.title.split(' — ')[0] : id; }
+  function shortTitle(id) { const p = R.projects.find(x => x.id === id); return p ? p.title.split(' — ')[0].replace(/\s*\([^()]*\)\s*$/, '') : id; }   /* (2026-11-22) 제목이 「핵심어 (세부 / 세부)」 꼴 — 링크엔 괄호 앞까지 */
   function renderPillars() {
     $('#pillarGrid').innerHTML = R.pillars.map(p => `
       <article class="pillar">
@@ -1358,7 +1358,8 @@
     $('#factGrid').innerHTML = (F.seeking && F.seeking.length ? sec('찾고 있는 자리', F.seeking) : '') + sec('자격', F.certs) + sec('학력 · 교육', F.edu) + sec('기타', F.etc);
     const fa = $('#f-asof'); if (fa) fa.textContent = R.config.asOf;
     const fl = $('#footLine'); const Pf = R.profile;
-    if (fl) fl.innerHTML = `© ${Pf.name} · 2026<span class="fsep">/</span><a href="mailto:${Pf.email}">${Pf.email}</a><span class="fsep">/</span><a href="tel:${Pf.phone.replace(/-/g, '')}">${Pf.phone}</a>`;
+    if (fl) fl.innerHTML = `© ${Pf.name} · 2026<span class="fsep">/</span><a href="mailto:${Pf.email}">${Pf.email}</a><span class="fsep">/</span><a href="tel:${Pf.phone.replace(/-/g, '')}">${Pf.phone}</a>` +
+      `<span class="foot-cv"><span class="fsep">/</span><a href="files/sjpark_resume.pdf" download="박성준_이력서.pdf" rel="nofollow">이력서 PDF</a></span>`;   /* (11-22) 가린판 이력서(회사명 가림 · 연락처 제외) — GNB 아래 줄(topics.js tm-copy)과 같은 파일 */
   }
 
   /* ------------------------------------------------------------ 직무점수 */

@@ -1131,6 +1131,8 @@ body { overflow-x: clip; }
 #footLine a { color: var(--ink); font-weight: 600; text-decoration: none; }
 #footLine a:hover { color: var(--accent-ink); text-decoration: underline; }
 .fsep { margin: 0 12px; color: var(--rule-2); }
+.foot-cv { display: contents; }   /* (11-22) 이력서 PDF 링크 — 인쇄(PDF) 바닥글에는 빼서 장 수가 바뀌지 않게 */
+@media print { .foot-cv { display: none !important; } }
 
 /* 경력 타임라인 — 회사 이름을 누르면 해당 카드로 */
 .grow-row.go { cursor: pointer; }
@@ -2305,6 +2307,9 @@ a.rs-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;
     min-height: clamp(540px, calc(100svh - var(--mast-h, 55px) - 41px - var(--hp-t) - var(--hp-b)), 840px);
   }
   html.tm-wide .hero .shell { min-height: 0; }   /* 장 넘김에서는 topics.css 가 높이를 장 높이로 정한다 */
+  /* (11-22 본인 「처음 소개 화면이 아주 약간 위로 올라가 있는 것 같다 — 위아래 · 좌우 여백 동일한지」) 셋째 줄 1fr 이 남는 높이를 다 받아
+     align-content: center 가 듣지 않고 빈칸이 모두 아래로 갔다(1463×760 위 26 · 아래 96px, 1920×950 32 · 130px — 좌우는 같았음). 장 넘김에서는 줄을 내용 높이로 */
+  html.tm-wide .hero .shell { grid-template-rows: auto auto auto; }
   .hero .shell > .hero-r { display: contents; }
   .hero-l { grid-area: l; align-self: start; }
   .hero-r > .mb-h { grid-area: h; align-self: start; margin-top: var(--hr-shift, 0px); }   /* 오른쪽 묶음을 왼쪽 높이 가운데로(app.js centerHeroRight · 11-20 넷째) */
@@ -2435,11 +2440,12 @@ a.rs-card:hover { transform: translateY(-3px); border-color: var(--tone); box-sh
 /* (11-21, 본인 「핵심 요약 — 헤드 카피 아래 좌/우 블록이 같은 높이에 정렬되게」) 넓은 화면은 두 틀(.sum-l · .sum-r)을 풀어 한 격자로:
    첫 줄 = 제목 · 문단 | 현재 · 이전(아래 끝 맞춤), 둘째 줄 = 주요 스킬 | 기타 스킬 — 두 블록이 같은 높이에서 시작한다 */
 @media screen and (min-width: 1101px) {
-  .summary .shell { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "h n" "l n" "m o"; row-gap: 0; align-items: start; }
+  /* (11-22 본인 「좌/우측 단락이 같은 높이에서 시작되게 — 헤드값(핵심 요약) 제외 본문 기준」) 오른쪽 현재 · 이전을 제목 줄에서 빼 본문 줄 맨 위에 — 예전엔 두 줄에 걸쳐 아래 끝에 붙어 1463 에서 35px 낮게 시작했다 */
+  .summary .shell { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "h ." "l n" "m o"; row-gap: 0; align-items: start; }
   .summary .shell > .sum-l, .summary .shell > .sum-r { display: contents; }
   .summary #sum-h { grid-area: h; }
   .summary #h-lede { grid-area: l; }
-  .summary .sum-r .nowbox { grid-area: n; align-self: end; margin: 0; padding: 0 0 2px; border-bottom: 0; }
+  .summary .sum-r .nowbox { grid-area: n; align-self: start; margin: 0; padding: 0 0 2px; border-bottom: 0; }
   .summary #sumMain { grid-area: m; }
   .summary #sumOther { grid-area: o; }
   .summary :is(#sumMain, #sumOther) > .sk-h { margin-top: 24px; }

@@ -349,14 +349,19 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   html.tm-wide .mast .tools { flex: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(28px, 1fr)); gap: 4px; }
   html.tm-wide .mast .tools .iconbtn { width: 100%; min-width: 0; height: 32px; padding: 0; justify-content: center; }
   html.tm-wide .tm-copy { display: block; flex: none; margin: -4px 0 0; padding: 0 4px; font-size: 11px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.tm-wide .tm-copy .cv a { color: var(--accent-ink); font-weight: 600; text-decoration: none; }   /* (11-22) 이력서 PDF 받기 */
+  html.tm-wide .tm-copy .cv a:hover { text-decoration: underline; }
   /* 다른 주제에 마우스 — GNB 옆에 항목 목록 */
-  html.tm-wide .tm-drop { left: 100%; right: auto; top: var(--dy, 80px); width: min(460px, calc(100vw - var(--gnb-w) - 32px)); padding: 0 0 0 10px; transform: translateX(-8px); }
+  /* (11-22 본인 「GNB 마우스 오버 설명 상자가 조금 큼 — 너비 조금 줄이고 글 사이 세로 간격도 조금」) 폭 460 → 400px · 항목 34 → 29px · 설명 줄간 1.55 → 1.45 · 위아래 여백 줄임 */
+  html.tm-wide .tm-drop { left: 100%; right: auto; top: var(--dy, 80px); width: min(400px, calc(100vw - var(--gnb-w) - 32px)); padding: 0 0 0 10px; transform: translateX(-8px); }
   html.tm-wide .tm-drop.on { transform: none; }
-  html.tm-wide .tm-drop-in { max-width: none; margin: 0; padding: 16px 16px 14px; }
-  html.tm-wide .tm-dg { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  html.tm-wide .tm-dg > ul { grid-column: 1; grid-row: auto; grid-template-columns: minmax(0, 1fr); margin-top: 6px; }
+  html.tm-wide .tm-drop-in { max-width: none; margin: 0; padding: 13px 14px 10px; }
+  html.tm-wide .tm-dg { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  html.tm-wide .tm-dd { font-size: 13px; line-height: 1.45; }
+  html.tm-wide .tm-dg > ul { grid-column: 1; grid-row: auto; grid-template-columns: minmax(0, 1fr); margin-top: 4px; gap: 0 10px; }
+  html.tm-wide .tm-dh { padding: 2px 0; }
   html.tm-wide .tm-dh .n { font-size: 22px; } html.tm-wide .tm-dh b { font-size: 18px; }
-  html.tm-wide .tm-dg li button { min-height: 34px; font-size: 13.5px; }
+  html.tm-wide .tm-dg li button { min-height: 29px; padding: 4px 11px; font-size: 13.5px; line-height: 1.35; }
   /* 목차(모든 주제) — 넓은 화면은 GNB 옆에 여러 단으로(숫자 「3 / 10」을 눌러 연다) */
   html.tm-wide .tm-drop.all { top: 12px; width: min(1040px, calc(100vw - var(--gnb-w) - 32px)); }
   html.tm-wide .tm-drop.all .tm-drop-in { max-height: calc(100vh - 24px); grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px 20px; }   /* 다섯 칸 — 주제 9개가 두 줄로 한 화면에 */

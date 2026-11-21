@@ -39,7 +39,7 @@
   const el = (tag, attrs, html) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs || {})) if (v != null) e.setAttribute(k, v); if (html != null) e.innerHTML = html; return e; };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const txt = n => (n ? n.textContent.replace(/\s+/g, ' ').trim() : '');
-  const short = s => s.split(' — ')[0];
+  const short = s => s.split(' — ')[0].replace(/\s*\([^()]*\)\s*$/, '');   /* (2026-11-22) 카드 제목 「핵심어 (세부 / 세부)」 — 항목 이름엔 괄호 앞까지 */
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   /* 주제 — 판에 넣을 절(secs)과 항목(sub: [이름, 대상]) */
@@ -63,7 +63,7 @@
       sub: () => $$('#gcards .gcard').map(c => [txt($('h3', c)), c]) },
     { id: 'work', label: '주요 업무', en: 'Projects', desc: '실제 데이터로 움직이는 영상과 함께 보는 프로젝트', secs: ['#work'],
       sub: () => $$('#projects .proj').map(c => [short(txt($('h3', c))), c]) },
-    { id: 'pillars', label: '역량', en: 'Capabilities', desc: 'MD · 퍼포먼스 · 자동화 · 리더십', secs: ['#pillars'],
+    { id: 'pillars', label: '역량', en: 'Capabilities', desc: 'MD · 퍼포먼스 · 자동화 · 조직관리', secs: ['#pillars'],
       sub: () => $$('#pillarGrid .pillar').map(c => [txt($('h3', c)), c]).concat([['툴', '#toolRow']]) },
     { id: 'career', label: '경력', en: 'Career', desc: '상품 매칭 · 가격비교로 시작해 그로스까지', secs: ['#career', '#archive'],
       sub: () => [['경력 타임라인', '#gantt']].concat($$('#jobs .job').map(j => [j.dataset.co || txt($('.co', j)), j])).concat($('#archive') && !$('#archive').hidden ? [['참고 자료', '#archive']] : []) },
@@ -154,7 +154,9 @@
   const pager = el('div', { class: 'tm-pager', role: 'group', 'aria-label': '장 넘기기' },
     `<button type="button" class="tm-pp" aria-label="이전 장">${ARR('M10 3 5 8l5 5')}</button><button type="button" class="tm-pcount" aria-controls="tmDrop" aria-expanded="false" title="목차 — 모든 주제 · 항목"><b>1</b><span>/ 1</span><small></small></button><button type="button" class="tm-pn" aria-label="다음 장">${ARR('m6 3 5 5-5 5')}</button>`);
   nav.after(pager);
-  const fl = $('#footLine'), copy = el('p', { class: 'tm-copy' }, esc((fl && fl.firstChild ? fl.firstChild.textContent : '').trim() || '© 박성준'));   // 「© 이름 · 2026」만(메일 · 전화는 연락처 장에)
+  /* 「© 이름 · 2026」만(메일 · 전화는 연락처 장에) + (11-22 본인 「우측 너무 휑하니까 (이력서 PDF) 링크 걸어서 이력서도 받아볼 수 있게」) 가린판 이력서 PDF(files/sjpark_resume.pdf — 회사명 가림 · 연락처 제외) */
+  const fl = $('#footLine'), copy = el('p', { class: 'tm-copy' }, esc((fl && fl.firstChild ? fl.firstChild.textContent : '').trim() || '© 박성준') +
+    ' <span class="cv">(<a href="files/sjpark_resume.pdf" download="박성준_이력서.pdf" rel="nofollow" title="이력서 PDF 받기 — 회사명 가림 · 연락처 제외">이력서 PDF</a>)</span>');
   shell.appendChild(copy);
 
   /* 드롭다운(좁은 화면: 탭에 마우스 · 목차 / 넓은 화면: 다른 주제에 마우스 → GNB 옆에 항목 목록) */
