@@ -45,7 +45,9 @@
   }
   btn.addEventListener('click', () => (D.active ? toScroll() : toDeck()));
   // 기억한 보기로 — 스크롤로 시작하는 시안(toggle.html)은 「장」을, 장으로 시작하는 페이지(본판 index.html · 게시본)는 「스크롤」을 기억했을 때 바꾼다
-  let v = null; try { v = store().getItem(KEY); } catch (e) {}
+  /* (2026-11-22 본인 「첫 화면이 페이지네이션 형태로 나오게 하고 스크롤로 변경 가능하게」) 단추에 data-restore="off" 면(본판 index.html) 기억한 보기를 되살리지 않는다 —
+     같은 탭에서 「스크롤로 보기」를 누른 뒤 새로고침 · 다시 열기를 하면 스크롤로 시작해 「장 넘김이 안 된다」로 보였다. 늘 장 넘김으로 시작하고 바꾸기는 단추로 */
+  let v = null; if (btn.dataset.restore !== 'off') { try { v = store().getItem(KEY); } catch (e) {} }
   const later = fn => { if (document.readyState === 'complete') setTimeout(fn, 0); else addEventListener('load', fn, { once: true }); };
   if (v === 'deck' && !D.active) later(toDeck);
   else if (v === 'scroll' && D.active) later(toScroll);
