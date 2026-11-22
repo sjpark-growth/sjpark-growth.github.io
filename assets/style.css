@@ -2539,3 +2539,25 @@ a.rs-card:hover { transform: translateY(-3px); border-color: var(--tone); box-sh
 .sk-more:focus-visible, .sk-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 10px; }
 @media (max-width: 600px) { .sk-scroll { max-height: var(--sk-h, 280px); } }
 @media (prefers-reduced-motion: reduce) { .sk-more i { transition: none; } }
+
+/* ===== 모바일 · PDF 재점검 (2026-11-22 밤, 본인 「모바일, pdf 최적화 재점검」) =====
+   ① 휴대폰(≤600px) 보조 글자 12px — 10-31 「작은 글자」 규칙 뒤에 새로 생긴 곳(주요 성과 카드 · 기타 스킬 칩 · 핵심/기타 꼬리표 · 판 끝 띠 · 기타 대시보드 사실 칸 · 기간 비교 표의 기간).
+      큰 숫자 옆 단위(건 · 점) · 모션 배지 · 참고 자료 그림 위 꼬리표(11px) · 차트 글자는 그대로
+   ② 375px 미만(갤럭시 360 등)에서 이메일 · 전화 칩이 두 줄로 꺾여 핵심 성과가 64px 밀리던 것 → 칩만 조금 좁혀 한 줄로
+   ③ 손가락 기기(태블릿 · 가로 휴대폰)에서 성과 리포트 「자세히 보기 ↓」 누르는 높이 19 → 35px — 보이는 모양은 그대로(600px 이하는 원래 넓혀 둠)
+   ④ 인쇄: 성과 추이 「기간 비교」 표가 격자 둘째 줄이라 차트 아래 남은 자리에 들어가지 못하고 네 단계 카드와 함께 다음 장으로 넘어가
+      전체 PDF 3 · 4쪽이 반씩 비었다 → 인쇄에서만 블록으로 쌓는다(장 수 16 그대로 · 글자 같음) */
+@media screen and (max-width: 600px) {
+  #results .rs-cs, #results .rs-when, .summary .sk-h em, #skScroll .sk-row .tools span, #xdash .xd .facts .fk, #cmpTable td div, .tm-end .tm-end-k { font-size: 12px; }
+}
+@media screen and (max-width: 374px) {
+  .hero .contact { gap: 6px; }
+  .hero .contact .chip { font-size: 13px; padding-inline: 10px; }
+}
+@media screen and (pointer: coarse) {
+  .mp-dash .mp-span a { padding-block: 8px; margin-block: -8px; }
+}
+@media print {
+  .perf { display: block; }
+  .perf > .cmp { margin-top: 10pt; }
+}

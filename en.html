@@ -76,6 +76,8 @@
   .mast .iconbtn.go.hot { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .mast .tools .iconbtn span.lg { font: inherit; padding: 0; background: none; color: inherit; border-radius: 0; transform: none !important; white-space: pre; }
   @media (max-width: 600px) { .mast .iconbtn .lg { display: none; } }
+  /* (2026-11-22) 휴대폰 보조 글자 12px — 본판 10-31 「작은 글자」 규칙과 같게(머리 꼬리표 11.5 → 12) */
+  @media screen and (max-width: 600px) { .en-eyebrow { font-size: 12px; } }
 </style>
 <script>
   /* 테마: 본판과 같은 저장값(psj-theme)을 먼저 찍어 깜빡임을 막는다 */

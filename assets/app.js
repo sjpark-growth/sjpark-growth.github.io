@@ -644,7 +644,8 @@
        이제 페이지 로드가 끝난 뒤에, 구역이 200px 앞으로 다가왔을 때만 받는다(그 전에는 뒤에 깐 썸네일이 보인다) */
     /* (2026-10-11) 휴대폰(폭 600px 이하) · 데이터 절약 모드에서는 데모 본체(약 3MB)를 저절로 받지 않는다 — 썸네일만 깔아 두고
        「크게 보기」 · 「축소판」 · 「영상으로 보기」를 누를 때 받는다(loadFrame). 창이 600px 보다 넓어지면 그때부터 예전처럼 다가올 때 받는다 */
-    const narrow = window.matchMedia ? matchMedia('(max-width: 600px)') : null;
+    /* (2026-11-22) 가로로 든 휴대폰(폭 844 · 높이 390 등)도 휴대폰 — 폭만 보면 3MB 를 저절로 받았다. 손가락 기기이고 높이 500px 이하면 같이 본다(태블릿은 예전처럼) */
+    const narrow = window.matchMedia ? matchMedia('(max-width: 600px), (pointer: coarse) and (max-height: 500px)') : null;
     const saveData = !!(navigator.connection && navigator.connection.saveData);
     const watchFrame = () => {
       if (saveData) return showPoster();
