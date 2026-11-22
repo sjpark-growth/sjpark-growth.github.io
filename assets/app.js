@@ -210,7 +210,7 @@
        주요 스킬(data.js tools) · 기타 스킬(toolsMore)을 나열한다 — 역량 절 아래 도구 칩을 옮겨 온 것(화면에서 그쪽은 숨김). 인쇄 · PDF 는 예전 그대로.
        묶음 옆 한 줄은 이미 공개된 문구만(역량 · 주요 업무) */
     const chipsOf = list => list.map(t => t[0] === '*' ? `<span class="hot">${t.slice(1)}</span>` : `<span>${t}</span>`).join('');
-    const SK_NOTE = { '광고': '9개 매체 · 대부분 대행 없이 직접 운영', '커머스': '30여 개 몰 상품 · 가격 · 기획전', '데이터': '백데이터 취합 · 분석 · 리포트', '자동화 · AI': '자동화 8건 · Claude Code 로 직접 구축' };
+    const SK_NOTE = { '광고': '9개 매체 · 대부분 대행 없이 직접 운영', '커머스': '30여 개 몰 상품 · 가격 · 기획전', '데이터': '데이터 취합 · 분석 · 리포트', '자동화 · AI': '자동화 8건 · Claude Code 로 직접 구축' };
     if ($('#sumMain') && R.tools) $('#sumMain').innerHTML = `<h3 class="sk-h">주요 스킬</h3>` + R.tools.map(([h, list]) =>
       `<div class="sk-grp"><div class="sk-top"><b>${h}</b>${SK_NOTE[h] ? `<span>${SK_NOTE[h]}</span>` : ''}</div><div class="tools">${chipsOf(list)}</div></div>`).join('');
     if ($('#sumOther') && R.toolsMore) {
@@ -1167,6 +1167,9 @@
   const linkOf = id => id === 'dashboard' ? '#dash' : '#p-' + id;
   function renderProjects() {
     const host = $('#projects');
+    /* (2026-11-22 둘째 본인 「주요 업무 우측 주요 데이터에 파란색 글자 등 텍스트 색깔 구분해 가독성」) 「어떻게」 줄의 괄호 풀이 — 숫자 · 태그가 없는
+       짧은 괄호(「(랭킹 패널티)」 「(CPC)」)만 연한 글자 span.hp 로. 핵심어(줄 첫 <b>) · 숫자(<strong>) 색은 style.css 맨 아래 「주요 업무 글자색」 */
+    const soft = x => String(x).replace(/\(([^()<>\d]{1,24})\)/g, '<span class="hp">($1)</span>');
     R.projects.filter(p => !p.featured).forEach(p => {
       const card = el('article', { class: 'proj' + (p.wide ? ' wide' : ''), id: 'p-' + p.id, 'aria-labelledby': 'pt-' + p.id });
       const facts = p.facts.map(f => `<li><span class="fv">${f.from ? `<span class="from">${f.from}</span><span class="ar">→</span>` : ''}<span class="to" data-roll-from="${f.from ? f.from.replace(/,/g, '') : ''}" data-roll-to="${f.v}">${f.v}</span><small class="fu">${f.u || ''}</small>${f.d ? `<span class="fd">${f.d}</span>` : ''}</span><span class="fk">${f.k}</span>${f.s ? `<span class="fs">${f.s}</span>` : ''}${R.config.showAbsolute && f.abs ? `<span class="abs">${f.abs}</span>` : ''}</li>`).join('');
@@ -1178,7 +1181,7 @@
           <p class="hook">${p.hook}</p>
           <ul class="facts">${facts}</ul>
           <button type="button" class="how-tg" aria-expanded="false" aria-controls="how-${p.id}">어떻게 했는지 <b>${p.how.length}가지</b></button>
-          <ul class="how" id="how-${p.id}">${p.how.map(x => `<li>${x}</li>`).join('')}</ul>
+          <ul class="how" id="how-${p.id}">${p.how.map(x => `<li>${soft(x)}</li>`).join('')}</ul>
         </div>`;
       host.appendChild(card);
     });

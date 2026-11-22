@@ -2499,3 +2499,14 @@ a.rs-card:hover { transform: translateY(-3px); border-color: var(--tone); box-sh
 }
 /* 장 넘김 차례 등장(topics.js ANIM) — 넓은 화면은 .dash-side 가 칸이 없어 .dash-intro · 구축 내용 조각이 각자 떠오른다. 좁은 화면은 .dash-side 가 통째로 떠오르니 안쪽은 겹쳐 움직이지 않게 */
 @media (max-width: 860px) { .dash-intro.tm-anim.tm-play, #dash .how-box > .tm-anim.tm-play { animation: none; } }
+/* =========================================================================
+   (2026-11-22 둘째) 주요 업무 글자색 — 본인 「주요 업무 우측 주요 데이터에 파란색 글자 등 텍스트 색깔 구분해 가독성 올려줘」.
+   「어떻게」 줄(data.js projects[].how = 「<b>핵심어</b> 내용」 — 같은 날 줄표를 뺐다): 핵심어 = 파란 굵은 글자 + 뒤에 가는 세로선,
+   숫자(<strong>) = 파란 굵은 글자(경력 카드 숫자와 같은 규칙), 본문 = 보조 글자, 괄호 풀이(span.hp — app.js soft()) = 연한 글자.
+   그로스 카드 줄(.gwhat)도 같은 꼴이라 핵심어 · 세로선만 맞춘다. 인쇄도 같다(색 PDF). 대비: --accent-ink 라이트 #1c34b0 · 다크 #a9b5ff */
+.proj .how li > b:first-child, .gwhat li > b:first-child { color: var(--accent-ink); font-weight: 700; }
+.proj .how li > b:first-child::after, .gwhat li > b:first-child::after { content: ""; display: inline-block; width: 1px; height: .82em; margin: 0 .5em 0 .55em;
+  background: currentColor; opacity: .35; vertical-align: -.06em; }
+.proj .how strong { color: var(--accent-ink); font-weight: 700; }
+.proj .how .hp { color: var(--ink-3); font-size: .92em; }
+.proj .how li > b:first-child .hp { font-weight: 500; }
