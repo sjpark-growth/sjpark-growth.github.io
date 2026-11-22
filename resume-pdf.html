@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>박성준 · 이력서 PDF</title>
+<meta name="description" content="박성준 이력서(회사명 가림 · 연락처 제외) — 미리 보고 PDF 로 내려받기">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f3f5f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a1019" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c1a2b'/%3E%3Cpath d='M7 22 L13 15 L18 18 L25 9' fill='none' stroke='%238b9bff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<!--
+  이력서 PDF 보기 페이지(2026-11-22 본인 「이력서 PDF 는 클릭 시 새 페이지에서 보이게 하고 거기서 다운로드」).
+  포트폴리오 GNB 아래 줄 · 바닥글의 「이력서 PDF」가 이 페이지를 새 창으로 연다. PDF 를 페이지에 바로 넣지 않고 쪽 그림을 보여 주는 것은
+  휴대폰(안드로이드 크롬 · 카카오톡 안 브라우저)이 PDF 를 그리지 못하거나 곧바로 내려받아 버려서 — 어디서나 같게 보이게.
+  쪽 그림과 아래 pages 블록은 tools/resume-pages.py 가 files/sjpark_resume.pdf 에서 만든다(손으로 고치지 않는다).
+  색 · 글꼴 토큰은 본판 assets/style.css 에서 가져오고(외부 요청 없음) 배치만 여기서 한다.
+-->
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-sans); line-height: 1.5; -webkit-text-size-adjust: 100%; }
+  .rp-bar { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--paper) 88%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--rule); }
+  .rp-in { max-width: 940px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; }
+  .rp-back { display: inline-flex; align-items: center; min-height: 40px; padding: 0 4px; color: var(--ink-2); font-size: 14px; text-decoration: none; white-space: nowrap; }
+  .rp-back:hover { color: var(--accent); }
+  .rp-ttl { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  .rp-ttl b { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
+  .rp-ttl span { font-size: 12.5px; color: var(--ink-2); }
+  .rp-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; padding: 0 16px; border-radius: 10px;
+    font-size: 14.5px; font-weight: 700; text-decoration: none; white-space: nowrap; border: 1px solid transparent; }
+  .rp-btn svg { width: 17px; height: 17px; flex: none; }
+  .rp-btn.main { background: var(--accent); color: #fff; }
+  .rp-btn.main:hover { filter: brightness(1.08); }
+  .rp-btn.sub { background: var(--surface); color: var(--ink); border-color: var(--rule); }
+  .rp-btn.sub:hover { border-color: var(--accent); color: var(--accent); }
+  .rp-btn:focus-visible, .rp-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  :root[data-theme="dark"] .rp-btn.main { color: #0a1019; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rp-btn.main { color: #0a1019; } }
+  .rp-main { max-width: 940px; margin: 0 auto; padding: 20px 16px 56px; }
+  .rp-note { margin: 0 0 16px; font-size: 13px; color: var(--ink-2); }
+  .pg { margin: 0 0 18px; background: #fff; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 2px rgba(12, 26, 43, .08), 0 8px 28px rgba(12, 26, 43, .10); }
+  .pg img { display: block; width: 100%; height: auto; }
+  :root[data-theme="dark"] .pg { box-shadow: 0 0 0 1px var(--rule), 0 10px 30px rgba(0, 0, 0, .45); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pg { box-shadow: 0 0 0 1px var(--rule), 0 10px 30px rgba(0, 0, 0, .45); } }
+  .rp-end { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 26px; text-align: center; font-size: 13px; color: var(--ink-2); }
+  /* 휴대폰 — 제목 줄 아래에 단추 두 개를 같은 폭으로 */
+  @media (max-width: 600px) {
+    .rp-in { padding: 6px 16px 10px; gap: 4px 12px; }
+    .rp-back { order: 1; min-height: 40px; font-size: 13px; }
+    .rp-ttl { order: 0; flex: 1 1 0; }
+    .rp-ttl b { font-size: 15px; }
+    .rp-ttl span { display: none; }   /* 부제(가림 · 연락처 제외)는 아래 안내 문장에도 있다 — 휴대폰은 막대를 낮게(150 → 약 100px) */
+    .rp-acts { order: 2; flex-basis: 100%; }
+    .rp-acts .rp-btn { flex: 1 1 0; min-width: 0; padding: 0 10px; font-size: 14px; }
+    .rp-main { padding: 14px 10px 44px; }
+    .pg { margin-bottom: 12px; }
+  }
+  @media print {
+    .rp-bar, .rp-note, .rp-end { display: none !important; }
+    body { background: #fff; }
+    .rp-main { max-width: none; padding: 0; }
+    .pg { box-shadow: none; border-radius: 0; margin: 0; break-after: page; }
+  }
+</style>
+<script>
+  /* 테마: 본판과 같은 저장값(psj-theme)을 먼저 찍어 깜빡임을 막는다 */
+  try { var t = localStorage.getItem('psj-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
+</head>
+<body>
+
+<header class="rp-bar">
+  <div class="rp-in">
+    <a class="rp-back" href="./" title="웹 포트폴리오로">← 포트폴리오</a>
+    <div class="rp-ttl"><b>박성준 · 이력서</b><span>이력서 · 경력기술서 · 기타 프로젝트 · 자기소개서</span></div>
+    <div class="rp-acts">
+      <a class="rp-btn sub" href="files/sjpark_resume.pdf" target="_blank" rel="noopener nofollow" title="브라우저의 PDF 보기로 엽니다">PDF로 열기</a>
+      <a class="rp-btn main" href="files/sjpark_resume.pdf" download="박성준_이력서.pdf" rel="nofollow" title="박성준_이력서.pdf 로 저장">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>PDF 다운로드</a>
+    </div>
+  </div>
+</header>
+
+<main class="rp-main">
+  <p class="rp-note">아래는 PDF 미리보기입니다(현 직장 · 브랜드 이름 가림 · 연락처 제외). 크게 보거나 글자를 복사하려면 「PDF로 열기」, 저장은 「PDF 다운로드」를 누르세요.</p>
+  <div class="rp-pages">
+    <!-- pages:start -->
+    <figure class="pg"><img src="files/resume-p1.webp" width="1240" height="1754" alt="이력서 1 / 6쪽" decoding="async"></figure>
+    <figure class="pg"><img src="files/resume-p2.webp" width="1240" height="1754" alt="이력서 2 / 6쪽" decoding="async" loading="lazy"></figure>
+    <figure class="pg"><img src="files/resume-p3.webp" width="1240" height="1754" alt="이력서 3 / 6쪽" decoding="async" loading="lazy"></figure>
+    <figure class="pg"><img src="files/resume-p4.webp" width="1240" height="1754" alt="이력서 4 / 6쪽" decoding="async" loading="lazy"></figure>
+    <figure class="pg"><img src="files/resume-p5.webp" width="1240" height="1754" alt="이력서 5 / 6쪽" decoding="async" loading="lazy"></figure>
+    <figure class="pg"><img src="files/resume-p6.webp" width="1240" height="1754" alt="이력서 6 / 6쪽" decoding="async" loading="lazy"></figure>
+    <!-- pages:end -->
+  </div>
+  <div class="rp-end">
+    <a class="rp-btn main" href="files/sjpark_resume.pdf" download="박성준_이력서.pdf" rel="nofollow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>PDF 다운로드</a>
+    <a class="rp-back" href="./">← 포트폴리오로 돌아가기</a>
+  </div>
+</main>
+
+</body>
+</html>

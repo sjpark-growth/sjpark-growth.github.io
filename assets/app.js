@@ -1359,7 +1359,7 @@
     const fa = $('#f-asof'); if (fa) fa.textContent = R.config.asOf;
     const fl = $('#footLine'); const Pf = R.profile;
     if (fl) fl.innerHTML = `© ${Pf.name} · 2026<span class="fsep">/</span><a href="mailto:${Pf.email}">${Pf.email}</a><span class="fsep">/</span><a href="tel:${Pf.phone.replace(/-/g, '')}">${Pf.phone}</a>` +
-      `<span class="foot-cv"><span class="fsep">/</span><a href="files/sjpark_resume.pdf" download="박성준_이력서.pdf" rel="nofollow">이력서 PDF</a></span>`;   /* (11-22) 가린판 이력서(회사명 가림 · 연락처 제외) — GNB 아래 줄(topics.js tm-copy)과 같은 파일 */
+      `<span class="foot-cv"><span class="fsep">/</span><a href="resume-pdf.html" target="_blank" rel="noopener nofollow" title="이력서 PDF — 새 창에서 보고 내려받기">이력서 PDF</a></span>`;   /* (11-22) 가린판 이력서(회사명 가림 · 연락처 제외) — GNB 아래 줄(topics.js tm-copy)과 같은 곳. (11-22 둘째, 본인 「클릭 시 새 페이지에서 보이게 하고 거기서 다운로드」) 바로 받지 않고 보기 페이지 resume-pdf.html 을 새 창으로 */
   }
 
   /* ------------------------------------------------------------ 직무점수 */

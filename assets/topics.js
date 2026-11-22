@@ -156,7 +156,7 @@
   nav.after(pager);
   /* 「© 이름 · 2026」만(메일 · 전화는 연락처 장에) + (11-22 본인 「우측 너무 휑하니까 (이력서 PDF) 링크 걸어서 이력서도 받아볼 수 있게」) 가린판 이력서 PDF(files/sjpark_resume.pdf — 회사명 가림 · 연락처 제외) */
   const fl = $('#footLine'), copy = el('p', { class: 'tm-copy' }, esc((fl && fl.firstChild ? fl.firstChild.textContent : '').trim() || '© 박성준') +
-    ' <span class="cv">(<a href="files/sjpark_resume.pdf" download="박성준_이력서.pdf" rel="nofollow" title="이력서 PDF 받기 — 회사명 가림 · 연락처 제외">이력서 PDF</a>)</span>');
+    ' <span class="cv">(<a href="resume-pdf.html" target="_blank" rel="noopener nofollow" title="이력서 PDF — 새 창에서 보고 내려받기(회사명 가림 · 연락처 제외)">이력서 PDF</a>)</span>');   /* (11-22 둘째) 바로 받지 않고 보기 페이지(resume-pdf.html)를 새 창으로 — 내려받기는 그 페이지 단추 */
   shell.appendChild(copy);
 
   /* 드롭다운(좁은 화면: 탭에 마우스 · 목차 / 넓은 화면: 다른 주제에 마우스 → GNB 옆에 항목 목록) */
