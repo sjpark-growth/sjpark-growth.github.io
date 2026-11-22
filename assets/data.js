@@ -108,7 +108,7 @@ window.RESUME = {
   board: [
     { id: 'dash',  group: 'LIVE DEMO', title: '퍼포먼스 대시보드 직접 구축', tag: '25 → 1', sub: '광고 채널 25개를 <b>한 화면</b>으로 · 원본 대조 검증', poster: 'assets/dash-poster.webp', span: 'Claude Code 로 직접 설계 · 구축' },
     { id: 'roas',  group: 'ROAS 개선', title: '통합 ROAS 개선',              tag: '+369%p',    from: '962', to: '1,331', unit: '%', sub: '전환매출 ÷ 광고비 · 9개 매체 통합', span: '입사 전 6개월(25.1–6) → 26년 상반기' },
-    { id: 'brand', group: '체질 개선', title: '브랜드 키워드 의존도 감소', tag: '−21.5%p',   from: '38.0', to: '16.5', unit: '%', sub: '검색 광고비 중 브랜드 비중 · <b>품목 확장</b>으로 대체', span: '입사 전 6개월 → 26.10' },
+    { id: 'brand', group: '체질 개선', title: '브랜드 키워드 의존도 축소', tag: '−21.5%p',   from: '38.0', to: '16.5', unit: '%', sub: '검색 광고비 중 브랜드 비중 · <b>품목 확장</b>으로 대체', span: '입사 전 6개월 → 26.10' },
     { id: 'mix',   group: '체질 개선', title: '매체 믹스 재설계',       tag: '−11.0%p',   from: '39', to: '28', unit: '%', sub: '쿠팡 1P 쏠림을 <b>윙 · 네이버</b>로 분산', span: '입사 첫 달(25.7) → 26.10 · 광고비 비중' },
     { id: 'multi', off: true, group: 'ROAS 개선', title: '다중 매체 개선',          tag: '4개 매체',  from: '', to: '+468', unit: '%p', sub: '쿠팡 1P <b>1,426% → 1,893%</b> 최대 개선<br>윙 +222%p · GFA +325%p · 비마트 3.1배 등', span: '매체별 개선 전 → 후' },
   ],
@@ -427,7 +427,7 @@ window.RESUME = {
     {
       id: 'brand', motion: 'brand', video: null,
       meta: ['2025.07 –', '쿠팡 · 네이버'], pill: { t: '핵심 성과', c: '' },
-      title: '브랜드 키워드 의존 감소 (쿠팡 / 네이버 검색광고)',
+      title: '브랜드 키워드 의존도 축소 (쿠팡 / 네이버 검색광고)',
       hook: '광고 없이도 올 <b>브랜드 검색</b> 예산을 <b>새 고객 검색어</b>로.<br>검색 클릭 점유율은 지키고 브랜드 키워드 의존도 <b>38.0% → 16.5% (−21.5%p)</b>.',
       facts: [
         { from: '38.0', v: '16.5', u: '%', d: '−21.5%p', k: '4개 검색 채널 합계', s: '입사 전 6개월 → 26.10' },
@@ -476,7 +476,7 @@ window.RESUME = {
     {
       id: 'naver', motion: 'naver', video: null,
       meta: ['2025.07 –', '네이버 SA · GFA'], pill: { t: '체질 개선', c: '' },
-      title: '네이버 브랜드 의존 완화 및 GFA 효율 개선',
+      title: '네이버 브랜드 의존도 축소 및 GFA 효율 개선',
       hook: '브랜드 키워드 축소 · 위치별 효율 평준화 → <b>예산 재배분</b>.<br>네이버 합계 ROAS <b>592% → 628% (+36%p)</b>.',
       facts: [
         { from: '304', v: '629', u: '%', d: '+325%p', k: 'GFA(성과형 디스플레이 광고) ROAS', s: '입사 전 6개월 → 최근 3개월' },
