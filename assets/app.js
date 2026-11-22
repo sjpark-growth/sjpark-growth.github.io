@@ -1768,7 +1768,15 @@
       home = { p: s.parentNode, n: s.nextSibling };
       c.parentNode.insertBefore(s, c);
     });
-    addEventListener('afterprint', () => { if (!home) return; home.p.insertBefore(s, home.n); home = null; });
+    const back = () => {
+      if (!home) return;
+      const n = home.n && home.n.parentNode === home.p ? home.n : null;
+      home.p.insertBefore(s, n || home.p.querySelector('#results') || null); home = null;
+    };
+    addEventListener('afterprint', back);
+    // afterprint 가 오지 않는 브라우저 대비 — 인쇄 미디어가 끝나면 되돌린다
+    const pm = matchMedia('print');
+    if (pm.addEventListener) pm.addEventListener('change', e => { if (!e.matches) back(); });
   }
 
   /* ------------------------------------------------------------ boot */

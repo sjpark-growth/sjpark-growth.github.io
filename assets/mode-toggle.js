@@ -51,9 +51,9 @@
     if (busy) return;
     busy = true;
     btn.querySelector('span').textContent = '바꾸는 중…'; btn.setAttribute('aria-busy', 'true'); btn.style.cursor = 'progress';
-    requestAnimationFrame(() => setTimeout(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {   // 두 번 기다림 — 첫 프레임에 「바꾸는 중…」이 그려진 뒤 무거운 일을 시작
       try { toDeck(); } finally { busy = false; btn.removeAttribute('aria-busy'); btn.style.cursor = ''; label(); }
-    }, 0));
+    }));
   });
   // 기억한 보기로 — 스크롤로 시작하는 페이지(toggle.html · 11-23 부터 본판 index.html)는 「장」을, 장으로 시작하는 페이지(게시본 아티팩트)는 「스크롤」을 기억했을 때 바꾼다
   /* (2026-11-22 본인 「첫 화면이 페이지네이션 형태로 나오게 하고 스크롤로 변경 가능하게」) 단추에 data-restore="off" 면(본판 index.html) 기억한 보기를 되살리지 않는다 —
