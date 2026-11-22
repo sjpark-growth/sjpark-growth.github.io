@@ -211,12 +211,35 @@
        묶음 옆 한 줄은 이미 공개된 문구만(역량 · 주요 업무) */
     const chipsOf = list => list.map(t => t[0] === '*' ? `<span class="hot">${t.slice(1)}</span>` : `<span>${t}</span>`).join('');
     const SK_NOTE = { '광고': '9개 매체 · 대부분 대행 없이 직접 운영', '커머스': '30여 개 몰 상품 · 가격 · 기획전', '데이터': '데이터 취합 · 분석 · 리포트', '자동화 · AI': '자동화 8건 · Claude Code 로 직접 구축' };
-    if ($('#sumMain') && R.tools) $('#sumMain').innerHTML = `<h3 class="sk-h">주요 스킬</h3>` + R.tools.map(([h, list]) =>
+    /* (11-22 둘째 본인 「좌측이 핵심 스킬이고 우측이 기타 스킬이라는 가독성이 떨어짐 — 구분을 명확히」 · 「기타는 더 보기로 원하면 스크롤」)
+       왼쪽 = 「핵심 스킬」 + 꼬리표(직접 운영 · 주력), 강조색 제목선 · 카드. 오른쪽 = 연한 상자 안 「기타 스킬」 + 꼬리표(써 본 도구 · 보조 업무),
+       앞 묶음부터 정해진 높이만 보이고(아래 흐림) 「더 보기」를 누르면 같은 높이 안에서 스크롤(높이가 같아 장 나눔이 바뀌지 않는다 — style.css 「핵심 · 기타 스킬 구분」) */
+    if ($('#sumMain') && R.tools) $('#sumMain').innerHTML = `<h3 class="sk-h sk-h-core">핵심 스킬 <em>직접 운영 · 주력</em></h3>` + R.tools.map(([h, list]) =>
       `<div class="sk-grp"><div class="sk-top"><b>${h}</b>${SK_NOTE[h] ? `<span>${SK_NOTE[h]}</span>` : ''}</div><div class="tools">${chipsOf(list)}</div></div>`).join('');
     if ($('#sumOther') && R.toolsMore) {
       const cnt = R.toolsMore.reduce((n, [, l]) => n + l.length, 0);
-      $('#sumOther').innerHTML = `<h3 class="sk-h">기타 스킬 <span>${cnt}</span></h3>` + R.toolsMore.map(([h, list]) =>
-        `<div class="sk-row"><b>${h}</b><div class="tools">${chipsOf(list)}</div></div>`).join('');
+      $('#sumOther').innerHTML = `<h3 class="sk-h sk-h-etc">기타 스킬 <span>${cnt}</span><em>써 본 도구 · 보조 업무</em></h3>` +
+        `<div class="sk-box"><div class="sk-scroll" id="skScroll" role="region" aria-label="기타 스킬 목록">` + R.toolsMore.map(([h, list]) =>
+        `<div class="sk-row"><b>${h}</b><div class="tools">${chipsOf(list)}</div></div>`).join('') +
+        `</div><button type="button" class="sk-more" aria-expanded="false" aria-controls="skScroll"><span>기타 스킬 더 보기</span><i aria-hidden="true">▾</i></button></div>`;
+      const box = $('#sumOther .sk-box'), sc = $('#skScroll'), btn = $('#sumOther .sk-more');
+      btn.addEventListener('click', () => {
+        const open = !box.classList.contains('open');
+        box.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open));
+        btn.firstChild.textContent = open ? '접기' : '기타 스킬 더 보기';
+        if (open) sc.setAttribute('tabindex', '0'); else { sc.removeAttribute('tabindex'); sc.scrollTop = 0; }
+      });
+      /* 넓은 화면(≥1101px · 두 단)은 상자 아래 끝을 왼쪽 핵심 스킬 아래 끝에 맞춘다 — 목록 높이 = 왼쪽 높이 − (오른쪽 높이 − 목록 높이).
+         좁은 화면 · 한 단은 style.css 기본 높이(--sk-h 없음) */
+      const main = $('#sumMain'), other = $('#sumOther'), wideMQ = matchMedia('screen and (min-width: 1101px)');
+      const fitSk = () => {
+        if (!wideMQ.matches || !main.offsetHeight) { sc.style.removeProperty('--sk-h'); return; }
+        const h = Math.round(main.offsetHeight - (other.offsetHeight - sc.offsetHeight));
+        sc.style.setProperty('--sk-h', Math.max(180, h) + 'px');
+      };
+      if ('ResizeObserver' in window) new ResizeObserver(() => requestAnimationFrame(fitSk)).observe(main);
+      wideMQ.addEventListener && wideMQ.addEventListener('change', fitSk);
+      requestAnimationFrame(fitSk);
     }
   }
 
