@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="ko" class="tabmode" data-tm-flow="on">
-<!-- (2026-11-20 · 본인 D-30 「안 C로 진행」) 기본은 장 넘김(페이지네이션) — html.tabmode 로 시작해 topics.js 가 절을 주제 판으로 옮기고, data-tm-flow="on" 이면
-     좁은 화면도 판 끝에서 한 번 더 스크롤 · ↓ · 밀어 올리기로 다음 주제(FLOW). 넘기는 법 안내 = assets/paged-guide.js · paged.css, 같은 페이지 안 「스크롤로 보기」 = #modeBtn · assets/mode-toggle.js.
-     절 · id 는 예전 스크롤판 그대로(주소 #perf · #p-cp1 도 그 판 · 그 자리로 열린다). 세부 CLAUDE.md 5-5 -->
+<html lang="ko" data-tm-flow="on">
+<!-- (2026-11-23 본인 「스크롤이 메인 페이지로 노출되게 — 처음에 장이 나오고 스크롤로 바뀌는 데 오래 걸린다」) 기본은 스크롤판 — html.tabmode 없이 시작한다.
+     장 넘김(페이지네이션)은 상단 「장으로 보기」(#modeBtn · assets/mode-toggle.js)를 누르면 topics.js 가 그 자리에서 켠다(data-tm-flow="on" — 좁은 화면도 판 끝에서 한 번 더 스크롤 · ↓ · 밀어 올리기로 다음 주제).
+     넘기는 법 안내(assets/paged-guide.js · paged.css)는 장 넘김을 처음 켤 때 뜬다. (2026-11-20 ~ 11-22 에는 장 넘김으로 시작했다 — 안 C.) 세부 CLAUDE.md 5-5 -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -54,10 +54,10 @@
       <a href="#contact">연락처</a>
     </nav>
     <div class="tools">
-      <!-- (2026-11-20) 같은 페이지 안 「스크롤로 보기 ↔ 장으로 보기」(assets/mode-toggle.js). 고른 보기는 이 탭에서만(sessionStorage) — 새로 들어오면 늘 장 넘김 -->
-      <button class="iconbtn" id="modeBtn" type="button" aria-pressed="true" data-store="session" data-key="psj-view" data-restore="off" title="한 페이지로 이어 보기 — 지금 보던 자리로">
+      <!-- (2026-11-20) 같은 페이지 안 「스크롤로 보기 ↔ 장으로 보기」(assets/mode-toggle.js). 고른 보기는 이 탭에서만(sessionStorage) — (2026-11-23) 새로 들어오면 · 새로고침하면 늘 스크롤판(data-restore="off") -->
+      <button class="iconbtn" id="modeBtn" type="button" aria-pressed="false" data-store="session" data-key="psj-view" data-restore="off" title="한 주제씩 장으로 넘겨 보기 — 지금 보던 자리로">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="1.5" y="3.5" width="4" height="9" rx="1"/><rect x="6" y="3.5" width="4" height="9" rx="1"/><rect x="10.5" y="3.5" width="4" height="9" rx="1"/></svg>
-        <span>스크롤로 보기</span>
+        <span>장으로 보기</span>
       </button>
       <button class="iconbtn" id="themeBtn" type="button" aria-label="화면 테마 바꾸기">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor"/></svg>

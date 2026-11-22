@@ -2561,3 +2561,18 @@ a.rs-card:hover { transform: translateY(-3px); border-color: var(--tone); box-sh
   .perf { display: block; }
   .perf > .cmp { margin-top: 10pt; }
 }
+
+/* (2026-11-23) 스크롤판 첫 화면 한 장 맞춤 — 본인 「스크롤이 메인 페이지로 노출되게」. 본판이 스크롤판으로 시작하면서,
+   장 넘김(왼쪽 GNB · 띠배너 없음)에 맞춰 다듬은 2단 첫 화면이 상단 바 + 띠배너 아래에서 창보다 길었다(1463×800 핵심 성과 끝 845px).
+   넓은 화면 스크롤판에서만 첫 화면 격자를 남는 높이에 맞춰 줄인다 — 배율은 app.js fitHeroScroll 이 --hero-z 로(1 ~ 0.8).
+   장 넘김(html.tabmode — topics.js 가 장 배율로 맞춤) · 인쇄(screen 아님) · 1100px 이하에는 걸리지 않는다 */
+@media screen and (min-width: 1101px) {
+  /* 폭도 같은 비율로 — zoom 만 걸면 격자 폭(CSS px)이 1/배율만큼 넓어져 오른쪽 정사각형 네 칸은 화면에서 그대로였다(1280×720 8px 넘침).
+     폭을 배율만큼 줄이면 줄이기 전과 같은 배치를 통째로 작게 보는 것과 같다(가운데 — 양옆 여백만 조금 넓어짐) */
+  html:not(.tabmode) .hero .shell { zoom: var(--hero-z, 1); width: calc(100% * var(--hero-z, 1)); margin-inline: auto; }
+}
+/* 휴대폰(≤600px) 스크롤판은 띠배너를 뺀다 — 장 넘김 휴대폰과 같게(11-20 부터 장 넘김은 휴대폰에서 띠배너가 없었다). 같은 숫자가 바로 아래 「핵심 성과」에 있고,
+   상단 바를 두 줄로 줄인 뒤에도 390×664(아이폰 사파리 보이는 높이)에서 핵심 성과 끝이 672px 로 8px 밖이었다(띠배너 36px) */
+@media screen and (max-width: 600px) {
+  .ticker { display: none; }
+}

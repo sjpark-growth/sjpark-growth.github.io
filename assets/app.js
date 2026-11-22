@@ -1727,6 +1727,50 @@
     fit();
   }
 
+  /* (2026-11-23 본인 「스크롤이 메인 페이지로 노출되게」) 스크롤판 첫 화면 한 장 맞춤 — 11-20 에 핵심 성과를 왼쪽 아래로 옮긴 2단 첫 화면은
+     장 넘김(왼쪽 GNB · 띠배너 없음 · 배율 --tm-z0)에 맞춰 다듬어져, 스크롤판(상단 바 55 + 띠배너 40px)에서는 1463×800 에서 핵심 성과 끝이 845px 로 창 밖이었다.
+     넓은 화면(≥1101px) 스크롤판에서만 첫 화면 격자를 남는 높이에 맞게 줄인다(style.css 「스크롤판 첫 화면 맞춤」 — zoom: var(--hero-z), 0.8 까지).
+     장 넘김(html.tabmode) · 인쇄에는 CSS 가 걸리지 않는다. 재는 동안만 --hero-z 를 1 로 */
+  function fitHeroScroll() {
+    const sh = $('.hero .shell'); if (!sh) return;
+    const root = document.documentElement, wideQ = matchMedia('screen and (min-width: 1101px)');
+    let raf = 0;
+    const fit = () => {
+      raf = 0;
+      let z = 1;
+      if (wideQ.matches && !root.classList.contains('tabmode')) {
+        sh.style.setProperty('--hero-z', '1');
+        const top = sh.getBoundingClientRect().top + scrollY, need = sh.offsetHeight;
+        if (need > 0) z = Math.max(0.8, Math.min(1, (innerHeight - top - 10) / need));
+        z = Math.floor(z * 100) / 100;
+      }
+      sh.style.setProperty('--hero-z', z >= 0.99 ? '1' : z.toFixed(2));
+    };
+    const soon = () => { if (!raf) raf = requestAnimationFrame(fit); };
+    addEventListener('resize', soon);
+    addEventListener('load', () => { soon(); setTimeout(soon, 600); setTimeout(soon, 1600); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(soon);
+    document.addEventListener('tm:stop', soon);
+    document.addEventListener('psj:view', soon);
+    if ('ResizeObserver' in window) { const ro = new ResizeObserver(soon); [$('.hero-l'), $('.hero-r > .hkey')].forEach(n => n && ro.observe(n)); }
+    fit();
+  }
+
+  /* (2026-11-23) 인쇄 순서 — 11-20 ~ 11-22 공개 PDF(전체 16 · 요약 7장)는 장 넘김에서 찍혀 「핵심 요약」이 원칙 뒤 · 연락처 앞에 들어갔다(topics.js contact 주제 FLOW).
+     스크롤판(이제 기본) 순서 그대로 찍으면 첫 화면 바로 뒤에 와 요약 PDF 가 8장(2쪽 반쯤 빔 · 마지막 장 거의 빔)이 됐다 → 인쇄하는 동안만 같은 자리로 옮겼다가 되돌린다.
+     장 넘김에서 인쇄할 때는 topics.js 가 이미 그 순서로 쌓는다 */
+  function printOrder() {
+    const s = $('#summary'), c = $('#contact');
+    if (!s || !c) return;
+    let home = null;
+    addEventListener('beforeprint', () => {
+      if (home || document.documentElement.classList.contains('tabmode')) return;
+      home = { p: s.parentNode, n: s.nextSibling };
+      c.parentNode.insertBefore(s, c);
+    });
+    addEventListener('afterprint', () => { if (!home) return; home.p.insertBefore(s, home.n); home = null; });
+  }
+
   /* ------------------------------------------------------------ boot */
   applyAngle();
   paintPeriods();
@@ -1735,6 +1779,8 @@
   renderBoard();
   rollBoard();
   centerHeroRight();
+  fitHeroScroll();
+  printOrder();
   renderGrowth();
   renderShowcase();
   renderResults();
