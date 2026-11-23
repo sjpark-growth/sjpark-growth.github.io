@@ -17,7 +17,7 @@
 - **(2026-11-23 본인 「스크롤이 메인 페이지로 노출되게 — 처음에 장이 나오고 스크롤로 바뀌는 데 오래 걸린다」) 본판 `index.html` 은 다시 스크롤판으로 시작한다** — `<html data-tm-flow="on">`(tabmode 없음). 장 넘김은 상단 「장으로 보기」(`#modeBtn`)를 누르면 그 자리에서 켜진다(넓은 화면은 판을 나누는 1~2초 동안 단추에 「바꾸는 중…」). 새로 들어오거나 새로고침하면 늘 스크롤판(`data-restore="off"`). 넘기는 법 카드는 장 넘김을 처음 켤 때. 장 넘김 꼴 옛 주소(`#work-3` · `#/work/3` · `#intro`)는 그 절 · 맨 위로(mode-toggle.js). 스크롤판 첫 화면 맞춤 · 인쇄 순서는 5-1 표 「스크롤판 기본 (2026-11-23)」. 첫 로드 때 메인 스레드가 막히는 시간(헤드리스 1463×800) 약 3.7초 → 0.8초.
   아래 줄은 11-20 ~ 11-22 기록(그때는 장 넘김으로 시작): **(2026-11-20 본인 「안 C로 진행」) 본판 `index.html` 은 장 넘김(페이지네이션)으로 시작한다** — `<html class="tabmode" data-tm-flow="on">` 으로 열리면 `assets/topics.js` 가 절을 주제 판으로 옮기고, 휠 · 방향키 · 드래그 · 스와이프로 넘긴다. 처음 보는 사람에게는 넘기는 법 카드(`assets/paged-guide.js` · `paged.css`), 상단 「스크롤로 보기」(`#modeBtn` · `assets/mode-toggle.js`)로 같은 페이지 안에서 예전 스크롤판으로. 「기타 대시보드」 절(`#xdash`)도 이제 본판에 있다(인쇄에는 안 넣음). 5-5.
 - `topics.html`(2026-11-15 시험 · 안 A) · `toggle.html`(2026-11-16 · 안 B)은 **옛 시안**으로 남겨 둔다(본판 메뉴에서 잇지 않음 · 비공개 아티팩트 묶음 도구가 읽음). 본판이 같은 틀이 된 뒤로는 index.html 을 고칠 때 다시 복사하지 않아도 된다 — 지울지는 본인 결정.
-- `tools/` · `.githooks/` · `.github/` 는 사이트가 아니라 관리 도구다(데모 가림 — 5-3). `.claude/skills/web-motion/`(2026-11-23)은 모션 · 시각 효과 작업 규칙 스킬과 점검 스크립트다(5-7 — Claude Code 가 이 저장소에서 저절로 읽는다).
+- `tools/` · `.githooks/` · `.github/` 는 사이트가 아니라 관리 도구다(데모 가림 — 5-3). `.claude/skills/`(2026-11-23)는 Claude Code 가 이 저장소에서 저절로 읽는 스킬(모션 규칙 `web-motion` · 검사 · 이력서 심사 — 5-7 · 5-8), 루트 `DESIGN.md` 는 디자인 기준 파일, `tools/claude-setup/` 은 PC 전역 스킬 설치 도구다(5-8).
 
 ## 2. data.js 에서 자주 고치는 곳
 
@@ -289,17 +289,29 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 
 | 효과 | 어디 | 주의 |
 |---|---|---|
-| 첫 화면 빛(aurora, WebGL) + 점 격자 | `fx.js aurora()` · `.fx-stage`(`.hero` 맨 앞 자식, z-index −1 · `.hero` 에 position: relative · isolation) | 빛은 「핵심 과업」 칸(#mboard) 둘레를 돈다. 바탕 위 글자(소개 · 「핵심 성과」 머리 · 「핵심 과업」 머리) 자리는 `--fx-a-text` 만큼 옅게 — 대비 4.5:1(fx-audit contrast 로 정한 값: 라이트 0.25 · 다크 0.1). 라이트 색은 밝은 파스텔(바탕보다 많이 어두워지지 않음). 해상도 0.5배 · 40fps, 소프트웨어 GL 은 0.25배 · 20fps, 프레임이 밀리면 단계적으로 낮추다 멈춘 한 장. 화면 밖 · 다른 탭 · 인쇄면 멈춤, 동작 줄이기면 멈춘 한 장. WebGL 이 없거나 잃으면 CSS 그라데이션. 스크롤판에서 첫 화면이 올라가는 동안 빛은 0.32 배 느리게(시차) |
+| 첫 화면 빛(aurora, WebGL) + 점 격자 | `fx.js aurora()` · `.fx-stage`(`.hero` 맨 앞 자식, z-index −1 · `.hero` 에 position: relative · isolation) | 빛은 「핵심 과업」 칸(#mboard) 둘레를 돈다. 바탕 위 글자(소개 · 「핵심 성과」 머리 · 「핵심 과업」 머리) 자리는 `--fx-a-text` 만큼 옅게 — 대비 4.5:1(fx-audit contrast 로 정한 값: 라이트 0.25 · 다크 0.1). 라이트 색은 밝은 파스텔(바탕보다 많이 어두워지지 않음). 해상도 0.5배 · 40fps, 소프트웨어 GL 은 0.25배 · 20fps, 프레임이 밀리면 단계적으로 낮추다 멈춘 한 장. 화면 밖 · 다른 탭 · 인쇄면 멈춤, 동작 줄이기면 멈춘 한 장. WebGL 이 없거나 잃으면 CSS 그라데이션. 스크롤판에서 첫 화면이 올라가는 동안 빛은 0.32 배 느리게(시차). **5초 안에 잦아들어 멈춘 한 장**(루프 꺼짐 — `REST_AFTER` 2.5초 + 2.5초), 첫 화면 위 마우스 · 테마 바꿈 · 탭 돌아옴 · 다시 화면에 들어옴이 깨운다(WCAG 2.2.2 · web-design-guidelines 「5초 넘는 자동 움직임」) |
 | 카드 기울기(tilt) · 단추 끌림(magnet) | `fx.js pointerFx()` `TILT` · `MAG` | 마우스만. 개별 속성 `rotate` · `translate` 을 JS 가 lerp(hover 의 transform 과 따로 겹침) — 대상에 CSS transition 을 더하지 않는다(원래 transition 목록을 덮어씀). 부모에 `.fx-persp`(perspective 1100px — 화면만). 장 넘김 끌기 중엔 안 움직임 |
 | 따라오는 고리(cursor) | `fx.js cursor()` · `.fx-cursor` | 마우스만 · 기본 커서는 그대로. z-index 130. 누를 것 위 커짐 · 차트 위 작은 점 · 입력 · iframe 위 숨김 |
 | 꼬리표 해독(scramble) | `fx.js scramble()` `.sec-h .tag` · `.growth-h .tag` | 영문 · 숫자만(고정폭 — 폭 그대로), 화면에 처음 들어올 때 한 번. 장 넘김 · 인쇄 · 동작 줄이기에서는 안 돎. 인쇄 직전 · 「장으로 보기」 클릭 직전에 원래 글자로(`holds`). **그래서 fx.js 는 app.js 앞**(beforeprint 가 printWrap 보다 먼저) |
-| 테두리 빛(beam) | `fx.js beam()` `BEAM` = LIVE DEMO 칸 · 주요 성과 머리 카드(.rs-lead) · 프로필 사진 | `.fx-beam::after`(@property `--fx-ang` + conic + mask exclude). 대상에 ::after 가 있으면 못 씀. 화면 밖은 `.fx-idle` — **`.anim-idle` 을 쓰면 카드 자신의 등장 애니메이션까지 멈춰 투명한 채 굳는다**(휴대폰 LIVE DEMO 칸에서 실제로 났다) |
-| 흐르는 그라데이션 글자 | `fx.js grad()` `.thesis em` 안 `span.fx-grad` | 형광펜 밑줄(em 바탕)은 그대로. 색 `--fx-g1~3` 은 대비 4.5:1 넘는 색만. 인쇄는 단색 |
+| 테두리 빛(beam) | `fx.js beam()` `BEAM` = LIVE DEMO 칸 · 주요 성과 머리 카드(.rs-lead) · 프로필 사진 | 화면에 처음 들어올 때 두 바퀴(4.8초) 돌고 사라짐 · 마우스를 올리면 다시(`fxBeamAgain` — 이름을 바꿔야 처음부터). `.fx-beam::after`(@property `--fx-ang` + conic + mask exclude). 대상에 ::after 가 있으면 못 씀. 화면 밖은 `.fx-idle` — **`.anim-idle` 을 쓰면 카드 자신의 등장 애니메이션까지 멈춰 투명한 채 굳는다**(휴대폰 LIVE DEMO 칸에서 실제로 났다) |
+| 흐르는 그라데이션 글자 | `fx.js grad()` `.thesis em` 안 `span.fx-grad` | 화면에 들어올 때 한 번(4.5초) · 문장에 마우스를 올리면 다시. 형광펜 밑줄(em 바탕)은 그대로. 색 `--fx-g1~3` 은 대비 4.5:1 넘는 색만. 인쇄는 단색 |
 | 테마 원형 전환 | `FX.themeSwap` ← `app.js wireChrome` 테마 단추 | View Transitions 가 없거나 동작 줄이기면 바로 바뀜 |
 | 스크롤 진행 막대 | `.mast::after` 그라데이션 + 빛 | |
 
 - 실측(2026-11-23 헤드리스 — `fx-audit.js --pdf`): 1463×800 · 1280×720 · 390×844 × 라이트 · 다크 모두 오류 0 · 넘침 0 · 효과 끔과 위치 같음(첫 화면 · 주요 성과 · 상단 바 안 모든 요소) · 끝난 뒤 글자 같음 · 첫 화면 글자 대비 최저 6.3(끔 6.85) · 동작 줄이기 루프 0 · 장 넘김 켜짐 · PDF 장 수 효과 켬 = 끔(이 컨테이너 글꼴 16 · 8). 첫 로드는 fx.js 하나(28KB · gzip 약 11KB)가 늘었다(6절 5). 실제 GPU · 트랙패드 · 휴대폰 손맛은 `미검증`(헤드리스는 GPU 없이 그린다).
+- (같은 날 둘째 — 설치한 디자인 기준 web-design-guidelines · Taste 에 맞춰) **보라 · 라벤더를 뺐다** — 효과 색은 강조색 코발트 · 하늘 · 청록만(`--fx-a1~3` · `--fx-g1~3`). 끝없이 도는 효과는 없다(위 표). 다시 잰 fx-audit 모두 통과 · 첫 화면 대비 최저 6.44.
 - 새 효과는 스킬 3절 순서대로 넣고 이 표에 한 줄 더한다.
+
+## 5-8. Claude 스킬 · 디자인 기준 파일 (2026-11-23)
+
+본인 「어썸디자인도 설치해줘 — lazyowen.com 가이드 참고해 전체적으로 자동 설치 · 필요한 것들 클로드에 보강」. 자세한 것은 `tools/claude-setup/README.md` · 출처는 `.claude/skills/THIRD_PARTY.md`.
+
+- **우선순위: CLAUDE.md > `DESIGN.md` > 디자인 스킬의 기본값.** 스킬이 이 파일의 규칙(숫자 · 인쇄 장 수 · 장 넘김 · 실제 연락처 · 첫 화면 한 장)과 부딪히면 이 파일을 따른다.
+- `DESIGN.md`(루트) — Awesome DESIGN.md 형식으로 이 사이트의 실제 토큰(색 · 글꼴 · 모서리 · 간격 · 그림자 · 움직임)을 정리했다. 값의 원본은 `style.css` — 토큰을 바꾸면 여기도 고친다. 참고용 남의 DESIGN.md 는 `DESIGN.local.md` 로만(gitignore).
+- 이 저장소 스킬(`.claude/skills/` — 검토한 판만, 원본 그대로 · 라이선스 동봉): `web-motion`(직접 작성) · `web-design-guidelines`(Vercel, 규칙 동봉판 SHA 고정 — 배포 전 검사. 영어 전용 글자 규칙은 한국어 본문에 적용 안 함) · `emil-design-eng`(움직임 다듬기) · `hiring-panel`(`/hiring-panel` 이력서 심사 — 결과 `.hiring-panel/` 은 **gitignore, 올리지 않는다**: 개인 정보).
+- **Taste(`design-taste-frontend`)는 이 저장소에 쓰지 않는다** — 진짜 연락처를 가짜로 바꾸고 · 기울기 · 스크롤 등장을 금지하고 · 절 구조를 다시 짜며 · 매 턴 헤드리스 점검(Stop 훅)을 돈다. PC 전역(`tools/claude-setup/install-global.ps1`)에만 — 새 랜딩 · 회사 사이트용. 그 기준 중 「보라 그라데이션 · 끝없는 장식 금지」만 이 사이트에 반영(5-7).
+- 남의 스킬을 새로 넣거나 올릴 때: 빈 임시 폴더에 받아 **모든 파일을 읽고**(훅 · 네트워크 요청 · 스크립트 실행 · 「다른 도구보다 우선」 같은 지시) 이 파일 규칙과 부딪히지 않는지 본 뒤 넣는다. `THIRD_PARTY.md` 표에 출처 · 판 · 라이선스를 적는다. 공개 저장소라 큰 자산 묶음(수 MB 이상)은 넣지 않는다.
+- 클라우드 세션 네트워크: lazyowen.com 을 기본 환경 허용 목록에 더했다(11-23). impeccable 은 자기 사이트(impeccable.style)에서 묶음을 받아 막혀 있다 — PC 에서.
 
 ## 6. 확인 방법
 

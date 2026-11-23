@@ -5,13 +5,13 @@
    효과는 모두 「덧그림」이다 — 배치(크기 · 위치 · 줄바꿈)를 바꾸지 않고 transform · opacity · 캔버스 · 가상 요소만 쓴다.
    그래서 첫 화면 한 장 맞춤 · 장 넘김 장 나눔 · PDF 장 수(16 · 7)가 그대로다(fx-audit 가 ?fx=0 과 위치를 비교한다).
 
-     aurora   첫 화면 뒤 흐르는 빛(WebGL — 「핵심 과업」 칸 뒤에 모이고 소개 글자 쪽은 옅게) + 마우스를 따라 켜지는 점 격자
+     aurora   첫 화면 뒤 흐르는 빛(WebGL — 「핵심 과업」 칸 둘레를 돌고 소개 글자 쪽은 옅게) + 마우스를 따라 켜지는 점 격자. 5초 안에 잦아들어 멈춘 한 장, 마우스가 깨운다
      tilt     카드가 마우스 쪽으로 살짝 기운다(성과 리포트 칸 · 주요 성과 카드 · 그로스 · 역량 · 원칙 · 점수)
      magnet   단추가 마우스 쪽으로 몇 px 끌려온다(상단 메뉴 · 도구 단추 · 표 단추)
      cursor   마우스를 느리게 따라오는 고리 — 누를 수 있는 것 위에서 커진다(마우스만)
      scramble 절 꼬리표(Performance · Projects …)의 영문 · 숫자가 화면에 들어올 때 한 번 해독되듯 맞춰진다(고정폭 글꼴이라 폭 그대로)
-     beam     테두리를 따라 도는 빛(LIVE DEMO 칸 · 주요 성과 머리 카드 · 프로필 사진)
-     grad     첫 화면 문장 강조(「광고 밖까지」)에 흐르는 그라데이션 글자
+     beam     테두리를 따라 도는 빛(LIVE DEMO 칸 · 주요 성과 머리 카드 · 프로필 사진) — 화면에 들어올 때 두 바퀴(4.8초) 뒤 사라짐, 마우스를 올리면 다시
+     grad     첫 화면 문장 강조(「광고 밖까지」)에 한 번 흐르는 그라데이션 글자(4.5초 · 문장에 마우스를 올리면 다시). 색은 사이트 강조색 계열만(보라 없음)
      theme    테마 단추를 누르면 단추 자리에서 원이 퍼지며 바뀐다(View Transitions — 없으면 바로 바뀜)
 
    끄는 법: 주소 ?fx=0 (이 탭만 — sessionStorage) · localStorage psj-fx=0 (이 브라우저) · 한 가지만 끄려면 FX_CONF 의 그 이름을 false.
@@ -153,7 +153,11 @@ void main(){
     if (!gl || !build()) { stage.classList.add('fx-nogl'); mods.push('aurora(css)'); return; }
     mods.push('aurora');
 
-    const S = { w: 0, h: 0, focus: [.7, .5, .2, .35], prot: new Float32Array(12), mouse: [.5, .5, 0], mt: [.5, .5, 0], col: null, alpha: [.9, .4], t0: 0, intro: 0, vis: false, last: 0 };
+    const S = { w: 0, h: 0, focus: [.7, .5, .2, .35], prot: new Float32Array(12), mouse: [.5, .5, 0], mt: [.5, .5, 0], col: null, alpha: [.9, .4], t0: 0, intro: 0, vis: false, last: 0,
+      tacc: 14, speed: 1, wake: 0, prev: 0, rest: false };
+    // 쉬기(2026-11-23 — WCAG 2.2.2 「5초 넘게 저절로 움직이는 것은 멈출 수 있어야」 · 배터리): 마지막으로 깨운 뒤 REST_AFTER 가 지나면
+    // 흐름이 2.5초 동안 느려져 멈춘 한 장이 되고 루프도 끈다. 첫 화면 위 마우스 움직임 · 테마 바꿈 · 탭 돌아옴 · 화면에 다시 들어옴이 깨운다
+    const REST_AFTER = 2500;                           // 2.5초 + 잦아듦 2.5초 = 5초 안에 멈춤(web-design-guidelines 「5초 넘는 자동 움직임」)
     // 캔버스 해상도 = CSS 크기 × 0.5 (흐린 빛이라 충분 · GPU 부담 ¼). 그래픽 카드 없이 CPU 로 그리는 브라우저(SwiftShader · llvmpipe —
     // 드라이버가 막힌 회사 PC 등)는 처음부터 0.25 · 20fps. 그려 보고 프레임이 밀리면(1초 평균 28ms 넘음) 한 단계씩 더 낮춘다(0.5 → 0.35 → 0.25 → 멈춘 한 장)
     let soft = false;
@@ -184,11 +188,14 @@ void main(){
       const g = (fb || host).getBoundingClientRect();
       stage.style.setProperty('--fx-fx', ((g.left + g.width / 2 - hr.left) / hr.width * 100).toFixed(1) + '%');
       stage.style.setProperty('--fx-fy', ((g.top + g.height / 2 - hr.top) / hr.height * 100).toFixed(1) + '%');
-      if (RM.matches || !S.vis) draw(performance.now());
+      if (RM.matches || !S.vis || S.rest) draw(performance.now());   // 캔버스 크기를 바꾸면 지워지므로 쉬는 중에도 한 장 다시
     };
     function draw(now) {
       if (!S.col || gl.isContextLost()) return;
-      const T = RM.matches ? 14 : (now - S.t0) / 1000 + 14;
+      const dt = S.prev ? Math.min(.1, (now - S.prev) / 1000) : 0; S.prev = now;
+      S.speed = RM.matches ? 0 : now - S.wake > REST_AFTER ? Math.max(0, S.speed - dt / 2.5) : Math.min(1, S.speed + dt / .8);
+      S.tacc += dt * S.speed * S.speed;                  // 속도를 제곱으로 — 멈출 때 부드럽게 잦아든다
+      const T = S.tacc;
       S.intro = RM.matches ? 1 : Math.min(1, S.intro + .025);
       for (let i = 0; i < 3; i++) S.mouse[i] = lerp(S.mouse[i], S.mt[i], .08);
       gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
@@ -210,23 +217,25 @@ void main(){
       perf.prev = now;
       if (perf.n >= 45) { const avg = perf.sum / perf.n; perf.n = perf.sum = 0; if (avg > 28) slower(); }
       if (now - S.last >= 1000 / FPS - 2) { S.last = now; draw(now); }
+      if (S.speed <= 0 && S.mouse[2] < .01 && S.intro >= 1) { S.rest = true; S.prev = 0; loops.delete('aurora'); return; }   // 멈춘 한 장 — 루프 끔
       if (!still) raf = requestAnimationFrame(frame);
     };
-    const run = () => { if (want() && !raf) { loops.add('aurora'); raf = requestAnimationFrame(frame); } };
-    S.t0 = performance.now();
-    FX._aurora = () => ({ soft, level: lv, scale: SCALE, fps: FPS, still, size: [S.w, S.h] });
+    const run = () => { if (want() && !raf && !S.rest) { loops.add('aurora'); raf = requestAnimationFrame(frame); } };
+    const wake = () => { S.wake = performance.now(); if (S.rest) { S.rest = false; S.prev = 0; } run(); };
+    S.t0 = S.wake = performance.now();
+    FX._aurora = () => ({ soft, level: lv, scale: SCALE, fps: FPS, still, rest: S.rest, speed: +S.speed.toFixed(2), size: [S.w, S.h] });
     colors(); place();
-    if ('IntersectionObserver' in window) new IntersectionObserver(es => { S.vis = es[es.length - 1].isIntersecting; if (S.vis) { place(); run(); } }, { rootMargin: '80px 0px' }).observe(host);
+    if ('IntersectionObserver' in window) new IntersectionObserver(es => { S.vis = es[es.length - 1].isIntersecting; if (S.vis) { place(); wake(); } }, { rootMargin: '80px 0px' }).observe(host);
     else { S.vis = true; run(); }
-    document.addEventListener('visibilitychange', run);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
     afterPrint(run);
     if ('ResizeObserver' in window) new ResizeObserver(() => requestAnimationFrame(place)).observe(host);
     addEventListener('resize', () => requestAnimationFrame(place));
     document.addEventListener('tm:mode', () => setTimeout(place, 60));
-    onTheme(() => requestAnimationFrame(colors));
-    RM.addEventListener && RM.addEventListener('change', () => { colors(); place(); run(); });
+    onTheme(() => requestAnimationFrame(() => { colors(); if (S.rest) draw(performance.now()); wake(); }));
+    RM.addEventListener && RM.addEventListener('change', () => { colors(); place(); wake(); });
     cv.addEventListener('webglcontextlost', e => { e.preventDefault(); stage.classList.add('fx-nogl'); });
-    cv.addEventListener('webglcontextrestored', () => { stage.classList.remove('fx-nogl'); if (build()) { colors(); place(); run(); } });
+    cv.addEventListener('webglcontextrestored', () => { stage.classList.remove('fx-nogl'); if (build()) { colors(); place(); wake(); } });
     // 마우스 — 빛이 따라오고 점 격자가 켜진다(마우스만)
     if (FINE.matches) {
       let gr = 0, gx = 0, gy = 0;
@@ -234,10 +243,11 @@ void main(){
         if (e.pointerType !== 'mouse') return;
         const r = stage.getBoundingClientRect();
         S.mt = [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, 1];
+        if (performance.now() - S.wake > 400) wake();
         gx = e.clientX - r.left; gy = e.clientY - r.top;
         if (!gr) gr = requestAnimationFrame(() => { gr = 0; stage.style.setProperty('--fx-gx', gx.toFixed(0) + 'px'); stage.style.setProperty('--fx-gy', gy.toFixed(0) + 'px'); stage.classList.add('fx-lit'); });
       }, { passive: true });
-      host.addEventListener('pointerleave', () => { S.mt[2] = 0; stage.classList.remove('fx-lit'); });
+      host.addEventListener('pointerleave', () => { S.mt[2] = 0; stage.classList.remove('fx-lit'); if (!S.rest) run(); });
     }
     // 스크롤 — 첫 화면이 올라가는 동안 빛은 조금 느리게(시차)
     let sr = 0;
@@ -377,13 +387,13 @@ void main(){
   const BEAM = '.mp-dash, .rs-lead, .hero .portrait';
   const LOOP_CSS = [];
   function beam() {
-    $$(BEAM).forEach(n => { n.classList.add('fx-beam'); LOOP_CSS.push(n); });
+    $$(BEAM).forEach(n => { n.classList.add('fx-beam', 'fx-idle'); LOOP_CSS.push(n); });   // 화면에 처음 들어올 때 돈다(그 전엔 멈춤)
     if (LOOP_CSS.length) mods.push('beam');
   }
   function grad() {
     $$('.thesis em').forEach(em => {
       if (em.querySelector('.fx-grad')) return;
-      const s = document.createElement('span'); s.className = 'fx-grad';
+      const s = document.createElement('span'); s.className = 'fx-grad fx-idle';
       while (em.firstChild) s.appendChild(em.firstChild);
       em.appendChild(s); LOOP_CSS.push(s);
     });

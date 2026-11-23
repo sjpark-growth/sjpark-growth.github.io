@@ -14,18 +14,19 @@ description: 박성준 포트폴리오(이 저장소)의 모션 · 시각 효과
 2. **한 화면에 주인공 하나** — 첫 화면은 빛(aurora), 주요 성과는 테두리 빛(beam), 절 머리는 꼬리표 해독(scramble). 같은 자리에 효과를 겹치지 않는다(이미 `wireReveal` 등장 · `wireSpot` 빛 번짐 · 숫자 굴림이 있다).
 3. **끄면 예전 그대로** — 모든 규칙은 `html.fx-on` 아래. `?fx=0`(이 탭) · `localStorage psj-fx=0`(이 브라우저)이면 스크립트가 클래스를 안 붙인다. 스크립트가 꺼져도 화면은 멀쩡해야 한다.
 4. **외부 요청 0** — 라이브러리(GSAP · three.js · Lottie · 웹폰트) 금지(CLAUDE.md 1절). WebGL · Web Animations · View Transitions · CSS `@property` 는 브라우저 기본이라 쓴다.
-5. **멈출 줄 아는 움직임** — 끝없이 도는 것은 화면 밖 · 다른 탭 · 동작 줄이기 · 인쇄에서 멈춘다. 마우스를 따라가는 것은 마우스(`(hover: hover) and (pointer: fine)`)일 때만.
+5. **멈출 줄 아는 움직임** — 저절로 도는 장식은 **5초 안에 멈춘다**(WCAG 2.2.2 · `web-design-guidelines`) — 한 번 돌고 끝 · 마우스를 올리면 다시. 화면 밖 · 다른 탭 · 동작 줄이기 · 인쇄에서는 처음부터 멈춤. 마우스를 따라가는 것은 마우스(`(hover: hover) and (pointer: fine)`)일 때만.
+6. **색은 `DESIGN.md` 안에서** — 강조색 코발트 · 하늘 · 청록. **보라 · 라벤더 · 무지개 그라데이션 금지**(「AI 가 만든 화면」의 대표 표시).
 
 ## 2. 지금 있는 장치 지도 — 새로 만들기 전에 여기서 찾는다
 
 | 무엇 | 어디 | 메모 |
 |---|---|---|
-| 첫 화면 빛(WebGL) + 점 격자 | `fx.js aurora()` · CSS `.fx-stage` `.fx-grid` | 「핵심 과업」 칸(#mboard) 둘레를 도는 빛 4개 + 흐르는 잡음. 소개 · 「핵심 성과」 머리 · 「핵심 과업」 머리 자리는 `--fx-a-text` 만큼 옅게(글자 대비). 해상도 0.5배 · 40fps, 소프트웨어 GL(SwiftShader 등)은 0.25배 · 20fps, 1초 평균 28ms 넘으면 한 단계씩 낮추다 멈춘 한 장 |
+| 첫 화면 빛(WebGL) + 점 격자 | `fx.js aurora()` · CSS `.fx-stage` `.fx-grid` | 「핵심 과업」 칸(#mboard) 둘레를 도는 빛 4개 + 흐르는 잡음. 5초 안에 잦아들어 멈춤(`REST_AFTER`), 마우스 · 테마 · 탭 복귀가 깨움. 소개 · 「핵심 성과」 머리 · 「핵심 과업」 머리 자리는 `--fx-a-text` 만큼 옅게(글자 대비). 해상도 0.5배 · 40fps, 소프트웨어 GL(SwiftShader 등)은 0.25배 · 20fps, 1초 평균 28ms 넘으면 한 단계씩 낮추다 멈춘 한 장 |
 | 카드 기울기 · 단추 끌림 | `fx.js pointerFx()` (`TILT` · `MAG` 선택자) | `rotate` · `translate` **개별 속성**을 JS 가 직접 lerp — hover 의 `transform` 과 따로 겹친다. CSS `transition` 을 더하지 않는다(카드마다 있던 transition 목록을 덮어쓴다) |
 | 따라오는 고리 | `fx.js cursor()` · `.fx-cursor` | 기본 커서는 숨기지 않는다. 누를 것 위 `is-hot`, 차트 위 `is-chart`(작은 점), 입력 · iframe 위 `is-quiet`(숨김) |
 | 꼬리표 해독 | `fx.js scramble()` (`SCR`) | 영문 · 숫자만 바꾸고 한글은 그대로, 고정폭 글꼴이라 폭이 안 바뀐다. 장 넘김에서는 안 돈다(장 넘김이 절 머리를 복사 · 줄바꿈 공백을 바꿈) |
-| 테두리 빛 | `fx.js beam()` (`BEAM`) · `.fx-beam::after` | `@property --fx-ang` + conic-gradient + mask exclude. 대상에 ::after 가 이미 있으면 쓰지 않는다 |
-| 흐르는 그라데이션 글자 | `fx.js grad()` · `.fx-grad` | `.thesis em` 안에 span 을 넣어 글자만 — em 의 형광펜 밑줄 바탕은 그대로. 주기 반복 그라데이션(200% · 0→100%)이라 이음매 없음 |
+| 테두리 빛 | `fx.js beam()` (`BEAM`) · `.fx-beam::after` | 들어올 때 두 바퀴(4.8초) · 마우스 올리면 다시. `@property --fx-ang` + conic-gradient + mask exclude. 대상에 ::after 가 이미 있으면 쓰지 않는다 |
+| 흐르는 그라데이션 글자 | `fx.js grad()` · `.fx-grad` | 한 번(4.5초) · 마우스 올리면 다시. `.thesis em` 안에 span 을 넣어 글자만 — em 의 형광펜 밑줄 바탕은 그대로. 주기 반복 그라데이션(200% · 0→100%)이라 이음매 없음 |
 | 테마 원형 전환 | `FX.themeSwap(apply, 단추)` ← `app.js wireChrome` | View Transitions 없으면 바로 바뀜 |
 | 스크롤 등장 · 빛 번짐 | `app.js wireReveal` · `wireSpot` (11-15) | 첫 화면 밖 카드 · 절 머리. 장 넘김에서는 안 돎 |
 | 숫자 굴림 | `app.js rollNumbers` · `[data-roll-to]` | 인쇄 직전 끝값으로 |
@@ -45,7 +46,7 @@ description: 박성준 포트폴리오(이 저장소)의 모션 · 시각 효과
    - 화면 밖 · 다른 탭: rAF 루프는 `loops` 에 이름을 넣고 빼서 `FX.info().loops` 로 보이게
    - 손가락 기기: 마우스 전용이면 `FINE.matches` 에서만
 5. 루트 `CLAUDE.md` 5-7절 표에 한 줄 더한다(무엇 · 어디 · 주의).
-6. 아래 6절 점검을 돌린다.
+6. 아래 6절 점검을 돌린다. 곡선 · 길이 · 누름 반응은 `emil-design-eng`, 마지막 규칙 검사는 `web-design-guidelines`(같은 `.claude/skills/`).
 
 ## 4. 반드시 지킬 것 (이 저장소에서 실제로 깨졌던 것들)
 
