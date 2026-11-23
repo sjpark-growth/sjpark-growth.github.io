@@ -489,3 +489,11 @@ a.xd-shot:hover .xd-open { transform: translateY(-2px); }
   .tm-anim { animation: none !important; }
   html.tm-sheet main::after { display: none; }
 }
+
+/* ===== (2026-11-23) 문맥 · 기능 시각화 보강 (본인 「문맥, 기능상 시각화 추가로 찾아서 개선해줘」) =====
+   기타 대시보드 「핵심 기능」 칩이 한 줄에 하나씩 세로로 쌓이던 것 — 위 .xd .how { display: grid }(예전 줄 목록용)가
+   style.css .how.how-tips { display: flex; flex-wrap: wrap } 를 덮었다(같은 특이도 · 이 파일이 뒤에 읽힘, 헤드리스 계산값으로 확인). 칩 목록만 가로로 흐르게 */
+.xd.xd-full .how.how-tips { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; }
+/* 주요 업무 바로 가기는 장 넘김에서 숨김(GNB 항목 · 목차가 같은 일). 기타 대시보드 연결 줄은 넓은 화면 장 넘김에서만 숨김(첫 카드 장이 길어져 장 수가 늘지 않게) */
+html.tabmode .work-jump { display: none; }
+html.tm-wide .xd-map { display: none; }

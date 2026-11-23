@@ -2590,3 +2590,123 @@ a.rs-card:hover { transform: translateY(-3px); border-color: var(--tone); box-sh
   /* 띄어쓰기 없이 붙은 조사 · 기호 낱말(「1,384%로」 「2배+」) — app.js printWrap 이 인쇄하는 동안만 감싼다 */
   .pw-nw { white-space: nowrap; }
 }
+
+/* ===== (2026-11-23) 문맥 · 기능 시각화 보강 — 본인 「문맥, 기능상 시각화 추가로 찾아서 개선해줘」 =====
+   ① 가로로 넘기는 칩 줄 공통(.hrow — app.js edgeFade) ② 주요 업무 바로 가기(#workJump) ③ 기타 대시보드 연결 줄(#xdMap)
+   ④ 근거 링크 칩(.ev-link — 원칙 · 직무점수) ⑤ 간트 직무 글자(.g-role) ⑥ # 링크로 닿은 카드 깜빡임. 인쇄에는 ② ③ 이 없고 ④ ⑤ 는 글자 · 칩 모양 그대로 */
+.hrow { scrollbar-width: none; }
+.hrow::-webkit-scrollbar { display: none; }
+.hrow.hs-x { -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent); mask-image: linear-gradient(90deg, #000 86%, transparent); }
+.hrow.hs-x.hs-l { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 86%, transparent); mask-image: linear-gradient(90deg, transparent, #000 28px, #000 86%, transparent); }
+.hrow.hs-x.hs-end { -webkit-mask-image: none; mask-image: none; }
+.hrow.hs-x.hs-l.hs-end { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px); mask-image: linear-gradient(90deg, transparent, #000 28px); }
+
+/* ② 주요 업무 바로 가기 — 순번 · 짧은 제목 칩. 「제안 · 실행 예정」 · 「진행 중」 은 카드와 같은 pill 꼬리표 */
+.work-jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 clamp(18px, 2.2vw, 26px); }
+.work-jump .wj { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; box-sizing: border-box; padding: 5px 12px 5px 10px; border: 1px solid var(--rule); border-radius: 999px;
+  background: var(--surface); color: var(--ink-2); font-size: 13px; font-weight: 600; line-height: 1.25; text-decoration: none; transition: border-color .15s, color .15s; }
+.work-jump .wj-n { font-family: var(--f-num); font-stretch: 85%; font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
+.work-jump .pill { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; }
+.work-jump .pill.wip { background: color-mix(in srgb, var(--warn) 14%, transparent); color: color-mix(in srgb, var(--warn) 72%, var(--ink)); }   /* 카드 pill 과 같은 색은 라이트 3.6:1 — 글자만 조금 진하게(4.5:1 이상) */
+.work-jump .wj:hover, .work-jump .wj:focus-visible { border-color: var(--accent); color: var(--accent-ink); }
+.work-jump .wj:hover .wj-n, .work-jump .wj:focus-visible .wj-n { color: var(--accent-ink); }
+.work-jump .wj:focus-visible, .xd-map a:focus-visible, a.ev-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media screen and (max-width: 860px) {
+  .work-jump { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x proximity; }
+  .work-jump .wj { flex: none; white-space: nowrap; scroll-snap-align: start; }
+}
+
+/* ③ 기타 대시보드 연결 줄 — 「퍼포먼스 대시보드 → 01 ~ 04」. 마우스를 올린 칸만 또렷(사이트 공통 규칙) */
+.xd-map { display: flex; align-items: stretch; gap: 8px; margin: 0 0 clamp(18px, 2.2vw, 26px); }
+.xd-map a { text-decoration: none; border-radius: 12px; transition: border-color .15s, opacity .15s; }
+.xd-map .xm-hub { flex: none; display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 8px 14px; background: var(--accent); color: var(--surface); }
+.xd-map .xm-hub small { font-size: 11px; font-weight: 700; letter-spacing: .04em; opacity: .85; }
+.xd-map .xm-hub b { font-size: 14px; font-weight: 700; white-space: nowrap; }
+.xd-map .xm-ar { flex: none; align-self: center; color: var(--ink-3); font-size: 16px; }
+.xd-map .xm-n { flex: 1 1 0; min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 7px; align-items: baseline; align-content: center; padding: 8px 12px;
+  border: 1px solid var(--rule); background: var(--surface); color: var(--ink); }
+.xd-map .xm-n b { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-map .xm-n small { grid-column: 1 / -1; margin-top: 2px; font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-map .xm-n:hover, .xd-map .xm-n:focus-visible { border-color: var(--accent); }
+@media (hover: hover) { .xd-map:hover .xm-n:not(:hover) { opacity: .55; } }
+@media screen and (min-width: 601px) and (max-width: 1100px) {
+  .xd-map { flex-wrap: wrap; }
+  .xd-map .xm-n { flex: 1 1 180px; }
+}
+@media screen and (max-width: 600px) {
+  .xd-map { overflow-x: auto; scroll-snap-type: x proximity; }
+  .xd-map .xm-hub, .xd-map .xm-n { scroll-snap-align: start; }
+  .xd-map .xm-hub { padding: 8px 12px; }
+  .xd-map .xm-n { flex: none; width: 138px; }   /* 390 에서 다음 칸(02)이 반쯤 보이게 — 172px 이면 01 이 딱 끝에서 잘려 뒤에 더 있다는 단서가 없었다(교차 검증 11-23) */
+}
+
+/* ④ 근거 링크 칩 — 모양(바탕 · 글자색)은 그대로, 「사례 →」 링크처럼 밑줄 · 화살표만 */
+a.ev-link { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 3px; }
+a.ev-link .ev-ar { display: inline-block; margin-left: 4px; font-size: .95em; text-decoration: none; transition: transform .15s; }
+a.ev-link:hover { text-decoration-color: currentColor; }
+a.ev-link:hover .ev-ar { transform: translateX(2px); }
+.belief a.bev { color: var(--accent-ink); }
+.sb li.has-link { padding: 0; }
+/* inline-block — inline-flex 면 인쇄 때 printWrap 이 숫자를 span 으로 감싸는 순간 그 앞 빈칸이 flex 항목 끝에서 지워져 PDF 에 「매출3.79억」으로 찍혔다 */
+.sb li.has-link a.ev-link { display: inline-block; min-height: 24px; box-sizing: border-box; padding: 3px 8px; line-height: 18px; }
+.sb li.has-link:hover { transform: none; }
+@media print {
+  a.ev-link { text-decoration: none; }
+  a.ev-link .ev-ar, .work-jump, .xd-map { display: none !important; }
+  .sb li.has-link a.ev-link { min-height: 0; }
+}
+
+/* ⑤ 간트 직무 글자 — 격자선 위에서도 읽히게 바탕색 테두리(paint-order). 「팀장」만 굵게 */
+.gantt .g-role { font-size: 11px; font-weight: 400; fill: var(--ink-2); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.gantt .g-role .g-rk { font-weight: 700; fill: var(--ink); }
+.gantt .grow-row.is-now .g-role { font-weight: 600; }
+@media print { .gantt .g-role { stroke: none; } }   /* 테두리 글자는 PDF 에서 글자마다 윤곽이 한 벌 더 들어가 전체 PDF 가 약 0.4MB 늘었다 — 종이는 흰 바탕이라 뺀다 */
+
+/* ⑦ 「동일 매출 대비 지출 X% 절감」 짝 막대(app.js savePair — 주요 성과 카드 · 풀이 툴팁 공용). rs-index 와 같은 문법: 작년 = 100 점선 · 둥근 막대 · 끝 값.
+   색 뜻: 광고비 = --ink-3 테두리 + 빗금(회색 채움은 왼쪽 큰 카드에서 「매출」 뜻이라 쓰지 않음), 매출 = 카드 색(--tone) */
+.rs-pair2 { --kw: 40px; --vw: 50px; position: relative; display: grid; gap: 5px; margin: 7px 0 2px; }
+.rs-pair2 .rp-row { display: grid; grid-template-columns: var(--kw) minmax(0, 1fr) var(--vw); align-items: center; column-gap: 6px; }
+.rs-pair2 .rp-k { font-size: 12px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
+.rs-pair2 .rp-track { position: relative; display: block; height: 7px; }
+.rs-pair2 .rp-track i { display: block; width: var(--w); height: 100%; box-sizing: border-box; border-radius: 4px; transform-origin: 0 50%; }
+.rs-pair2 .sp .rp-track i { border: 1px solid var(--ink-3); background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink-3) 34%, transparent) 0 2px, transparent 2px 5px); }
+.rs-pair2 .rv .rp-track i { background: linear-gradient(90deg, color-mix(in srgb, var(--tone, var(--accent)) 55%, transparent), var(--tone, var(--accent))); }
+.rs-pair2 b { font-family: var(--f-num); font-stretch: 90%; font-size: 12.5px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); white-space: nowrap; }
+.rs-pair2 .rv b { color: color-mix(in srgb, var(--tone, var(--accent)) 72%, var(--ink)); }
+/* 작년 = 100 점선은 막대 칸마다(나란히 놓는 장 넘김에서도 그대로), 꼬리표는 아래 한 줄 */
+.rs-pair2 .rp-track::after { content: ""; position: absolute; top: -3px; bottom: -3px; left: var(--b); border-left: 1.5px dashed var(--ink-3); opacity: .8; }
+.rs-pair2.roas .rp-track::after { content: none; }
+.rs-pair2 .rp-base { position: relative; display: block; height: 11px; margin: -2px calc(var(--vw) + 6px) 0 calc(var(--kw) + 6px); pointer-events: none; }
+.rs-pair2 .rp-base span { position: absolute; top: 0; left: var(--b); transform: translateX(-50%); font-size: 11px; line-height: 1; color: var(--ink-3); white-space: nowrap; }
+/* 장 넘김 넓은 화면 — 주요 성과가 한 장에 들어가게 두 줄을 한 줄로 나란히(예전 30.8억 → 41억 막대 높이와 비슷하게), 꼬리표는 빼고 점선만 */
+html.tm-wide .rs-card .rs-pair2 { --kw: 34px; --vw: 44px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 10px; margin: 5px 0 1px; }
+html.tm-wide .rs-card .rs-pair2 .rp-base { display: none; }
+.results.rs-wait .rs-pair2 .rp-track i { transform: scaleX(0); }
+.results.rs-play .rs-pair2 .rp-track i { animation: rsGrow .9s .5s cubic-bezier(.2,.8,.2,1) backwards; }
+.results.rs-play .rs-pair2 .rv .rp-track i { animation-delay: .65s; }
+@media (prefers-reduced-motion: reduce) {
+  .results.rs-wait .rs-pair2 .rp-track i { transform: none; }
+  .results .rs-pair2 .rp-track i { animation: none !important; }
+}
+@media screen and (max-width: 600px) {
+  .rs-card .rs-pair2 { --kw: 34px; --vw: 46px; }
+  .rs-card .rs-pair2 .rp-base { display: none; }   /* 휴대폰 — 「작년 = 100」 꼬리표는 빼고 점선만 */
+}
+/* 풀이가 있다는 표시 — 점선 밑줄(카드 · 주요 업무 숫자 칸) */
+.sv-hint, .proj .facts li[data-save] .fkn { text-decoration: underline dotted color-mix(in srgb, var(--ink-3) 75%, transparent); text-underline-offset: 3px; }
+.rs-card[data-save], .proj .facts li[data-save] { cursor: help; }
+a.rs-card[data-save] { cursor: pointer; }
+.proj .facts li[data-save]:focus-visible, div.rs-card[data-save]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* 툴팁 안 — 머리 · 범위 · 짝 막대 · 셈 · 풀이 */
+.tip .sv-scope { margin: -3px 0 2px; font-size: 12px; color: var(--ink-3); }
+.tip .rs-pair2.in-tip { --kw: 52px; margin: 8px 0 4px; min-width: 236px; }
+.tip .sv-calc { margin-top: 4px; font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.tip .sv-calc b { color: var(--accent-ink); font-weight: 700; }
+@media print { .sv-hint, .proj .facts li[data-save] .fkn { text-decoration: none; } }
+
+/* ⑧ 성과 추이 「효율 경로」 범례 — 점 모양(입사 전 · ①~④ 단계 무리) */
+.legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
+
+/* ⑥ # 링크로 닿은 카드 — 경력 카드 .job.flash 와 같은 깜빡임 */
+.proj.flash, .xd.flash { animation: jobflash 1.4s ease-out; }
+@media (prefers-reduced-motion: reduce) { .proj.flash, .xd.flash { animation: none; } }

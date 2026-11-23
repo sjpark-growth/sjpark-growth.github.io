@@ -825,6 +825,16 @@
       ],
       caption: '입사 후 1P 에 몰려 있던 집행(25.10 56.8%)을 네이버와 윙으로 분산했습니다. 26년 10월 기준 <b>1P 28% · 윙 30% · 네이버 37%</b> — 한 채널의 정책 변화에 흔들리지 않는 구성입니다.',
       cmp: { cols: [['1P', p => p.mix.cp1], ['윙', p => p.mix.cp3], ['네이버', p => p.mix.naver]], dec: 1, suffix: '', note: '광고비 비중 %' } },
+    /* (2026-11-23 본인 「문맥, 기능상 시각화 추가로 찾아서 개선해줘」) 「효율 경로」 — 다른 다섯 보기는 모두 시간축이라 절 머리 「광고비는 효율을 확인한 뒤에 늘렸습니다」의
+       핵심(비슷한 광고비 수준에서 ROAS 가 어디에 있었나)이 안 보였다. 가로 = 월 광고비 지수 · 세로 = 통합 ROAS, 점 하나 = 한 달(series.js 값 그대로 — 새 숫자 없음).
+       캡션 숫자는 phases · roas 캡션에 이미 있는 것만(888~923% · 1.9배 · 1,090% 이상). 그리기 drawPath, 인쇄는 「광고비와 매출」로(renderPerf) */
+    { id: 'path', label: '효율 경로', title: '월 광고비와 통합 ROAS — 달별 경로', unit: '가로 = 월 광고비 지수(입사 전 6개월 월평균 = 100) · 세로 = 순수 ROAS %', type: 'path', dec: 0, suffix: '',
+      series: [
+        { id: 'spend', name: '월 광고비 (지수)', color: 'var(--ink-3)', values: S.index.spend },
+        { id: 'roas', name: '통합 ROAS (%)', color: 'var(--accent)', values: S.roas.total, emph: true },
+      ],
+      caption: '점 하나가 한 달입니다. 위로 갈수록 ROAS 가 높고, 오른쪽으로 갈수록 광고비를 많이 쓴 달입니다. 진단 구간(25.7–8)은 ROAS <b>888~923%</b>였고, 월 광고비를 입사 전의 1.9배로 늘린 확장 구간에서도 <b>1,090% 이상</b>을 지켰습니다. 비슷한 광고비 수준의 달끼리 위아래로 비교해 보세요.',
+      cmp: { cols: [['월 광고비(지수)', p => p.index.spend], ['통합 ROAS', p => p.roas.total]], dec: 0, suffix: '', note: '광고비 = 지수(입사 전 6개월 월평균 = 100) · ROAS = 순수 ROAS % · 광고비 가중', deltaCol: 1, deltaUnit: '%p' } },
   ];
   let curView = 'amount', showLabels = false;
 
@@ -841,8 +851,10 @@
     $('#phaseList').innerHTML = R.phases.map(p => `<li><span class="pn">${p.n}</span><div><b>${p.t}</b><span class="pp">${mLabel(p.from)}–${mLabel(p.to)} · ${p.s}</span><p>${p.d}</p></div></li>`).join('');
     setView(curView, true);
     observeWidth($('#perfChart'), () => drawPerf(false));
-    addEventListener('beforeprint', () => { PRINTING = true; drawPerf(false); });
-    addEventListener('afterprint', () => { PRINTING = false; drawPerf(false); });
+    /* (2026-11-23) 「효율 경로」를 보던 중 인쇄하면 「광고비와 매출」로 그려 찍고(PDF 쪽 수 · 글자 그대로) 끝나면 보던 보기로 되돌린다 */
+    let printBack = null;
+    addEventListener('beforeprint', () => { PRINTING = true; if (curView === 'path') { printBack = curView; setView('amount', true); } else drawPerf(false); });
+    addEventListener('afterprint', () => { PRINTING = false; if (printBack) { const b = printBack; printBack = null; setView(b, true); } else drawPerf(false); });
   }
 
   function setView(id, first) {
@@ -851,7 +863,9 @@
     const v = VIEWS.find(x => x.id === id);
     $('#chartTitle').textContent = v.title; $('#chartUnit').textContent = v.unit;
     $('#perfCaption').innerHTML = v.caption;
-    $('#perfLegend').innerHTML = v.series.map(sr => `<span data-sid="${sr.id}"${sr.emph && v.series.length > 1 ? ' class="lg-emph"' : ''}><i class="${v.type === 'stack' || sr.id === 'spend' ? 'sq' : ''}" style="background:${sr.color}"></i>${sr.name}</span>`).join('')
+    $('#perfLegend').innerHTML = v.type === 'path'
+      ? `<span data-sid="pre"><i class="dot" style="background:var(--before)"></i>입사 전</span>` + R.phases.map(p => `<span data-sid="p${p.n}"><i class="dot" style="background:${pathShade(p.n)}"></i>${'①②③④⑤⑥'[p.n - 1] || p.n} ${p.t}</span>`).join('')
+      : v.series.map(sr => `<span data-sid="${sr.id}"${sr.emph && v.series.length > 1 ? ' class="lg-emph"' : ''}><i class="${v.type === 'stack' || sr.id === 'spend' ? 'sq' : ''}" style="background:${sr.color}"></i>${sr.name}</span>`).join('')
       + (v.type !== 'stack' ? '<span><i style="background:var(--band-b);height:10px;width:14px;border:1px solid var(--rule-2)"></i>입사 전</span>' : '');
     renderCmp(v); renderTable(v);
     drawPerf(!first);
@@ -890,6 +904,7 @@
     // 인쇄는 1:1 폭이라 400 이면 차트가 종이에서 너무 길다. (2026-11-16) 주제별 보기 넓은 화면(topics.html · topics.js wideMQ 와 같은 조건 — 한 장 = 화면 높이)은
     // 창 높이에 맞춰 낮춘다. 클래스(tm-wide)가 아니라 조건으로 본다 — 인쇄 뒤 app.js 가 먼저 다시 그릴 때는 클래스가 아직 빠져 있어 400 으로 그려져 「성과」가 두 장으로 갈렸다
     const H = PRINTING ? 300 : narrow ? 320 : TM_WIDE() ? Math.round(Math.max(250, Math.min(400, innerHeight * 0.36))) : 400;
+    if (v.type === 'path') return drawPath(v, box, W, H, narrow, animate);
     /* 오른쪽 여백 = 끝 라벨 자리. duo 는 끝 라벨이 짧아(값 · 「9월 월 환산」) 168 이면 오른쪽이 비어 보인다 (2026-09-19) */
     const m = { l: 48, r: narrow ? 56 : (v.type === 'stack' ? 110 : v.type === 'duo' ? 96 : v.series.length > 1 ? 168 : 76), t: 62, b: 30 };
     const step = (W - m.l - m.r) / N;
@@ -1045,6 +1060,99 @@
     }
   }
 
+  /* (2026-11-23) 「효율 경로」 그리기 — 같은 #perfChart · 같은 높이. 입사 전 = 회색 점 · 점선, 입사 뒤 = 강조색 점 · 옅은 선(달 순서), 단계 배지 ①~④ 는 성과 추이 단계 띠와 같은 모양.
+     기준 점선 둘(입사 전 광고비 = 100 · 입사 전 6개월 ROAS), 「① 진단 때 광고비 수준」 옅은 세로 띠(같은 광고비에서 위아래 비교 — 처음엔 ① → ④ 화살표였으나 26.10 라벨과 겹쳐 띠로).
+     범례(data-sid pre · p1~p4)에 올리면 그 무리만 또렷.
+     마우스 = 가장 가까운 점의 달 · 광고비 지수 · ROAS · 단계, 키보드 ← → = 달 이동. 「세부 수치 보기」 = 입사 뒤 점 옆에 달 글자(휴대폰 제외) */
+  const pathShade = n => `color-mix(in srgb, var(--accent) ${[62, 75, 88, 100][n - 1] || 100}%, var(--surface))`;   // 효율 경로 단계 농도(점 · 범례 같이) — 가장 옅은 ①도 바탕 대비 3:1 이상(라이트 · 다크, 45% 는 2.2:1 이었다)
+  function drawPath(v, box, W, H, narrow, animate) {
+    const sp = S.index.spend, ro = S.roas.total;
+    const m = { l: narrow ? 44 : 52, r: narrow ? 14 : 26, t: 36, b: 40 };
+    const xs = niceTicks(Math.min(40, ...sp), Math.max(200, ...sp), narrow ? 4 : 5), ys = niceTicks(Math.min(700, ...ro), Math.max(1700, ...ro), narrow ? 4 : 5);
+    const x0 = xs[0], x1 = xs[xs.length - 1], y0 = ys[0], y1 = ys[ys.length - 1], plotB = H - m.b;
+    const X = val => m.l + (val - x0) / (x1 - x0) * (W - m.l - m.r), Y = val => m.t + (1 - (val - y0) / (y1 - y0)) * (plotB - m.t);
+    const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `월 광고비 지수와 통합 ROAS 의 달별 경로, ${mLabel(S.months[0])}–${mLabel(S.months[lastIdx])}` });
+    const grid = s('g', {}, svg), marks = s('g', {}, svg);
+    ys.forEach(t => { s('line', { x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), style: 'stroke:var(--grid)' }, grid); txt(grid, m.l - 8, Y(t) + 4, nf(t), 'tick', 'end'); });
+    xs.forEach(t => { s('line', { x1: X(t), x2: X(t), y1: m.t, y2: plotB, style: 'stroke:var(--grid)' }, grid); txt(grid, X(t), plotB + 16, nf(t), 'tick', 'middle'); });
+    s('line', { x1: m.l, x2: W - m.r, y1: plotB, y2: plotB, style: 'stroke:var(--axis)' }, grid);
+    const rx = X(100), ry = Y(P.B.roas.total);
+    s('line', { x1: rx, x2: rx, y1: m.t, y2: plotB, style: 'stroke:var(--ink-3);stroke-width:1;stroke-dasharray:4 4' }, grid);
+    s('line', { x1: m.l, x2: W - m.r, y1: ry, y2: ry, style: 'stroke:var(--ink-3);stroke-width:1;stroke-dasharray:4 4' }, grid);
+    txt(grid, m.l + 6, ry + 15, `입사 전 6개월 ${nf(P.B.roas.total, 0)}%`, 'tick strong', 'start');
+    txt(grid, rx + 5, plotB - 6, narrow ? '입사 전 = 100' : '입사 전 광고비 = 100', 'tick strong', 'start');
+    txt(grid, W - m.r, H - 3, '월 광고비 (지수) →', 'tick', 'end');
+    txt(grid, m.l - 8, m.t - 16, '↑ 통합 ROAS %', 'tick strong', 'start');
+    const phaseOf = i => i < tenureIdx ? null : R.phases.find(p => S.months[i] >= p.from && S.months[i] <= p.to) || null;
+    const pts = S.months.map((mo, i) => ({ i, x: X(sp[i]), y: Y(ro[i]), ph: phaseOf(i) }));
+    const rOf = p => p.i === lastIdx ? 6 : p.ph ? 4.6 : 3.6;
+    s('path', { d: pathD(pts.slice(0, tenureIdx + 1).map(p => [p.x, p.y])), class: 'draw', 'data-sid': 'pre', style: 'fill:none;stroke:var(--before);stroke-width:1.4;stroke-dasharray:3 3;opacity:.8' }, marks);
+    s('path', { d: pathD(pts.slice(tenureIdx).map(p => [p.x, p.y])), class: 'draw', style: 'fill:none;stroke:var(--accent);stroke-width:1.5;opacity:.32;stroke-linejoin:round' }, marks);
+    const groups = {}, gOf = sid => groups[sid] || (groups[sid] = s('g', { 'data-sid': sid }, marks));
+    const cen = {};
+    R.phases.forEach(ph => { const c = pts.filter(p => p.ph === ph); if (c.length) cen[ph.n] = { x: c.reduce((a, p) => a + p.x, 0) / c.length, y: c.reduce((a, p) => a + p.y, 0) / c.length, top: Math.min(...c.map(p => p.y)), ph }; });
+    // ① 진단 때 광고비 수준 — 옅은 세로 띠(점보다 아래 층). 같은 띠 안에서 위아래(같은 광고비 · 다른 ROAS)를 비교하게 한다
+    const p1 = pts.filter(p => p.ph && p.ph.n === 1);
+    if (p1.length) {
+      const bx0 = Math.min(...p1.map(p => p.x)) - 8, bx1 = Math.max(...p1.map(p => p.x)) + 8;
+      s('rect', { x: bx0, y: m.t, width: Math.max(0, Math.min(W - m.r, bx1) - bx0), height: plotB - m.t, class: 'fade', style: 'fill:var(--band);stroke:color-mix(in srgb, var(--accent) 22%, transparent);stroke-dasharray:3 3' }, grid);
+      if (!narrow) txt(grid, Math.min(W - m.r, bx1) - 4, m.t + 12, '① 진단 때 광고비 수준', 'tick strong', 'end', 'fill:var(--accent-ink)');
+    }
+    // 단계마다 점 농도 — ① 옅게 → ④ 진하게(「개선 구간은 점점 밝고 굵게」 — 5절). 처음엔 한 가지 파랑이라 시간 순서 · 범례가 안 읽혔다(교차 검증 11-23)
+    pts.forEach(p => { p.c = s('circle', { cx: p.x, cy: p.y, r: rOf(p), class: 'fade', style: p.ph ? `fill:${pathShade(p.ph.n)};stroke:var(--surface);stroke-width:${p.i === lastIdx ? 2.5 : 1.5}` : 'fill:var(--before);stroke:var(--surface);stroke-width:1.2' }, gOf(p.ph ? 'p' + p.ph.n : 'pre')); });
+    // 글자 자리(어림 상자) — 「세부 수치 보기」 달 글자가 배지 이름 · 끝 라벨 · 다른 달 글자와 겹치지 않게(교차 검증 11-23: 26.7 | 26.8 · 26.10 | 26.9 겹침)
+    const boxes = [], boxOf = (x, y, w, anchor) => ({ x0: anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x, x1: anchor === 'end' ? x : anchor === 'middle' ? x + w / 2 : x + w, y0: y - 10, y1: y + 3 });
+    const hits = b => boxes.some(o => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0);
+    Object.values(cen).forEach(c => {
+      const g = gOf('p' + c.ph.n), by = Math.max(m.t + 9, c.top - 17);
+      s('circle', { cx: c.x, cy: by, r: 8.5, style: 'fill:var(--accent-soft);stroke:var(--accent);stroke-width:1' }, g);
+      txt(g, c.x, by + 3.5, String(c.ph.n), 'phase-t', 'middle', 'fill:var(--accent-ink);font-size:10.5px');
+      boxes.push({ x0: c.x - 9, x1: c.x + 9, y0: by - 9, y1: by + 9 });
+      if (!narrow) { txt(g, c.x + 13, by + 4, c.ph.t, 'phase-t', 'start'); boxes.push(boxOf(c.x + 13, by + 4, c.ph.t.length * 11.5, 'start')); }
+    });
+    const pre = pts.slice(0, tenureIdx);
+    if (pre.length) { const cx = pre.reduce((a, p) => a + p.x, 0) / pre.length, low = Math.max(...pre.map(p => p.y)); txt(gOf('pre'), cx, Math.min(plotB - 8, low + 20), '입사 전', 'phase-t', 'middle', 'fill:var(--ink-3)'); }
+    // 마지막 달 — 넓은 칸은 점 오른쪽(끝에 닿으면 왼쪽), 휴대폰은 점 위(옆 점과 겹치지 않게)
+    const L = pts[lastIdx], lastTxt = `${mLabel(S.months[lastIdx])} ${nf(ro[lastIdx], 0)}%`, lw = lastTxt.length * 7.4;
+    const la = narrow ? { x: L.x, y: L.y - 12, a: 'middle' } : L.x > W - m.r - 90 ? { x: L.x - 10, y: L.y + 4, a: 'end' } : { x: L.x + 10, y: L.y + 4, a: 'start' };
+    txt(gOf('p' + (L.ph ? L.ph.n : 0)), la.x, la.y, lastTxt, 'dlab', la.a, 'paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round');
+    boxes.push(boxOf(la.x, la.y, lw, la.a));
+    if (showLabels && !narrow) pts.slice(tenureIdx).forEach(p => {
+      if (p.i === lastIdx) return;
+      const t = mLabel(S.months[p.i]), w = t.length * 6.2;
+      const spot = [[p.y - 9, 'middle', p.x], [p.y + 16, 'middle', p.x], [p.y + 4, 'start', p.x + 8], [p.y + 4, 'end', p.x - 8]].map(([y, a, x]) => ({ x, y, a, b: boxOf(x, y, w, a) })).find(c => !hits(c.b));
+      if (!spot) return;   // 자리가 없으면 그 달 글자는 빼고(마우스 · 방향키 툴팁에는 있음)
+      boxes.push(spot.b); txt(gOf('p' + p.ph.n), spot.x, spot.y, t, 'vlab', spot.a);
+    });
+    const hit = s('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: plotB - m.t, style: 'fill:transparent;cursor:crosshair' }, svg);
+    const tipAt = (i, cx, cy) => {
+      pts.forEach(p => p.c.setAttribute('r', p.i === i ? 7.5 : rOf(p)));
+      const ph = pts[i].ph;
+      showTip(`<div class="t">${S.months[i].replace('-', '년 ')}월</div><div class="r"><span>월 광고비 (지수)</span><b>${nf(sp[i], 0)}</b></div><div class="r"><span>통합 ROAS</span><b>${nf(ro[i], 0)}%</b></div><div class="f">${ph ? `${'①②③④⑤⑥'[ph.n - 1] || ph.n} ${ph.t} · 입사 후 ${i - tenureIdx + 1}개월째` : '입사 전'}</div>`, cx, cy);
+    };
+    const clear = () => { pts.forEach(p => p.c.setAttribute('r', rOf(p))); hideTip(); };
+    hit.addEventListener('pointermove', ev => {
+      const r = svg.getBoundingClientRect(), k = W / r.width, mx = (ev.clientX - r.left) * k, my = (ev.clientY - r.top) * k;
+      let best = null, bd = Infinity; pts.forEach(p => { const d = (p.x - mx) ** 2 + (p.y - my) ** 2; if (d < bd) { bd = d; best = p; } });
+      if (best && bd < 44 * 44) tipAt(best.i, ev.clientX, ev.clientY); else clear();
+    });
+    hit.addEventListener('pointerleave', clear);
+    box.tabIndex = 0; box.setAttribute('aria-label', `${v.title} 차트 — 좌우 방향키로 달을 이동합니다`);
+    let ki = lastIdx;
+    box.onkeydown = e => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault();
+      ki = clamp(ki + (e.key === 'ArrowRight' ? 1 : -1), 0, N - 1);
+      const r = svg.getBoundingClientRect(), k = r.width / W; tipAt(ki, r.left + pts[ki].x * k, r.top + pts[ki].y * k);
+    };
+    box.onblur = clear;
+    box.replaceChildren(svg);
+    if (animate !== false && !reduceMotion) {
+      $$('path.draw', svg).forEach(p => { const len = p.getTotalLength(); p.animate?.([{ strokeDasharray: `${len}`, strokeDashoffset: `${len}` }, { strokeDasharray: `${len}`, strokeDashoffset: '0' }], { duration: 900, easing: 'cubic-bezier(.3,.7,.2,1)', fill: 'backwards' }); });
+      pts.forEach(p => p.c.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: 120 + p.i * 35, fill: 'backwards' }));
+      $$('rect.fade', svg).forEach(f => f.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: 700, fill: 'backwards' }));
+    }
+  }
+
   // 「세부 수치 보기」 — 차트 위에 월별 값을 직접 적는다 (좁은 화면에서는 한 달씩 건너뛰기)
   function drawValueLabels(v, svg, o) {
     const g = s('g', { class: 'vlabs', 'pointer-events': 'none' }, svg);
@@ -1141,6 +1249,14 @@
           ${d.demo ? `<a class="btn" href="${d.demo}" target="_blank" rel="noopener">${ICON.ext}데모 열기</a>` : `<span class="xd-note">${d.note}</span>`}`}
         </div>
       </article>`; }).join('');
+    /* (2026-11-23 본인 「문맥, 기능상 시각화 추가로 찾아서 개선해줘」) 「대시보드 ─ 도구 4개」 연결 한 줄 — 설명 문구(「대시보드 옆에 만든 도구」)가
+       카드만으로는 서로 어떻게 이어지는지 안 보였다. 짧은 말은 data.js items[].link(카드 사실 칸 · 기능 줄의 원문 조각 — 새 숫자 · 새 주장 없음).
+       절 머리(.sec-h) 밖에 두어 장 넘김 고정 머리 사본(copyPins)에 따라가지 않게 하고, 넓은 화면 장 넘김(tm-wide)은 숨긴다(topics.css). 인쇄는 원래 #xdash 제외 */
+    let map = $('#xdMap');
+    if (!map) { map = el('nav', { class: 'xd-map hrow', id: 'xdMap', 'aria-label': '퍼포먼스 대시보드와 도구 4개의 연결' }); host.parentNode.insertBefore(map, host); }
+    map.innerHTML = `<a class="xm-hub" href="#dash"><small>중심</small><b>퍼포먼스 대시보드</b></a><span class="xm-ar" aria-hidden="true">→</span>` +
+      M.items.map((d, i) => `<a class="xm-n" href="#xd-${d.id}"${d.linkT ? ` title="${d.linkT}"` : ''}><span class="xd-n">${String(i + 1).padStart(2, '0')}</span><b>${d.name}</b>${d.link ? `<small>${d.link}</small>` : ''}</a>`).join('');
+    edgeFade(map);
   }
 
   /* ------------------------------------------------------------ 주요 성과 (2026-11-20 · data.js results)
@@ -1178,14 +1294,19 @@
       <p class="rs-legend" aria-hidden="true"><span class="sales">매출</span><span class="contrib">공헌이익</span></p>
       ${Array.isArray(L.read) && L.read.length ? `<div class="rs-read"><p class="rs-sub">이렇게 읽어요</p><ul>${L.read.map(t => `<li>${t}</li>`).join('')}</ul></div>` : ''}
       <p class="rs-note">${L.note}</p>`;
+    const SD = S.saveDefs || {};
     $('#rsCards').innerHTML = S.cards.map(c => {
-      const pair = c.from ? (() => { const a = num(c.from), b = num(c.v), m = Math.max(a, b) || 1;
+      const sd = c.save && SD[c.save];
+      /* (2026-11-23) 「동일 매출 대비 지출」 카드 — 광고비 · 매출 증감을 짝 막대로(savePair). 동일 몰 카드는 예전 30.8억 → 41억 막대 자리를 이것으로 */
+      const pair = sd && sd.spend != null ? savePair(sd) : c.from ? (() => { const a = num(c.from), b = num(c.v), m = Math.max(a, b) || 1;
         return `<span class="rs-mini" aria-hidden="true"><i class="was" style="--w:${(a / m * 100).toFixed(1)}%"></i><i class="now" style="--w:${(b / m * 100).toFixed(1)}%"></i></span>`; })() : '';
+      const hint = t => sd ? String(t).replace(/(동일 (?:전환)?매출 대비 지출 [\d.]+% 절감)/, '<span class="sv-hint">$1</span>') : t;   // 마우스 / 초점 풀이가 있다는 표시(점선 밑줄) — 글자는 그대로
+      c = { ...c, d: c.d && hint(c.d), s: c.s && hint(c.s) };
       const body = `<span class="rs-ck">${c.k}</span>
         <span class="rs-cv">${c.from ? `<s>${c.from}</s><span aria-hidden="true"> → </span>` : ''}${rollv(c.v, c.from ? String(c.from).replace(/[^\d.]/g, '') : '0', c.u)}</span>
         ${c.d ? `<span class="rs-cd">${c.d}</span>` : ''}${pair}${c.s ? `<span class="rs-cs">${c.s}</span>` : ''}`;
-      const tone = c.tone ? ` data-tone="${c.tone}"` : '';
-      return `<li>${c.to ? `<a class="rs-card"${tone} href="${c.to}">${body}</a>` : `<div class="rs-card"${tone}>${body}</div>`}</li>`;
+      const tone = (c.tone ? ` data-tone="${c.tone}"` : '') + (sd ? ` data-save="${c.save}"` : '');
+      return `<li>${c.to ? `<a class="rs-card"${tone} href="${c.to}">${body}</a>` : `<div class="rs-card"${tone}${sd ? ' tabindex="0"' : ''}>${body}</div>`}</li>`;
     }).join('');
     // 처음 보일 때 — 막대가 0 에서 자라고(transform — 합성) 숫자가 굴러간다. 그 전에는 막대를 0 으로 접어 두어(rs-wait) 한 번 다 보였다 줄어드는 깜빡임이 없게
     const sec = host.closest('.results') || host;
@@ -1195,6 +1316,56 @@
       setTimeout(() => { rollNumbers($('#rsLead')); rollNumbers($('#rsCards')); }, reduceMotion ? 0 : 280);
     }, 0.2);
     $('#rsPrev').innerHTML = `<h3 class="rs-ph">이전 직장</h3><ul>${S.prev.map(p => `<li><b>${p.co}</b><span class="rs-when">${p.when}</span><span class="rs-pt">${p.t}</span></li>`).join('')}</ul>`;
+  }
+
+  /* ------------------------------------------------------------ 「동일 매출 대비 지출 X% 절감」 풀이 (2026-11-23)
+     본인 「문맥, 기능상 시각화 추가로 찾아서 개선해줘」 — 이 파생 지표가 화면 15곳 넘게 나오는데 뜻 · 셈이 없어, 광고비가 늘어난 쿠팡 윙(+32.8%)도 「지출을 줄였다」로 읽혔다.
+     data.js results.saveDefs(화면에 이미 나오는 값만) → ① 주요 성과 카드 짝 막대(savePair — rs-index 와 같은 문법: 작년 = 100 점선 · 둥근 막대 · 끝 값,
+     광고비 = 빗금 테두리 · 매출 = 카드 색) ② 카드 · 주요 업무 숫자 칸([data-save])에 마우스를 올리거나 초점이 가면 같은 짝 막대 + 셈 + 풀이(#tip — role=status 라 읽기 프로그램도 읽음).
+     글 노드는 건드리지 않아 인쇄 · PDF 글자는 그대로(짝 막대는 인쇄에 없는 #results 안) */
+  const fmtPct = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
+  function savePair(d, cls = '') {
+    const a = 100 + d.spend, b = 100 + d.rev, top = Math.max(a, b, 100) / 0.86, w = v => (v / top * 100).toFixed(1);
+    return `<span class="rs-pair2${cls}" style="--b:${w(100)}%" aria-hidden="true">
+      <span class="rp-row sp"><span class="rp-k">광고비</span><span class="rp-track"><i style="--w:${w(a)}%"></i></span><b>${fmtPct(d.spend)}</b></span>
+      <span class="rp-row rv"><span class="rp-k">${d.revK || '매출'}</span><span class="rp-track"><i style="--w:${w(b)}%"></i></span><b>${fmtPct(d.rev)}</b></span>
+      <span class="rp-base"><span>작년 = 100</span></span></span>`;
+  }
+  function saveTip(d) {
+    const rk = d.revK || '매출';
+    let fig = '', calc = '', more = '';
+    if (d.spend != null) {
+      fig = savePair(d, ' in-tip');
+      calc = `1 − (1 ${d.spend < 0 ? '−' : '+'} ${Math.abs(d.spend).toFixed(1)}%) ÷ (1 ${d.rev < 0 ? '−' : '+'} ${Math.abs(d.rev).toFixed(1)}%) ≈ <b>${d.save}%</b>`;
+      if (d.spend > 0) more = ` 광고비 총액은 ${fmtPct(d.spend)} 늘었습니다.`;
+    } else if (d.roas) {
+      const [r0, r1] = d.roas, m = Math.max(r0, r1) / 0.86;
+      fig = `<span class="rs-pair2 in-tip roas" aria-hidden="true"><span class="rp-row sp"><span class="rp-k">ROAS 전</span><span class="rp-track"><i style="--w:${(r0 / m * 100).toFixed(1)}%"></i></span><b>${r0}%</b></span><span class="rp-row rv"><span class="rp-k">ROAS 후</span><span class="rp-track"><i style="--w:${(r1 / m * 100).toFixed(1)}%"></i></span><b>${r1}%</b></span></span>`;
+      calc = `ROAS = ${rk} ÷ 광고비 · 1 − ${r0} ÷ ${r1} ≈ <b>${d.save}%</b>`;
+    } else {
+      calc = `1 − (1 + 광고비 증감) ÷ (1 + ${rk} 증감) ≈ <b>${d.save}%</b>`;
+    }
+    return `<div class="t">동일 ${rk} 대비 지출 ${d.save}% 절감</div><div class="sv-scope">${d.scope}</div>${fig}<div class="sv-calc">${calc}</div>
+      <div class="f">같은 ${rk}을 내는 데 든 광고비가 ${d.save}% 줄었다는 뜻입니다.${more}</div>`;
+  }
+  function wireSaveDefs() {
+    const D = R.results && R.results.saveDefs; if (!D) return;
+    for (const [k, d] of Object.entries(D)) {   // 점검 — 셈과 적힌 값이 어긋나면 알림(화면에는 안 씀)
+      const c = d.roas ? (1 - d.roas[0] / d.roas[1]) * 100 : d.spend != null ? (1 - (1 + d.spend / 100) / (1 + d.rev / 100)) * 100 : null;
+      if (c != null && Math.round(c * 10) / 10 !== d.save) console.warn('saveDefs 셈 불일치', k, c.toFixed(2), d.save);
+    }
+    let cur = null, y0 = 0;
+    const close = () => { if (cur) { cur = null; hideTip(); } };
+    const open = (n, x, y) => { const d = D[n.dataset.save]; if (!d) return; cur = n; y0 = scrollY; showTip(saveTip(d), x, y); };
+    document.addEventListener('mouseover', e => { const n = e.target.closest && e.target.closest('[data-save]'); if (n && n !== cur) open(n, e.clientX, e.clientY); });
+    document.addEventListener('mouseout', e => { if (cur && !(e.relatedTarget && cur.contains(e.relatedTarget)) && cur.contains(e.target)) close(); });
+    // 키보드 초점 — Tab 이 칸을 화면 안으로 굴린 뒤에 연다(굴리기 전에 열면 위치가 어긋나고, 그 굴림이 아래 scroll 닫기에 걸렸다 — 교차 검증 11-23)
+    document.addEventListener('focusin', e => { const n = e.target.closest && e.target.closest('[data-save]'); if (!n) return; requestAnimationFrame(() => { if (document.activeElement !== n) return; const r = n.getBoundingClientRect(); open(n, r.left, r.bottom - 6); }); });
+    document.addEventListener('focusout', e => { if (cur && !(e.relatedTarget && cur.contains(e.relatedTarget))) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    document.addEventListener('pointerdown', e => { if (cur && !cur.contains(e.target)) close(); });   // 손가락 기기 — 바깥을 누르면 닫힘
+    addEventListener('scroll', () => { if (cur && Math.abs(scrollY - y0) > 40) close(); }, { passive: true });   // 읽는 사람이 실제로 굴렸을 때만
+    document.addEventListener('tm:nav', close);
   }
 
   /* ------------------------------------------------------------ projects */
@@ -1209,7 +1380,7 @@
     const soft = x => String(x).replace(/\(([^()<>\d]{1,24})\)/g, '<span class="hp">($1)</span>');
     R.projects.filter(p => !p.featured).forEach(p => {
       const card = el('article', { class: 'proj' + (p.wide ? ' wide' : ''), id: 'p-' + p.id, 'aria-labelledby': 'pt-' + p.id });
-      const facts = p.facts.map(f => `<li><span class="fv">${f.from ? `<span class="from">${f.from}</span><span class="ar">→</span>` : ''}<span class="to" data-roll-from="${f.from ? f.from.replace(/,/g, '') : ''}" data-roll-to="${f.v}">${f.v}</span><small class="fu">${f.u || ''}</small>${f.d ? `<span class="fd">${f.d}</span>` : ''}</span><span class="fk">${fkNote(f.k)}</span>${f.s ? `<span class="fs">${f.s}</span>` : ''}${R.config.showAbsolute && f.abs ? `<span class="abs">${f.abs}</span>` : ''}</li>`).join('');
+      const facts = p.facts.map(f => `<li${f.save ? ` data-save="${f.save}" tabindex="0"` : ''}><span class="fv">${f.from ? `<span class="from">${f.from}</span><span class="ar">→</span>` : ''}<span class="to" data-roll-from="${f.from ? f.from.replace(/,/g, '') : ''}" data-roll-to="${f.v}">${f.v}</span><small class="fu">${f.u || ''}</small>${f.d ? `<span class="fd">${f.d}</span>` : ''}</span><span class="fk">${fkNote(f.k)}</span>${f.s ? `<span class="fs">${f.s}</span>` : ''}${R.config.showAbsolute && f.abs ? `<span class="abs">${f.abs}</span>` : ''}</li>`).join('');
       card.innerHTML = `
         <div class="player" data-scene="${p.motion}" ${p.video ? `data-video="${p.video}"` : ''}><div class="stage"></div></div>
         <div class="proj-body">
@@ -1230,7 +1401,32 @@
     });
     $$('.player', host).forEach(pl => window.MOTION && window.MOTION.mount(pl, { scene: pl.dataset.scene, video: pl.dataset.video }));
     $$('.proj', host).forEach(c => onFirstView(c, () => rollNumbers(c), 0.3));
+    renderWorkJump(host);
   }
+  /* (2026-11-23 본인 「문맥, 기능상 시각화 추가로 찾아서 개선해줘」) 주요 업무 카드 10장 바로 가기 칩 줄 — 스크롤판이 기본이 된 뒤(11-23)
+     카드 10장(휴대폰 약 15화면)에 원하는 카드로 바로 가는 길이 없었다(장 넘김의 GNB 항목 · 「3 / 10」이 하던 일). 순번 · 짧은 제목(shortTitle),
+     「제안 · 실행 예정」 · 「진행 중」 카드는 카드와 같은 pill 꼬리표. 장 넘김(tabmode)은 숨김(GNB · 목차가 같은 일) · 인쇄 숨김 · 휴대폰은 한 줄 가로 넘김 */
+  function renderWorkJump(host) {
+    let nav = $('#workJump');
+    if (!nav) { nav = el('nav', { class: 'work-jump hrow', id: 'workJump', 'aria-label': '주요 업무 바로 가기' }); host.parentNode.insertBefore(nav, host); }
+    nav.innerHTML = R.projects.filter(p => !p.featured).map((p, i) => `<a class="wj" href="#p-${p.id}"><span class="wj-n">${String(i + 1).padStart(2, '0')}</span><span class="wj-t">${shortTitle(p.id)}</span>${p.pill && p.pill.c === 'wip' ? `<span class="pill wip">${p.pill.t}</span>` : ''}</a>`).join('');
+    edgeFade(nav);
+  }
+  /* (2026-11-23) 가로로 넘기는 칩 줄(.hrow — 휴대폰 바로 가기 · 연결 줄) 양 끝 흐림 — 상단 메뉴 줄(.nav-l · .nav-end)과 같은 방식.
+     가려진 쪽만 흐리게: 왼쪽으로 넘겼으면 .hs-l, 오른쪽 끝이면 .hs-end */
+  function edgeFade(row) {
+    if (!row || row.dataset.fade) return; row.dataset.fade = '1';
+    const f = () => { const max = row.scrollWidth - row.clientWidth; row.classList.toggle('hs-x', max > 4); row.classList.toggle('hs-l', row.scrollLeft > 4); row.classList.toggle('hs-end', max <= 4 || row.scrollLeft >= max - 4); };
+    row.addEventListener('scroll', f, { passive: true }); observeWidth(row, f); f();
+  }
+  /* (2026-11-23) 스크롤판에서 # 링크로 카드에 닿으면 그 카드를 한 번 깜빡여 어디에 왔는지 보여 준다(경력 「관련 사례」 · 간트 이동의 .flash 와 같은 모양).
+     장 넘김(tabmode)은 topics.js 가 그 판 · 그 장으로 옮기고 스스로 강조하므로 건드리지 않는다 */
+  document.addEventListener('click', e => {
+    const a = e.target && e.target.closest ? e.target.closest('a[href^="#p-"], a[href^="#xd-"]') : null;
+    if (!a || document.documentElement.classList.contains('tabmode')) return;
+    const t = document.getElementById(a.getAttribute('href').slice(1)); if (!t) return;
+    setTimeout(() => { t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); }, reduceMotion ? 0 : 350);
+  });
 
   /* ------------------------------------------------------------ demo modal */
   const modal = $('#demoModal'); let lastFocus = null;
@@ -1288,6 +1484,7 @@
       const narrow = cw < 600;
       const W = narrow ? Math.max(300, cw - 20) : Math.max(640, cw - 36), rowH = 30, m = narrow ? { l: 92, r: 66, t: 22, b: 8 } : { l: 150, r: 84, t: 22, b: 8 };
       const rows = [...all].sort((a, b) => ym(b.from) - ym(a.from));
+      const roles = [];
       const H = m.t + rows.length * rowH + m.b;
       const X = t => m.l + (t - t0) / (t1 - t0) * (W - m.l - m.r);
       const svg = s('svg', { viewBox: `0 0 ${W} ${H}` });
@@ -1312,9 +1509,27 @@
           s('rect', { x: X(a), y: y + 7, width: bw, height: 14, rx: 3 }, s('clipPath', { id: cid }, s('defs', {}, svg)));
           s('rect', { x: X(a) - 30, y: y + 5, width: 22, height: 18, class: 'gsweep', 'clip-path': `url(#${cid})`, style: `--gw:${bw + 60}px;fill:#fff;opacity:.55` }, row);
         }
-        txt(row, X(b) + 6, y + 18, `${yy ? yy + '년 ' : ''}${mm ? mm + '개월' : ''}`.trim(), 'g-sub', 'start');
+        const per = txt(row, X(b) + 6, y + 18, `${yy ? yy + '년 ' : ''}${mm ? mm + '개월' : ''}`.trim(), 'g-sub', 'start');
+        if (!narrow && r.role) roles.push({ row, r, a: X(a), per, y });
       });
       host.replaceChildren(svg);
+      /* (2026-11-23 본인 「문맥, 기능상 시각화 추가로 찾아서 개선해줘」) 직무 글자 — 절 제목 · 바로 아래 인용(「팀장에서 실무자로 돌아온 이유」)은 역할의 흐름을
+         말하는데 간트에는 회사 · 기간만 있었다. data.js role 원문 그대로(줄이지 않음), 「팀장」만 굵게. 넓은 칸(화면 · 인쇄 655)에서만 — 휴대폰은 바로 아래 카드에 직무가 있다.
+         자리는 잰 폭으로: 막대 앞(오른쪽 맞춤)에 들어가면 거기, 아니면 기간 글자 뒤, 그래도 넘치면 빼고 읽기 프로그램 이름에만 */
+      roles.forEach(({ row, r, a, per, y }) => {
+        const t = s('text', { class: 'g-role', y: y + 18 }, row);
+        String(r.role).split(/(팀장)/).forEach(part => { if (!part) return; const sp = s('tspan', part === '팀장' ? { class: 'g-rk' } : {}, t); sp.textContent = part; });
+        let len = 0; try { len = t.getComputedTextLength(); } catch (e) {}
+        if (!len) len = String(r.role).length * 11;   // 그려지지 않은 상태(숨은 판 등) — 글자 수로 어림
+        if (a - 8 - len >= m.l + 6) { t.setAttribute('x', a - 8); t.setAttribute('text-anchor', 'end'); }
+        else {
+          let pw = 0; try { pw = per.getComputedTextLength(); } catch (e) {}
+          const x0 = Number(per.getAttribute('x')) + (pw || 60) + 10;
+          if (x0 + len <= W - 4) { t.setAttribute('x', x0); t.setAttribute('text-anchor', 'start'); } else t.remove();
+        }
+        row.dataset.role = r.role;
+      });
+      roles.length = 0;
       host.scrollLeft = host.scrollWidth; // 좁은 화면에서는 최근 경력이 먼저 보이게
       // 타임라인 ↔ 경력 카드 서로 강조
       $$('.grow-row', svg).forEach(g => {
@@ -1323,7 +1538,7 @@
         // 회사 이름(행)을 누르면 아래 해당 경력 카드로 이동
         const card = $$('#jobs .job').find(j => j.dataset.co === g.dataset.co);
         if (!card) return;
-        g.classList.add('go'); g.setAttribute('role', 'link'); g.setAttribute('tabindex', '0'); g.setAttribute('aria-label', `${g.dataset.co} 경력 보기`);
+        g.classList.add('go'); g.setAttribute('role', 'link'); g.setAttribute('tabindex', '0'); g.setAttribute('aria-label', `${g.dataset.co} 경력 보기${g.dataset.role ? ' — ' + g.dataset.role : ''}`);
         const go = () => {
           const mastH = $('.mast').offsetHeight;
           scrollTo({ top: card.getBoundingClientRect().top + scrollY - mastH - 12, behavior: reduceMotion ? 'auto' : 'smooth' });
@@ -1392,7 +1607,9 @@
 
   /* ------------------------------------------------------------ beliefs · facts */
   function renderRest() {
-    $('#beliefList').innerHTML = R.beliefs.map(b => `<article class="belief"><span class="q" aria-hidden="true">“</span><div><h3>${b.h}</h3><p>${b.p}</p>${b.ev ? `<span class="bev">${b.ev}</span>` : ""}</div></article>`).join('');
+    /* (2026-11-23 본인 「문맥, 기능상 시각화 추가로 찾아서 개선해줘」) 근거 칩이 그 사례로 이어지게 — data.js beliefs[].to · scores.items[].ev[].to 가 있을 때만 링크.
+       모양은 그대로(바탕 · 글자색), 「사례 →」 링크처럼 화살표 · 밑줄만. 장 넘김은 topics.js 가 # 링크를 받아 그 판 · 그 장으로 */
+    $('#beliefList').innerHTML = R.beliefs.map(b => `<article class="belief"><span class="q" aria-hidden="true">“</span><div><h3>${b.h}</h3><p>${b.p}</p>${b.ev ? (b.to ? `<a class="bev ev-link" href="${b.to}">${b.ev}<span class="ev-ar" aria-hidden="true">→</span></a>` : `<span class="bev">${b.ev}</span>`) : ""}</div></article>`).join('');
     const F = R.facts;
     const sec = (h, list) => `<section><h3>${h}</h3><dl>${list.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl></section>`;
     $('#factGrid').innerHTML = (F.seeking && F.seeking.length ? sec('찾고 있는 자리', F.seeking) : '') + sec('자격', F.certs) + sec('학력 · 교육', F.edu) + sec('기타', F.etc);
@@ -1411,7 +1628,7 @@
       <article class="score">
         <div class="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="rt"/><circle cx="60" cy="60" r="52" class="rv" style="stroke-dasharray:${C};stroke-dashoffset:${C * (1 - it.v / 100)}"/></svg>
           <div class="rn"><span class="shine" data-roll-from="0" data-roll-to="${it.v}">${it.v}</span><small>점</small></div></div>
-        <div class="sb"><h4>${it.k}</h4><p>${it.why}</p><ul>${it.ev.map(e => `<li>${e}</li>`).join('')}</ul></div>
+        <div class="sb"><h4>${it.k}</h4><p>${it.why}</p><ul>${it.ev.map(e => e && e.to ? `<li class="has-link"><a class="ev-link" href="${e.to}">${e.t}<span class="ev-ar" aria-hidden="true">→</span></a></li>` : `<li>${e && e.t ? e.t : e}</li>`).join('')}</ul></div>
       </article>`).join('');
     onFirstView($('#scoreGrid'), () => {
       $$('.score .rv').forEach((c, i) => c.animate?.([{ strokeDashoffset: C }, { strokeDashoffset: c.style.strokeDashoffset }], { duration: 1300, delay: i * 150, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
@@ -1875,6 +2092,7 @@
   renderArchive();
   renderRest();
   renderScores();
+  wireSaveDefs();
   wireChrome();
   wireAnimBudget();
   wireMeta();
