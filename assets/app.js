@@ -1818,7 +1818,7 @@
       /* 띄어쓰기 없이 붙은 조사 · 기호 — 「1,384%로」 「국가데이터처)보다」 「2배+」 「응답(답변율」이 낱말 가운데서 꺾였다(keep-all 이어도 % · ) · + · ( 앞뒤는 끊길 수 있다).
          그 낱말만 인쇄하는 동안 span.pw-nw(white-space: nowrap)로 감싼다. 낱말 잇기 문자(U+2060)는 PDF 글자에 섞여 나와(187곳 — 붙여 넣기 · 채용 시스템 검색이 깨짐) 쓰지 않는다.
          좁은 숫자 칸(.facts)의 「이화에스엠피(스포틀러)」 같은 긴 낱말은 감싸면 칸을 넘쳐 여는 괄호 규칙에서 뺀다 */
-      const NW = /[%\d)][가-힣+]|[가-힣]\+/, NWP = /[가-힣]\(/, list = [];
+      const NW = /[%\d)][가-힣+]|[가-힣]\+/, NWP = /[가-힣]\(/, list = [];   // 숫자 + 한글(「1.5명분」)도 넣는다 — 빼 보니(span 316 → 75개) 숫자 칸 꺾임 · 괄호 갈라짐이 1곳씩 늘었다(keep-all 이어도 숫자와 한글 사이는 꺾일 수 있다, 11-23 실측)
       const w2 = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest(SKIP) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
       for (let t; (t = w2.nextNode());) list.push(t);
       list.forEach(t => {
