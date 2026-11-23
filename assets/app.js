@@ -1699,12 +1699,16 @@
     const names = { system: '자동', light: '라이트', dark: '다크' };
     const cur = () => root.getAttribute('data-theme') || 'system';
     label.textContent = names[cur()];
-    $('#themeBtn').addEventListener('click', () => {
+    $('#themeBtn').addEventListener('click', e => {
       const next = { system: 'light', light: 'dark', dark: 'system' }[cur()];
-      if (next === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', next);
-      try { next === 'system' ? localStorage.removeItem('psj-theme') : localStorage.setItem('psj-theme', next); } catch (e) {}
-      label.textContent = names[next];
-      window.MOTION && window.MOTION.redrawAll();
+      const apply = () => {
+        if (next === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', next);
+        try { next === 'system' ? localStorage.removeItem('psj-theme') : localStorage.setItem('psj-theme', next); } catch (e2) {}
+        label.textContent = names[next];
+        window.MOTION && window.MOTION.redrawAll();
+      };
+      // (2026-11-23) 단추 자리에서 원이 퍼지며 바뀐다(assets/fx.js themeSwap — View Transitions 가 없거나 효과를 끄면 바로 바뀜)
+      if (window.FX && window.FX.themeSwap) window.FX.themeSwap(apply, e.currentTarget); else apply();
     });
     /* (2026-09-26) 인쇄 전 지연 로딩 이미지(참고 자료 · 대시보드 썸네일)를 먼저 받는다.
        맨 위에서 바로 「PDF」를 누르면 아직 안 받은 이미지가 빈 회색 칸으로 찍히던 것 방지.

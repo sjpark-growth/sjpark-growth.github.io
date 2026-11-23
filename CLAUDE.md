@@ -5,7 +5,7 @@
 ## 1. 구조
 
 - 로컬에서 `index.html` 을 더블클릭하면 그대로 열리는 정적 사이트입니다. 빌드 과정 없음, 외부 요청 없음(CDN · 웹폰트를 넣지 않는다). **예외 하나 — 방문 분석 `assets/track.js`(2026-11-25 본인 「GTM + GA4 + 클래리티」 · 5-7)**: GTM 컨테이너 ID 가 있고 공개 주소일 때만 페이지가 다 뜬 뒤 GTM 을 받는다(로컬 · 워크트리 · 아티팩트 · 자동 점검에서는 외부 요청 0). 다른 분석 도구 · 외부 스크립트를 따로 붙이지 않는다 — 더할 것은 GTM 안에서.
-- 스크립트 로드 순서: `series.js` → `data.js` → `motion.js` → `app.js` → `topics.js` → `mode-toggle.js` → `paged-guide.js`(뒤 셋은 2026-11-20 장 넘김 본판 — 5-5) → `track.js`(2026-11-25 — en.html · resume-pdf.html 끝에도 같은 파일). 스타일은 `style.css` → `topics.css` → `paged.css`.
+- 스크립트 로드 순서: `series.js` → `data.js` → `motion.js` → `fx.js` → `app.js` → `topics.js` → `mode-toggle.js` → `paged-guide.js`(뒤 셋은 2026-11-20 장 넘김 본판 — 5-5 · `fx.js` 는 2026-11-23 모션 · 시각 효과 — 5-8, app.js **앞**이어야 한다) → `track.js`(2026-11-25 — en.html · resume-pdf.html 끝에도 같은 파일). 스타일은 `style.css` → `topics.css` → `paged.css`.
 - **문구와 수치는 `assets/data.js` 한 곳에 모은다.** `app.js` 에는 차트 캡션 몇 개(VIEWS)와 첫 화면 차트 라벨만 하드코딩되어 있다.
 - `assets/series.js` 는 대시보드 월별 데이터에서 자동 생성된 시계열이다. 손으로 고치지 않는다.
 - 데모 3종 `dashboard-demo.html`(퍼포먼스 대시보드) · `briefing-demo.html`(브리핑룸) · `stock-demo.html`(재고 신호판)은 실제 운영 도구의 **숫자를 임의 값으로 바꾸고 품목 · 상품 이름을 코드로 가린 사본**이다. 금액 · 비율 · ROAS 모두 실제 값이 아니며, 원본으로 되돌리거나 원본 파일을 여기에 두지 않는다. 내용은 주간 동기화(`_work/sync`)가 다룬다 — 손으로 고치지 않는다.
@@ -17,7 +17,7 @@
 - **(2026-11-23 본인 「스크롤이 메인 페이지로 노출되게 — 처음에 장이 나오고 스크롤로 바뀌는 데 오래 걸린다」) 본판 `index.html` 은 다시 스크롤판으로 시작한다** — `<html data-tm-flow="on">`(tabmode 없음). 장 넘김은 상단 「장으로 보기」(`#modeBtn`)를 누르면 그 자리에서 켜진다(넓은 화면은 판을 나누는 1~2초 동안 단추에 「바꾸는 중…」). 새로 들어오거나 새로고침하면 늘 스크롤판(`data-restore="off"`). 넘기는 법 카드는 장 넘김을 처음 켤 때. 장 넘김 꼴 옛 주소(`#work-3` · `#/work/3` · `#intro`)는 그 절 · 맨 위로(mode-toggle.js). 스크롤판 첫 화면 맞춤 · 인쇄 순서는 5-1 표 「스크롤판 기본 (2026-11-23)」. 첫 로드 때 메인 스레드가 막히는 시간(헤드리스 1463×800) 약 3.7초 → 0.8초.
   아래 줄은 11-20 ~ 11-22 기록(그때는 장 넘김으로 시작): **(2026-11-20 본인 「안 C로 진행」) 본판 `index.html` 은 장 넘김(페이지네이션)으로 시작한다** — `<html class="tabmode" data-tm-flow="on">` 으로 열리면 `assets/topics.js` 가 절을 주제 판으로 옮기고, 휠 · 방향키 · 드래그 · 스와이프로 넘긴다. 처음 보는 사람에게는 넘기는 법 카드(`assets/paged-guide.js` · `paged.css`), 상단 「스크롤로 보기」(`#modeBtn` · `assets/mode-toggle.js`)로 같은 페이지 안에서 예전 스크롤판으로. 「기타 대시보드」 절(`#xdash`)도 이제 본판에 있다(인쇄에는 안 넣음). 5-5.
 - `topics.html`(2026-11-15 시험 · 안 A) · `toggle.html`(2026-11-16 · 안 B)은 **옛 시안**으로 남겨 둔다(본판 메뉴에서 잇지 않음 · 비공개 아티팩트 묶음 도구가 읽음). 본판이 같은 틀이 된 뒤로는 index.html 을 고칠 때 다시 복사하지 않아도 된다 — 지울지는 본인 결정.
-- `tools/` · `.githooks/` · `.github/` 는 사이트가 아니라 관리 도구다(데모 가림 — 5-3).
+- `tools/` · `.githooks/` · `.github/` 는 사이트가 아니라 관리 도구다(데모 가림 — 5-3). `.claude/skills/web-motion/`(2026-11-23)은 모션 · 시각 효과 작업 규칙 스킬과 점검 스크립트다(5-7 — Claude Code 가 이 저장소에서 저절로 읽는다).
 
 ## 2. data.js 에서 자주 고치는 곳
 
@@ -280,6 +280,27 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 - 고칠 때: 절 id 를 바꾸거나 새 절을 만들면 `LIST.home` 도, 링크 종류(데모 파일 이름 · 이력서 경로)를 바꾸면 클릭 판정도 같이. 장 넘김 주제 id 는 영문 소문자라야 한다(주소에서 `^#([a-z]+)` 로 읽음). Clarity 맞춤 이벤트는 프로젝트당 20개 — 지금 15개.
 - 시험(2026-11-25 헤드리스, 세션 스크래치 `trk-test.js` — 외부 요청은 모두 막고 기록, 시험 ID 는 `window.PSJ_TRACK_TEST`): ID 없음 → 외부 요청 0 · 안내 없음 · 절 이벤트 intro … contact · 떠남 깊이 100 / 시험 ID → GTM 요청 1건 · load 뒤 · 다른 외부 요청 0 · dataLayer 첫 칸 gtm.js · clarity 대기열 · 클릭 5종 · 모달 데모 · 이벤트에 「@」 없음 / 장 넘김 → 장 이벤트 · last_section · 넓은 화면 장 수 29 = 안내 문구 없을 때와 같음 / 390 넘침 0 · 데모 미요청 / ?notrack 유지 · 해제 / en · resume-pdf · en 「포트폴리오로」 링크 — 30항목 통과, 오류 0. PDF 16 · 7장, site-gate 6화면 통과. **실제 GTM · GA4 · Clarity 수신은 `미검증`**(ID 를 넣고 게시한 뒤 GTM 미리보기로 본다).
 
+## 5-8. 모션 · 시각 효과 — `assets/fx.js` (2026-11-23)
+
+본인 「웹디자인 스킬이나 툴 전체적으로 보강 — 모션 그래픽이나 삐까뻔쩍한 것들로 내 웹페이지 퀄리티를 확 끌어올리고 싶어」. **작업 규칙 · 레시피 · 점검은 프로젝트 스킬 `.claude/skills/web-motion/SKILL.md`** 에 있다 — 효과를 고치기 전에 읽는다.
+
+- 모두 **덧그림**(transform · 개별 속성 rotate/translate/scale · opacity · 캔버스 · 가상 요소)이라 배치가 그대로다 — 첫 화면 한 장 · 장 넘김 장 나눔 · PDF 장 수 불변. 규칙은 `html.fx-on` 아래 · `style.css` 맨 끝 「FX」 블록.
+- 끄기: 주소 `?fx=0`(이 탭 — sessionStorage `psj-fx`) · `localStorage psj-fx=0`(이 브라우저) · 하나만 끄려면 fx.js 앞에 `window.FX_CONF = { cursor: false }`. 콘솔 `FX.info()` = 켜진 효과 · 돌고 있는 루프 · 빛 해상도 단계.
+
+| 효과 | 어디 | 주의 |
+|---|---|---|
+| 첫 화면 빛(aurora, WebGL) + 점 격자 | `fx.js aurora()` · `.fx-stage`(`.hero` 맨 앞 자식, z-index −1 · `.hero` 에 position: relative · isolation) | 빛은 「핵심 과업」 칸(#mboard) 둘레를 돈다. 바탕 위 글자(소개 · 「핵심 성과」 머리 · 「핵심 과업」 머리) 자리는 `--fx-a-text` 만큼 옅게 — 대비 4.5:1(fx-audit contrast 로 정한 값: 라이트 0.25 · 다크 0.1). 라이트 색은 밝은 파스텔(바탕보다 많이 어두워지지 않음). 해상도 0.5배 · 40fps, 소프트웨어 GL 은 0.25배 · 20fps, 프레임이 밀리면 단계적으로 낮추다 멈춘 한 장. 화면 밖 · 다른 탭 · 인쇄면 멈춤, 동작 줄이기면 멈춘 한 장. WebGL 이 없거나 잃으면 CSS 그라데이션. 스크롤판에서 첫 화면이 올라가는 동안 빛은 0.32 배 느리게(시차) |
+| 카드 기울기(tilt) · 단추 끌림(magnet) | `fx.js pointerFx()` `TILT` · `MAG` | 마우스만. 개별 속성 `rotate` · `translate` 을 JS 가 lerp(hover 의 transform 과 따로 겹침) — 대상에 CSS transition 을 더하지 않는다(원래 transition 목록을 덮어씀). 부모에 `.fx-persp`(perspective 1100px — 화면만). 장 넘김 끌기 중엔 안 움직임 |
+| 따라오는 고리(cursor) | `fx.js cursor()` · `.fx-cursor` | 마우스만 · 기본 커서는 그대로. z-index 130. 누를 것 위 커짐 · 차트 위 작은 점 · 입력 · iframe 위 숨김 |
+| 꼬리표 해독(scramble) | `fx.js scramble()` `.sec-h .tag` · `.growth-h .tag` | 영문 · 숫자만(고정폭 — 폭 그대로), 화면에 처음 들어올 때 한 번. 장 넘김 · 인쇄 · 동작 줄이기에서는 안 돎. 인쇄 직전 · 「장으로 보기」 클릭 직전에 원래 글자로(`holds`). **그래서 fx.js 는 app.js 앞**(beforeprint 가 printWrap 보다 먼저) |
+| 테두리 빛(beam) | `fx.js beam()` `BEAM` = LIVE DEMO 칸 · 주요 성과 머리 카드(.rs-lead) · 프로필 사진 | `.fx-beam::after`(@property `--fx-ang` + conic + mask exclude). 대상에 ::after 가 있으면 못 씀. 화면 밖은 `.fx-idle` — **`.anim-idle` 을 쓰면 카드 자신의 등장 애니메이션까지 멈춰 투명한 채 굳는다**(휴대폰 LIVE DEMO 칸에서 실제로 났다) |
+| 흐르는 그라데이션 글자 | `fx.js grad()` `.thesis em` 안 `span.fx-grad` | 형광펜 밑줄(em 바탕)은 그대로. 색 `--fx-g1~3` 은 대비 4.5:1 넘는 색만. 인쇄는 단색 |
+| 테마 원형 전환 | `FX.themeSwap` ← `app.js wireChrome` 테마 단추 | View Transitions 가 없거나 동작 줄이기면 바로 바뀜 |
+| 스크롤 진행 막대 | `.mast::after` 그라데이션 + 빛 | |
+
+- 실측(2026-11-23 헤드리스 — `fx-audit.js --pdf`): 1463×800 · 1280×720 · 390×844 × 라이트 · 다크 모두 오류 0 · 넘침 0 · 효과 끔과 위치 같음(첫 화면 · 주요 성과 · 상단 바 안 모든 요소) · 끝난 뒤 글자 같음 · 첫 화면 글자 대비 최저 6.3(끔 6.85) · 동작 줄이기 루프 0 · 장 넘김 켜짐 · PDF 장 수 효과 켬 = 끔(이 컨테이너 글꼴 16 · 8). 첫 로드는 fx.js 하나(28KB · gzip 약 11KB)가 늘었다(6절 5). 실제 GPU · 트랙패드 · 휴대폰 손맛은 `미검증`(헤드리스는 GPU 없이 그린다).
+- 새 효과는 스킬 3절 순서대로 넣고 이 표에 한 줄 더한다.
+
 ## 6. 확인 방법
 
 1. `index.html` 을 브라우저로 열어 콘솔 에러가 없는지 본다(F12 → Console).
@@ -291,9 +312,11 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
    (2026-11-25 방문 분석) `track.js` 한 요청이 늘었다(12.8KB · gzip 약 5.4KB, 본문 끝). GTM(약 90KB) · GA4(약 155KB) · Clarity(약 26KB — 압축 전송, 11-25 실측)는 공개 주소에서 load 뒤에만 받아 이 숫자에 들지 않는다.
    (2026-11-23 스크롤판 기본) 같은 방법 — 1463×800 · 390×844 모두 13개(문서 + 12) · 약 776KB(11-20 이후 data.js · app.js · CSS 가 늘어난 몫, 이번 변경은 약 3KB). 장 넘김 파일(topics · paged CSS/JS)은 「장으로 보기」를 바로 켜려고 그대로 받는다 — 줄이려면 늦게 불러오기로(지금은 안 함). `dashboard-demo.html` 은 두 폭 모두 안 받음.
    (2026-11-23 문맥 · 기능 시각화 보강) 요청 수 그대로, 압축 기준 약 +10KB(app.js +6.6 · style.css +2.6 · data.js +0.8 · topics.css +0.4KB).
+   (2026-11-23 모션 · 시각 효과) `assets/fx.js` 한 개 더(28KB · gzip 약 11KB) — 같은 방법으로 1463×800 문서 포함 15개 · 약 869KB, 390×844 14개 · 약 814KB(?fx=0 도 같은 파일을 받는다). 첫 화면 빛은 WebGL 셰이더라 그림 파일이 없다.
 6. 「입사 후 N개월」 · 「N년 N개월」이 오늘 기준으로 맞는지 본다(자동 계산이 막히면 HTML 의 옛 숫자가 그대로 보인다).
 7. PDF: 「전체 PDF」 약 16장 · 「요약 PDF」 약 7~8장, 1쪽이 표지(소개 + 핵심 성과 + 대시보드 · 차트 4칸)로 끝나는지, 참고 자료 이미지가 빈 칸이 아닌지 본다. 장 수는 글꼴에 따라 달라진다 — 이 PC(Noto Sans KR 설치)에서는 전체 16장 · 요약 7장, 맑은 고딕이면 전체 16장 · 요약 8장, 용량 전체 4.7MB · 요약 2.2MB(2026-11-05 실측 — 그 전 09-27 은 전체 18장 · 요약 8장). 꼬리말 한 줄만 있는 장 · 반쯤 빈 장 · 내용 없이 테두리만 남은 카드가 없는지, 넓은 창 · 휴대폰 창에서 인쇄해도 차트 글자 크기가 같은지 같이 본다.
 8. 데모나 본문을 바꿨으면 `node tools/demo-wash.js --check` 가 「가릴 것 없음」 열 줄(2026-11-20 판매가 트래커 데모 추가 · 11-14 쇼핑 인사이트 데모 추가 — 이전 여덟 줄)로 끝나는지, 대시보드 데모 첫 화면에 빈 ✕ 팝업이 없는지 본다.
+9. 모션 · 시각 효과(fx.js · FX 블록 · 테마 단추)를 바꿨으면 정적 서버를 띄우고 `node .claude/skills/web-motion/scripts/fx-audit.js --pdf` 가 「모두 통과」로 끝나는지 본다(5-8).
 
 ## 7. 배포 (GitHub Pages)
 
