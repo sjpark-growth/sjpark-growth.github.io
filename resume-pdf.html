@@ -68,6 +68,11 @@
 <script>
   /* 테마: 본판과 같은 저장값(psj-theme)을 먼저 찍어 깜빡임을 막는다 */
   try { var t = localStorage.getItem('psj-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  /* (2026-11-23) 공유판(?share) — 본판 index.html 머리와 같은 판정. 이 페이지에는 연락처가 없고(이력서 PDF 도 연락처 제외판), 포트폴리오로 돌아가는 링크에만 ?share 를 붙인다. CLAUDE.md 5-6 */
+  (function () { var m = /[?&]share(?:=([^&#]*))?(?:&|#|$)/.exec(location.search), on = !!m && m[1] !== '0';
+    try { if (m) { if (on) sessionStorage.setItem('psj-share', '1'); else sessionStorage.removeItem('psj-share'); } on = on || (!m && sessionStorage.getItem('psj-share') === '1'); } catch (e) {}
+    if (!on) return; document.documentElement.classList.add('share-view');
+    document.addEventListener('DOMContentLoaded', function () { [].forEach.call(document.querySelectorAll('a[href="./"]'), function (a) { a.setAttribute('href', './?share'); }); }); })();
 </script>
 </head>
 <body>

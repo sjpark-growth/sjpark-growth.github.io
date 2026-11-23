@@ -35,6 +35,11 @@
 <script>
   /* 테마: 저장된 선택이 있으면 먼저 찍어 깜빡임을 막는다 */
   try { var t = localStorage.getItem('psj-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  /* (2026-11-23 본인 「헤드헌터들이 포트폴리오 페이지를 못 쓰는 거 같으니 전화번호 · 이메일 노출이 안 되는 포트폴리오」) 공유판 — 주소에 ?share 가 있으면
+     html.share-view: 메일 · 전화를 그리지 않는다(app.js SHARE · en.html · resume-pdf.html 같은 표시). 이 탭에서는 이어 간다(sessionStorage psj-share), ?share=0 이면 끈다. CLAUDE.md 5-6 */
+  (function () { var m = /[?&]share(?:=([^&#]*))?(?:&|#|$)/.exec(location.search), on = !!m && m[1] !== '0';
+    try { if (m) { if (on) sessionStorage.setItem('psj-share', '1'); else sessionStorage.removeItem('psj-share'); } on = on || (!m && sessionStorage.getItem('psj-share') === '1'); } catch (e) {}
+    if (on) document.documentElement.classList.add('share-view'); })();
 </script>
 </head>
 <body>

@@ -15,6 +15,10 @@
   const lastIdx = S.months.length - 1;
   const N = S.months.length;
   const LAST = mLabel(S.months[lastIdx]);   // 차트 끝 달 라벨(「26.10」) — 기준 달이 바뀌어도 손으로 고치지 않게 (2026-11-21)
+  /* (2026-11-23) 공유판 — 주소 ?share 면 index.html 머리 스크립트가 html.share-view 를 붙인다. 메일 · 전화를 그리지 않고(화면 · 인쇄 · PDF),
+     EN · 이력서 PDF 로 가는 링크에도 ?share 를 이어 붙인다(그 페이지들도 같은 표시로 연락처를 숨김). CLAUDE.md 5-6 */
+  const SHARE = document.documentElement.classList.contains('share-view');
+  const shareQ = u => SHARE ? u.replace(/^([^?#]*)(\?[^#]*)?/, (m, p, q) => p + (q ? q + '&share' : '?share')) : u;
 
   const ICON = {
     mail: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><path d="m2 4 6 5 6-5"/></svg>',
@@ -180,18 +184,24 @@
     if (P.kicker) $('#h-kicker').textContent = P.kicker; else $('#h-kicker').remove();
     const ph = $('#h-photo');
     if (P.photo) { ph.src = P.photo; ph.addEventListener('error', () => ph.closest('.portrait').remove()); } else ph.closest('.portrait').remove();
-    const contactHTML = `
+    const pin = `<span class="chip">${ICON.pin}<span>${P.location}</span></span>`;
+    const contactHTML = SHARE ? pin : `
       <a class="chip" href="mailto:${P.email}">${ICON.mail}<span>${P.email}</span></a>
       <a class="chip" href="tel:${P.phone.replace(/-/g, '')}">${ICON.phone}<span>${P.phone}</span></a>
-      <span class="chip">${ICON.pin}<span>${P.location}</span></span>`;
-    const copyChip = `<button class="chip copy" type="button" data-copy="${P.email}">${ICON.copy}<span>이메일 복사</span></button>`;
+      ${pin}`;
+    const copyChip = SHARE ? '' : `<button class="chip copy" type="button" data-copy="${P.email}">${ICON.copy}<span>이메일 복사</span></button>`;
     /* 첫 화면은 복사 버튼 자리에 업력 요약을 둔다 — 복사 버튼은 맨 아래 연락처에 그대로 (2026-09-19) */
-    $('#heroContact').innerHTML = contactHTML;
+    /* 공유판은 첫 화면 연락처 줄을 통째로 접는다(지역 칩 하나만 남으면 휴대폰에선 그것도 숨겨 빈 줄 — 11-12 연락처 제외 PDF 와 같은 모양) */
+    const hc = $('#heroContact'); hc.innerHTML = SHARE ? '' : contactHTML; if (SHARE) hc.style.display = 'none';
     $('#contact2').innerHTML = contactHTML + copyChip;
+    if (SHARE) { const tg = $('#contact .tag'); if (tg) tg.textContent = 'Facts';
+      const en = $('#enBtn'); if (en) en.href = shareQ(en.getAttribute('href'));
+      const pn = $('.printnote b'); if (pn) pn.textContent = 'sjpark-growth.github.io/?share'; }
     $('#heroSum').innerHTML = (() => { let sub = false; return (P.highlights || []).map(h => { // 'gap' 줄부터는 구분선 아래 검은 글씨
       const sep = h[2] === 'gap' && !sub ? '<li class="hs-sep" aria-hidden="true"></li>' : ''; if (h[2] === 'gap') sub = true;
       return `${sep}<li${sub ? ' class="sub"' : ''}><b class="hs-k">${h[0]}</b><span>${h[1]}</span></li>`; }).join(''); })();
-    $('#contact-lede').textContent = `${P.role} · ${P.career}. 편하게 연락 주세요 — 메일이 가장 빠릅니다.`;
+    $('#contact-lede').textContent = SHARE ? `${P.role} · ${P.career}. 연락은 담당자를 통해 부탁드립니다.`   /* 원래 문장보다 길면 요약 PDF 끝에 빈 장이 생겼다(7 → 8장, 11-23) */
+      : `${P.role} · ${P.career}. 편하게 연락 주세요 — 메일이 가장 빠릅니다.`;
     // 요약 띠
     $('#h-lede').innerHTML = P.lede;
     $('#h-now').innerHTML = P.now.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
@@ -1189,6 +1199,9 @@
 
   /* ------------------------------------------------------------ projects */
   const linkOf = id => id === 'dashboard' ? '#dash' : '#p-' + id;
+  /* (2026-11-23 PDF 줄바꿈) 숫자 칸 이름 끝의 괄호 풀이 「매출 (동일 매출 대비 지출 29.7% 절감)」 → 괄호를 span.fkn 으로 감싼다. 화면은 그대로(글자 · 띄어쓰기 같음),
+     인쇄는 좁은 세 칸에서 「매출 (동일 / 매출 대비 지출 / 29.7% 절감)」처럼 괄호 중간에서 꺾이던 것을 괄호만 아래 작은 줄로(style.css 「PDF 줄바꿈」) */
+  const fkNote = k => String(k).replace(/^([\s\S]*?\S)(\s*)(\([^()]+\))$/, '$1<span class="fkn">$2$3</span>');
   function renderProjects() {
     const host = $('#projects');
     /* (2026-11-22 둘째 본인 「주요 업무 우측 주요 데이터에 파란색 글자 등 텍스트 색깔 구분해 가독성」) 「어떻게」 줄의 괄호 풀이 — 숫자 · 태그가 없는
@@ -1196,7 +1209,7 @@
     const soft = x => String(x).replace(/\(([^()<>\d]{1,24})\)/g, '<span class="hp">($1)</span>');
     R.projects.filter(p => !p.featured).forEach(p => {
       const card = el('article', { class: 'proj' + (p.wide ? ' wide' : ''), id: 'p-' + p.id, 'aria-labelledby': 'pt-' + p.id });
-      const facts = p.facts.map(f => `<li><span class="fv">${f.from ? `<span class="from">${f.from}</span><span class="ar">→</span>` : ''}<span class="to" data-roll-from="${f.from ? f.from.replace(/,/g, '') : ''}" data-roll-to="${f.v}">${f.v}</span><small class="fu">${f.u || ''}</small>${f.d ? `<span class="fd">${f.d}</span>` : ''}</span><span class="fk">${f.k}</span>${f.s ? `<span class="fs">${f.s}</span>` : ''}${R.config.showAbsolute && f.abs ? `<span class="abs">${f.abs}</span>` : ''}</li>`).join('');
+      const facts = p.facts.map(f => `<li><span class="fv">${f.from ? `<span class="from">${f.from}</span><span class="ar">→</span>` : ''}<span class="to" data-roll-from="${f.from ? f.from.replace(/,/g, '') : ''}" data-roll-to="${f.v}">${f.v}</span><small class="fu">${f.u || ''}</small>${f.d ? `<span class="fd">${f.d}</span>` : ''}</span><span class="fk">${fkNote(f.k)}</span>${f.s ? `<span class="fs">${f.s}</span>` : ''}${R.config.showAbsolute && f.abs ? `<span class="abs">${f.abs}</span>` : ''}</li>`).join('');
       card.innerHTML = `
         <div class="player" data-scene="${p.motion}" ${p.video ? `data-video="${p.video}"` : ''}><div class="stage"></div></div>
         <div class="proj-body">
@@ -1385,8 +1398,8 @@
     $('#factGrid').innerHTML = (F.seeking && F.seeking.length ? sec('찾고 있는 자리', F.seeking) : '') + sec('자격', F.certs) + sec('학력 · 교육', F.edu) + sec('기타', F.etc);
     const fa = $('#f-asof'); if (fa) fa.textContent = R.config.asOf;
     const fl = $('#footLine'); const Pf = R.profile;
-    if (fl) fl.innerHTML = `© ${Pf.name} · 2026<span class="fsep">/</span><a href="mailto:${Pf.email}">${Pf.email}</a><span class="fsep">/</span><a href="tel:${Pf.phone.replace(/-/g, '')}">${Pf.phone}</a>` +
-      `<span class="foot-cv"><span class="fsep">/</span><a href="resume-pdf.html" target="_blank" rel="noopener nofollow" title="이력서 PDF — 새 창에서 보고 내려받기">이력서 PDF</a></span>`;   /* (11-22) 가린판 이력서(회사명 가림 · 연락처 제외) — GNB 아래 줄(topics.js tm-copy)과 같은 곳. (11-22 둘째, 본인 「클릭 시 새 페이지에서 보이게 하고 거기서 다운로드」) 바로 받지 않고 보기 페이지 resume-pdf.html 을 새 창으로 */
+    if (fl) fl.innerHTML = `© ${Pf.name} · 2026` + (SHARE ? '' : `<span class="fsep">/</span><a href="mailto:${Pf.email}">${Pf.email}</a><span class="fsep">/</span><a href="tel:${Pf.phone.replace(/-/g, '')}">${Pf.phone}</a>`) +
+      `<span class="foot-cv"><span class="fsep">/</span><a href="${shareQ('resume-pdf.html')}" target="_blank" rel="noopener nofollow" title="이력서 PDF — 새 창에서 보고 내려받기">이력서 PDF</a></span>`;   /* (11-22) 가린판 이력서(회사명 가림 · 연락처 제외) — GNB 아래 줄(topics.js tm-copy)과 같은 곳. (11-22 둘째, 본인 「클릭 시 새 페이지에서 보이게 하고 거기서 다운로드」) 바로 받지 않고 보기 페이지 resume-pdf.html 을 새 창으로 */
   }
 
   /* ------------------------------------------------------------ 직무점수 */
@@ -1489,7 +1502,7 @@
     const baseTitle = document.title;
     const printTitle = () => {
       const d = new Date(), ymd = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0');
-      document.title = `박성준_포트폴리오_${document.body.classList.contains('print-short') ? '요약' : '전체'}_${ymd}`;
+      document.title = `박성준_포트폴리오_${document.body.classList.contains('print-short') ? '요약' : '전체'}${SHARE ? '_연락처제외' : ''}_${ymd}`;
     };
     addEventListener('beforeprint', printTitle);
     addEventListener('afterprint', () => { document.title = baseTitle; });
@@ -1779,6 +1792,68 @@
     if (pm.addEventListener) pm.addEventListener('change', e => { if (!e.matches) back(); });
   }
 
+  /* (2026-11-23 본인 「포트폴리오 PDF 줄바꿈 개선 — 전체적으로 너무 안 맞는다」) 인쇄 줄바꿈 묶음 — 인쇄하는 동안만 공백 몇 군데를 줄바꿈 없는 공백(U+00A0)으로:
+     「38.0% → 16.5%」가 화살표에서 · 「1,893% (+467%p)」가 괄호 앞에서 갈라지지 않게, 구분점 「·」이 줄 머리에 오지 않게, 짧은 괄호 풀이(12자 이하)는 통째로 넘어가게.
+     숫자 칸 이름(.facts) 안 괄호는 칸이 좁아 통째로 묶으면 넘쳐 빼고 CSS(text-wrap: balance)로 고르게. 고아 줄(마지막 줄 한 낱말)은 style.css 맨 아래 「PDF 줄바꿈」 블록의 text-wrap: pretty.
+     장 넘김에서 인쇄하면 topics.js 가 화면용 묶음(glue)을 푼 뒤 이것을 부른다(window.__printGlue) — 두 묶음이 같은 글자를 서로 덮어쓰지 않게. CLAUDE.md 5-1 「PDF 줄바꿈」 */
+  function printWrap() {
+    const NB = '\u00a0', done = new Map();
+    const SKIP = 'svg, script, style, textarea, .player .stage, [data-roll-to], .mast, .rail, .modal, .lightbox, .tip';
+    let on = false;
+    const glueOn = v => {
+      if (v === on) return; on = v;
+      if (!v) { unsplit(); done.forEach(([s, g], t) => { if (t.nodeValue === g) t.nodeValue = s; }); done.clear(); return; }
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest(SKIP) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
+      for (let t; (t = w.nextNode());) {
+        const s = t.nodeValue; if (s.indexOf(' ') < 0) continue;
+        let g = s.replace(/ (?=→)/g, NB).replace(/→ /g, '→' + NB)   // 화살표 앞뒤
+          .replace(/(\S) (?=\([+\-−]?\d)/g, '$1' + NB)              // 「1,893% (+467%p)」
+          .replace(/ (?=·)/g, t.parentElement.closest('.kpi') ? ' ' : NB);   // 구분점이 줄 머리에 오지 않게 — 핵심 성과 칸은 좁아 「30.8억 → 41억 (+33.1%) ·」가 칸을 넘쳐 억지로 꺾여 뺀다
+        if (!t.parentElement.closest('.facts')) g = g.replace(/\(([^()]{1,12})\)/g, m => m.replace(/ /g, NB));   // 짧은 괄호 풀이 통째로
+        // 굵은 숫자 바로 뒤 「 (+33.1%)」 — 글 덩어리가 달라 위 규칙이 못 본다(「<b>41억</b> (+33.1%)」)
+        const pv = t.previousSibling;
+        if (pv && pv.nodeType === 1 && /^(B|STRONG|EM)$/.test(pv.tagName) && /\S$/.test(pv.textContent)) g = g.replace(/^ (?=\([+\-−]?\d)/, NB);
+        if (g !== s) { done.set(t, [s, g]); t.nodeValue = g; }
+      }
+      /* 띄어쓰기 없이 붙은 조사 · 기호 — 「1,384%로」 「국가데이터처)보다」 「2배+」 「응답(답변율」이 낱말 가운데서 꺾였다(keep-all 이어도 % · ) · + · ( 앞뒤는 끊길 수 있다).
+         그 낱말만 인쇄하는 동안 span.pw-nw(white-space: nowrap)로 감싼다. 낱말 잇기 문자(U+2060)는 PDF 글자에 섞여 나와(187곳 — 붙여 넣기 · 채용 시스템 검색이 깨짐) 쓰지 않는다.
+         좁은 숫자 칸(.facts)의 「이화에스엠피(스포틀러)」 같은 긴 낱말은 감싸면 칸을 넘쳐 여는 괄호 규칙에서 뺀다 */
+      const NW = /[%\d)][가-힣+]|[가-힣]\+/, NWP = /[가-힣]\(/, list = [];
+      const w2 = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: t => (t.parentElement && !t.parentElement.closest(SKIP) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
+      for (let t; (t = w2.nextNode());) list.push(t);
+      list.forEach(t => {
+        const cell = !!t.parentElement.closest('.facts'), need = k => NW.test(k) || (!cell && NWP.test(k));
+        /* 굵은 숫자 바로 뒤에 붙은 조사 — 「<b>1,191~1,384%</b>로」는 글 덩어리가 둘이라 위 규칙이 못 본다(text-wrap: pretty 가 바로 그 틈에서 꺾었다) → 둘을 함께 감싼다 */
+        const prev = t.previousSibling, m0 = /^[가-힣+]\S*/.exec(t.nodeValue);
+        if (!cell && m0 && prev && prev.nodeType === 1 && /^(B|STRONG|EM)$/.test(prev.tagName) && !prev.matches(SKIP) && !prev.querySelector('[data-roll-to]') && /[%\d)]$/.test(prev.textContent)) {
+          const wrap = document.createElement('span'); wrap.className = 'pw-nw'; prev.before(wrap); wrap.append(prev, document.createTextNode(m0[0]));
+          t.nodeValue = t.nodeValue.slice(m0[0].length); joined.push([wrap, prev, t, m0[0]]);
+        }
+        const toks = t.nodeValue.split(' ');
+        if (!toks.some(need)) return;
+        const nodes = []; let buf = '';
+        toks.forEach((k, i) => {
+          const sp = i < toks.length - 1 ? ' ' : '';
+          if (!need(k)) { buf += k + sp; return; }
+          if (buf) { nodes.push(document.createTextNode(buf)); buf = ''; }
+          const s = document.createElement('span'); s.className = 'pw-nw'; s.textContent = k; nodes.push(s); buf = sp;
+        });
+        if (buf) nodes.push(document.createTextNode(buf));
+        t.before(...nodes); t.remove(); split.push([t, nodes]);
+      });
+    };
+    const split = [], joined = [];
+    const unsplit = () => {
+      split.forEach(([t, nodes]) => { if (nodes[0].parentNode) { nodes[0].before(t); nodes.forEach(n => n.remove()); } }); split.length = 0;
+      joined.forEach(([wrap, prev, t, m]) => { if (wrap.parentNode) { wrap.before(prev); wrap.remove(); t.nodeValue = m + t.nodeValue; } }); joined.length = 0;
+    };
+    window.__printGlue = glueOn;
+    addEventListener('beforeprint', () => { if (!(window.TopicsDeck && window.TopicsDeck.active)) glueOn(true); });
+    addEventListener('afterprint', () => glueOn(false));
+    const pm = matchMedia('print');
+    if (pm.addEventListener) pm.addEventListener('change', e => { if (!e.matches) glueOn(false); });
+  }
+
   /* ------------------------------------------------------------ boot */
   applyAngle();
   paintPeriods();
@@ -1806,6 +1881,7 @@
   wireReveal();
   wireSpot();
   wireDeckBtn();
+  printWrap();   // 인쇄 줄바꿈 묶음 — 다른 beforeprint(차트 다시 그리기 · 요약 옮기기 · 등장 끝내기) 뒤에 돌게 맨 끝에 건다
   onFirstView($('#kpis'), () => setTimeout(() => rollNumbers($('#kpis')), reduceMotion ? 0 : 200), 0.2);
   onFirstView($('#perfChart'), () => drawPerf(true), 0.2);
 })();

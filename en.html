@@ -78,10 +78,17 @@
   @media (max-width: 600px) { .mast .iconbtn .lg { display: none; } }
   /* (2026-11-22) 휴대폰 보조 글자 12px — 본판 10-31 「작은 글자」 규칙과 같게(머리 꼬리표 11.5 → 12) */
   @media screen and (max-width: 600px) { .en-eyebrow { font-size: 12px; } }
+  /* (2026-11-23) 공유판(?share) — 메일 · 전화 칩을 숨긴다(화면 · 인쇄 모두) */
+  html.share-view .en-chips .ct { display: none; }
 </style>
 <script>
   /* 테마: 본판과 같은 저장값(psj-theme)을 먼저 찍어 깜빡임을 막는다 */
   try { var t = localStorage.getItem('psj-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  /* (2026-11-23) 공유판(?share) — 본판 index.html 머리와 같은 판정(이 탭에서 이어 감 · ?share=0 이면 끔). 메일 · 전화를 숨기고 한국어판으로 가는 링크에 ?share 를 붙인다. CLAUDE.md 5-6 */
+  (function () { var m = /[?&]share(?:=([^&#]*))?(?:&|#|$)/.exec(location.search), on = !!m && m[1] !== '0';
+    try { if (m) { if (on) sessionStorage.setItem('psj-share', '1'); else sessionStorage.removeItem('psj-share'); } on = on || (!m && sessionStorage.getItem('psj-share') === '1'); } catch (e) {}
+    if (!on) return; document.documentElement.classList.add('share-view');
+    document.addEventListener('DOMContentLoaded', function () { [].forEach.call(document.querySelectorAll('a[href="./"]'), function (a) { a.setAttribute('href', './?share'); }); }); })();
 </script>
 </head>
 <body>
@@ -121,8 +128,8 @@
       <p class="en-thesis">I push ad efficiency to its limit — and grow <em>what sits outside the ad</em>.</p>
       <p class="en-lede">I run <b>9 ad channels in-house</b> for a Korean HMR (home meal replacement) brand, mostly without agencies. My background is marketplace <b>merchandising</b> — assortment, visibility and pricing — so when efficiency stalls I fix the product page, the category and the coupon structure, not just the bid. I built our unified performance dashboard myself with Claude Code.</p>
       <ul class="en-chips">
-        <li><a href="mailto:j1o2o1n7@naver.com">j1o2o1n7@naver.com</a></li>
-        <li>+82 10-8916-5977</li>
+        <li class="ct"><a href="mailto:j1o2o1n7@naver.com">j1o2o1n7@naver.com</a></li>
+        <li class="ct">+82 10-8916-5977</li>
         <li>Seoul, South Korea</li>
       </ul>
     </div>

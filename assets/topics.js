@@ -156,7 +156,7 @@
   nav.after(pager);
   /* 「© 이름 · 2026」만(메일 · 전화는 연락처 장에) + (11-22 본인 「우측 너무 휑하니까 (이력서 PDF) 링크 걸어서 이력서도 받아볼 수 있게」) 가린판 이력서 PDF(files/sjpark_resume.pdf — 회사명 가림 · 연락처 제외) */
   const fl = $('#footLine'), copy = el('p', { class: 'tm-copy' }, esc((fl && fl.firstChild ? fl.firstChild.textContent : '').trim() || '© 박성준') +
-    ' <span class="cv">(<a href="resume-pdf.html" target="_blank" rel="noopener nofollow" title="이력서 PDF — 새 창에서 보고 내려받기(회사명 가림 · 연락처 제외)">이력서 PDF</a>)</span>');   /* (11-22 둘째) 바로 받지 않고 보기 페이지(resume-pdf.html)를 새 창으로 — 내려받기는 그 페이지 단추 */
+    ' <span class="cv">(<a href="resume-pdf.html' + (document.documentElement.classList.contains('share-view') ? '?share' : '') + '" target="_blank" rel="noopener nofollow" title="이력서 PDF — 새 창에서 보고 내려받기(회사명 가림 · 연락처 제외)">이력서 PDF</a>)</span>');   /* (11-22 둘째) 바로 받지 않고 보기 페이지(resume-pdf.html)를 새 창으로 — 내려받기는 그 페이지 단추 */
   shell.appendChild(copy);
 
   /* 드롭다운(좁은 화면: 탭에 마우스 · 목차 / 넓은 화면: 다른 주제에 마우스 → GNB 옆에 항목 목록) */
@@ -465,7 +465,7 @@
   const NB = ' ', glued = new Map();
   /* (2026-11-20 본인 「전체적으로 줄바꿈 · 문맥 개선 — 숫자 · 단위 사이에서 끊기지 않게」) 좁은 화면(FLOW 본판)에도 가벼운 규칙만 —
      화살표 앞뒤 · 「(+369%p)」 앞만 붙인다(「962% → 1,331%」가 화살표에서 갈라지지 않게). 낱말 + 숫자 · 구분점은 좁은 칸에서 덩어리가 길어져 빼고,
-     인쇄 중에는 모두 되돌린다(PDF 줄바꿈 · 장 수 그대로). mode = 'full'(넓은 화면) · 'light'(좁은 화면 FLOW) · ''(되돌림) */
+     인쇄 중에는 모두 되돌린다 — (2026-11-23) 대신 인쇄용 묶음(app.js printWrap · window.__printGlue)을 beforeprint 에서 이어 건다. mode = 'full'(넓은 화면) · 'light'(좁은 화면 FLOW) · ''(되돌림) */
   let glueMode = '';
   const glueFor = () => glue(wide ? 'full' : (FLOW ? 'light' : ''));
   function glue(mode) {
@@ -1003,7 +1003,7 @@
 
   /* 인쇄 — 판을 세로로 다시 쌓는다(style 은 topics.css 인쇄 블록). 넓은 화면 배치(zoom · 장 폭)를 풀고, inert 를 풀어야 인쇄 · 복사에 다 나온다 */
   let printPg = 0;
-  on(window, 'beforeprint', () => { printPg = wide ? pg : restorePg(); setMode(false); glue(''); panels.forEach(p => { p.inert = false; p.removeAttribute('aria-hidden'); }); });
+  on(window, 'beforeprint', () => { printPg = wide ? pg : restorePg(); setMode(false); glue(''); if (window.__printGlue) window.__printGlue(true); panels.forEach(p => { p.inert = false; p.removeAttribute('aria-hidden'); }); });
   on(window, 'afterprint', () => { clearTimeout(rzT); setMode(wideMQ.matches); glueFor(); if (wide) layout(); go(cur, { page: wide ? printPg : 0, push: false, instant: true }); relayout(400); });   // 차트가 화면 폭으로 다시 그려진 뒤 한 번 더 나눈다
 
   // 처음 — #/주제(/장) 가 없으면 본판식 주소(#perf · #p-cp1)도 받아 그 판 · 그 자리로
