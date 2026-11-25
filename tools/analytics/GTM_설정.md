@@ -17,7 +17,7 @@ GTM 컨테이너 설정은 `gtm-container.json`(이 폴더)을 「관리자 → 
 - GA4 이벤트 데이터 보관 2개월 → **14개월**(탐색 · 유입경로 보고서가 2개월까지만 거슬러 올라가서).
 - GA4 맞춤 이벤트 4개 + **키 이벤트**(값 없음 · 이벤트당 한 번, 소스 매개변수 복사): `resume_download`(psj_click = resume_download) · `resume_view`(= resume_view) · `contact_email`(psj_click 포함 email_ — 클릭 · 복사) · `contact_phone`(= phone_click). 이벤트 목록 「주요 이벤트」 탭에는 데이터가 들어온 뒤 뜬다.
 - GA4 화면이 바뀌어 조건식 맞춤 이벤트는 「이벤트 → 커스텀 구성 → 맞춤 이벤트 → 만들기 → (URL 칸 아래) 옵션 더 보기」에 있다. 「이벤트 만들기」 첫 화면은 URL 조건만 된다.
-- Clarity–GA4 통합은 **연결 안 함**(Google 계정 권한 허용이 필요 — 본인 결정).
+- Clarity–GA4 통합 **연결됨**(같은 날 본인 「연동 진행」 — Google 권한(애널리틱스 관리 요소 수정 · 데이터 보기)은 본인이 승인, Clarity 설정 → 통합 「연결됨 · sjpark-growth portfolio · 활성」). 연결 직후 GA4 맞춤 측정기준에 Clarity 항목은 아직 없음 — 실제 방문이 생긴 뒤 생기는지 볼 것(`미검증`). 끊기는 Clarity 설정 → 통합 → 연결 끊기.
 
 ## 1. 계정 · ID 만들기 (본인)
 
