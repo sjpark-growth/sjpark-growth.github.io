@@ -26,7 +26,9 @@
   /* ---------- 보낼지 판정 ---------- */
   var nt = arg('notrack'); if (nt !== null) store('localStorage', 'psj-notrack', nt === '0' ? null : '1');
   var optout = store('localStorage', 'psj-notrack') === '1' || navigator.doNotTrack === '1' || W.doNotTrack === '1' || navigator.globalPrivacyControl === true;
-  var live = !!gtm && /^GTM-[A-Z0-9]+$/.test(gtm) && !optout && (T ? true : HOST.test(location.hostname) && navigator.webdriver !== true);
+  // 자동 점검 · 봇 빼기 — 새 헤드리스 크롬은 webdriver 가 false 로 나와(11-25 실측) 이름(UA)도 본다
+  var bot = navigator.webdriver === true || /HeadlessChrome|Lighthouse|PageSpeed|bot\b|crawl|spider|slurp/i.test(navigator.userAgent || '');
+  var live = !!gtm && /^GTM-[A-Z0-9]+$/.test(gtm) && !optout && (T ? true : HOST.test(location.hostname) && !bot);
 
   /* ---------- 맥락(모든 이벤트에 같이 실림 — GTM 데이터 영역 변수) ---------- */
   var path = location.pathname;
