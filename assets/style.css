@@ -2832,3 +2832,17 @@ a.rs-card[data-save] { cursor: pointer; }
   .thesis .fx-grad { background: none !important; color: inherit !important; -webkit-text-fill-color: currentColor !important; animation: none !important; }
   .fx-persp { perspective: none !important; }
 }
+
+/* ===== (2026-11-25) 디자인 점검 손질 — 설치한 web-design-guidelines · emil-design-eng 로 본판을 검사해 나온 것. 배치 그대로 =====
+   ① 손가락 기기에서 누른 뒤 hover 확대가 남던 것(:hover 고착) — 위 (hover: none) 줄(1045행 근처)은 카드만 풀어 칩 · 단추 · 메뉴 · 숫자 칸이
+      누른 뒤에도 커진 채 남았다. 누르는 동안(:active)의 눌림 반응은 그대로(:not(:active)).
+   ② 경력 타임라인 줄(.grow-row — role=link · tabindex 0) 키보드 초점 — outline 을 지운 뒤 글자 색만 바뀌어 거의 안 보였다
+      → 마우스를 올렸을 때와 같은 강조 띠 + 굵은 밑줄(app.js 도 focus 때 경력 카드를 같이 강조). */
+@media (hover: none) {
+  .more li:hover:not(:active), .tools span:hover:not(:active), .sb li:hover:not(:active), .gres span:hover:not(:active),
+  .proof li:hover:not(:active), .proj .facts li:hover:not(:active), .dash-side .facts li:hover:not(:active),
+  .phases li:hover:not(:active), .factgrid section:hover:not(:active), .belief:hover:not(:active), .gextra li:hover:not(:active),
+  .chip:hover:not(:active), .tbtn:hover:not(:active), .btn:hover:not(:active), .mast nav a:hover:not(:active) { transform: none; }
+}
+.grow-row:focus-visible .g-hl { opacity: .7 !important; }
+.grow-row.go:focus-visible .g-lab { fill: var(--accent-ink); text-decoration-thickness: 2px; text-decoration-color: var(--accent); }

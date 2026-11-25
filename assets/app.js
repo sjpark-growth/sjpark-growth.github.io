@@ -1535,6 +1535,9 @@
       $$('.grow-row', svg).forEach(g => {
         g.addEventListener('mouseenter', () => linkCareer(g.dataset.co, true));
         g.addEventListener('mouseleave', () => linkCareer(g.dataset.co, false));
+        // (2026-11-25) 키보드 초점도 마우스와 같은 강조(web-design-guidelines 점검)
+        g.addEventListener('focus', () => linkCareer(g.dataset.co, true));
+        g.addEventListener('blur', () => linkCareer(g.dataset.co, false));
         // 회사 이름(행)을 누르면 아래 해당 경력 카드로 이동
         const card = $$('#jobs .job').find(j => j.dataset.co === g.dataset.co);
         if (!card) return;
@@ -1561,7 +1564,7 @@
       <article class="job${j.now ? ' is-now' : ''}" data-co="${j.co}">
         <div class="job-side">
           ${j.now ? '<span class="now">재직 중</span>' : ''}
-          <div class="co">${j.co}<small>${j.sub}</small></div>
+          <div class="co" role="heading" aria-level="3">${j.co}<small>${j.sub}</small></div>
           <div class="per">${j.from} – ${j.to || '현재'}</div>
           <div class="role">${j.role}</div>
         </div>

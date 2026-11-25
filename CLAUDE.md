@@ -313,6 +313,7 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 - **Taste(`design-taste-frontend`)는 이 저장소에 쓰지 않는다** — 진짜 연락처를 가짜로 바꾸고 · 기울기 · 스크롤 등장을 금지하고 · 절 구조를 다시 짜며 · 매 턴 헤드리스 점검(Stop 훅)을 돈다. PC 전역(`tools/claude-setup/install-global.ps1`)에만 — 새 랜딩 · 회사 사이트용. 그 기준 중 「보라 그라데이션 · 끝없는 장식 금지」만 이 사이트에 반영(5-8).
 - 남의 스킬을 새로 넣거나 올릴 때: 빈 임시 폴더에 받아 **모든 파일을 읽고**(훅 · 네트워크 요청 · 스크립트 실행 · 「다른 도구보다 우선」 같은 지시) 이 파일 규칙과 부딪히지 않는지 본 뒤 넣는다. `THIRD_PARTY.md` 표에 출처 · 판 · 라이선스를 적는다. 공개 저장소라 큰 자산 묶음(수 MB 이상)은 넣지 않는다.
 - 클라우드 세션 네트워크: lazyowen.com 을 기본 환경 허용 목록에 더했다(11-23). impeccable 은 자기 사이트(impeccable.style)에서 묶음을 받아 막혀 있다 — PC 에서.
+- **첫 점검(2026-11-25 밤, web-design-guidelines · emil-design-eng 로 본판 · en · resume-pdf)**: 이름 없는 단추 · 링크 0(181곳) · alt 없는 그림 0 · id 겹침 0 · tabindex 양수 0 · `transition: all` · `ease-in` · `scale(0)` · 확대 막기 0. 고친 것(배치 · PDF 그대로, 가지에만): ① 손가락 기기에서 누른 뒤 칩 · 단추 · 메뉴 · 숫자 칸 hover 확대가 남던 것(`style.css` 맨 끝 「디자인 점검 손질」 — `:hover:not(:active)`, 눌림 반응은 그대로) ② 경력 타임라인 줄(`.grow-row`) 키보드 초점 강조 + 초점 때도 경력 카드 연결(app.js) ③ 경력 카드 회사 이름 `role="heading" aria-level="3"`(h2 → h4 건너뜀) ④ resume-pdf.html 제목 `role="heading" aria-level="1"`(h1 없음). 남긴 것(본인 판단): 끝없이 도는 기존 장식(띠배너 흐름 · `.shine` · `nav-hot` 맥박 · 재직 중 쓸림 — 5초 넘는 자동 움직임에 멈춤 수단이 마우스 올리기뿐), 건너뛰기 링크 없음(`<main>` · `<nav>` 랜드마크는 있음 — 장 넘김 · 방문 분석이 `#영문` 주소를 읽어 단순 `#main` 링크는 부딪힐 수 있다), 참고 자료 그림 width/height 속성 없음(`aspect-ratio: 4/3` 이 자리를 잡아 CLS 없음).
 
 ## 6. 확인 방법
 
