@@ -271,6 +271,7 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 ## 5-7. 방문 흐름 · 이탈 분석 — `assets/track.js` (2026-11-25)
 
 본인 「뷰저블 같은 방식으로 이탈 분석 — GTM 연동」 → 「GTM + GA4 + 클래리티 3개, 복합 분석」. 설정 순서 · 이벤트 표 · 보는 법은 `tools/analytics/GTM_설정.md`.
+**ID(2026-11-25 Claude 가 본인 승인으로 만듦)**: GTM `GTM-P9NRDTDV`(track.js `GTM_ID`) · GA4 `G-D1KF2MWKJW` · Clarity `zizzedwvba` — GA4 · Clarity ID 는 사이트가 아니라 GTM 컨테이너 안에 있다(`tools/analytics/gtm-container.json` 을 가져오기 · 병합). 계정 · 로그인 정보는 이 공개 문서에 적지 않는다.
 
 - 사이트는 `dataLayer` 에만 넣는다 — 열 때 맥락(`psj_ctx`: 페이지 · 보기 방식 · `?for` · `?share` · `?src`/`utm_source`), 0.8초 넘게 머문 절 · 장(`psj_section` — 스크롤판은 화면 45% 줄을 지난 마지막 절, 장 넘김은 topics.js `tm:nav` · `tm:ready` 와 주소 `#work-3`), 떠날 때(`psj_leave` — 탭 숨김 · 닫기), 누른 것(`psj_click` — 이력서 · 데모 · 메일 · 복사 · EN · 인쇄 · 바깥 링크, 데모 모달은 `#demoModal` hidden 관찰), 보기 전환(`psj:view`), 인쇄. Clarity 는 `window.clarity` 대기열에 태그(`last_section` · `max_depth` …) · 이벤트를 넣고 GTM 의 공식 Clarity 코드가 이어받는다.
 - **GTM 을 받는 조건**: 파일 맨 위 `GTM_ID` 가 있음 · 주소가 `sjpark-growth.github.io` · `navigator.webdriver` 아님 · 본인 제외(`?notrack` → `localStorage psj-notrack`, `?notrack=0` 해제) · DNT/GPC 아님. 받는 때는 `load` 뒤 한가할 때(requestIdleCallback, 늦어도 4초) — 첫 화면 요청 · 용량은 그대로. 받을 때만 바닥글에 안내 한 줄 `.trk-note`(화면만 · 인쇄 숨김 — PDF 장 수 그대로).

@@ -7,7 +7,7 @@
    · 인쇄 · PDF 에는 아무것도 더하지 않는다(안내 문구는 인쇄에서 숨김) */
 (function () {
   'use strict';
-  var GTM_ID = '';                                   // ← GTM 컨테이너 ID(예: 'GTM-ABCD123'). 비어 있으면 GTM 을 받지 않는다
+  var GTM_ID = 'GTM-P9NRDTDV';                       // GTM 컨테이너(2026-11-25 · 계정 sjpark-growth). 비우면('') GTM 을 받지 않는다
   var HOST = /^sjpark-growth\.github\.io$/;
   var W = window, D = document, root = D.documentElement;
   var T = W.PSJ_TRACK_TEST || null;                  // 헤드리스 시험용(페이지보다 먼저 넣는다) — { gtm: 'GTM-TEST' }

@@ -1,7 +1,17 @@
 # 방문 흐름 · 이탈 분석 — GTM + GA4 + Clarity 설정 (2026-11-25)
 
 사이트 쪽은 `assets/track.js` 가 이벤트를 `dataLayer` 에만 넣는다. 어디로 보낼지는 GTM 에서 정한다.
-**`track.js` 의 `GTM_ID` 가 비어 있는 동안에는 외부 요청이 없다** — 아래 1~4 를 끝낸 뒤 ID 를 넣고 게시한다.
+**`track.js` 의 `GTM_ID` 가 비어 있는 동안에는 외부 요청이 없다.**
+
+## 0. 만든 것 (2026-11-25)
+
+| 도구 | ID | 계정 · 이름 |
+|---|---|---|
+| GTM | `GTM-P9NRDTDV` (계정 6407836635 · 컨테이너 288652423) | 계정 sjpark-growth · 컨테이너 sjpark-growth.github.io · 버전 2 「v1 방문 흐름 분석」 게시 |
+| GA4 | 측정 ID `G-D1KF2MWKJW` · 스트림 16410100727 | 계정 sjpark-growth · 속성 sjpark-growth portfolio(대한민국 시간) · 데이터 공유 4개 모두 끔 · 「브라우저 기록 기반 페이지 변경」 끔 |
+| Clarity | `zizzedwvba` | 프로젝트 sjpark-growth portfolio |
+
+GTM 컨테이너 설정은 `gtm-container.json`(이 폴더)을 「관리자 → 컨테이너 가져오기 → 병합」으로 넣었다 — 다시 만들 때도 이 파일. 아래 1~3 은 손으로 할 때의 설명이다.
 
 ## 1. 계정 · ID 만들기 (본인)
 
