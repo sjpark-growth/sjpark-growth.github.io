@@ -1,6 +1,6 @@
 /* =========================================================================
    FX — 모션 · 시각 효과 도구 상자 (2026-11-23 본인 「웹디자인 스킬 · 툴 보강 — 모션 그래픽 · 삐까뻔쩍한 것들로 퀄리티를 확」)
-   CLAUDE.md 5-7 · 작업 규칙 .claude/skills/web-motion/SKILL.md · 점검 .claude/skills/web-motion/scripts/fx-audit.js
+   CLAUDE.md 5-8 · 작업 규칙 .claude/skills/web-motion/SKILL.md · 점검 .claude/skills/web-motion/scripts/fx-audit.js
 
    효과는 모두 「덧그림」이다 — 배치(크기 · 위치 · 줄바꿈)를 바꾸지 않고 transform · opacity · 캔버스 · 가상 요소만 쓴다.
    그래서 첫 화면 한 장 맞춤 · 장 넘김 장 나눔 · PDF 장 수(16 · 7)가 그대로다(fx-audit 가 ?fx=0 과 위치를 비교한다).
