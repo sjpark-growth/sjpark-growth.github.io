@@ -454,7 +454,7 @@
       });
       const B = seg(t, 7, 10), aB = E.out(seg(t, 7, 7.5)) * (1 - seg(t, 9.6, 10.1));
       g.alpha(aB, () => {
-        [['광고비', 100, 84.6, C.ink3, '−15.4%'], ['매출', 100, 120.4, C.c1p, '+20.4%']].forEach(([lb, a, b, col, d], k) => {
+        [['광고비', 100, 84.6, C.ink3, '−15.4%'], ['전환매출', 100, 120.4, C.c1p, '+20.4%']].forEach(([lb, a, b, col, d], k) => {
           const y = 210 + k * 150, cur = lerp(a, b, E.inOut(seg(t, 7.4 + k * .3, 9 + k * .3)));
           g.text(lb, 140, y - 18, { size: 22, weight: 700 });
           g.box(140, y, 820 * a / 130, 56, { stroke: C.before, dash: [6, 5], lw: 1.5, r: 8 });
@@ -481,7 +481,7 @@
   /* 5 · 쿠팡 윙 */
   SCENES.cp3 = {
     duration: 13, poster: 11.8,
-    chapters: [[0, '쿠팡 윙 광고비 — 25년 12월 최저로 줄였다가 다시 키움 (입사 전 평균 = 100)'], [6.2, '1P 가 못 잡는 구성으로 재편 + 신규 고객 확보 광고'], [9.6, '26년 7–8월, 전년 같은 달 대비 매출 +100.2% · 동일 매출 대비 지출 33.7% 절감']],
+    chapters: [[0, '쿠팡 윙 광고비 — 25년 12월 최저로 줄였다가 다시 키움 (입사 전 평균 = 100)'], [6.2, '1P 가 못 잡는 구성으로 재편 + 신규 고객 확보 광고'], [9.6, '26년 7–8월, 전년 같은 달 대비 전환매출 +100.2% · 동일 전환매출 대비 지출 33.7% 절감']],
     draw(g, t) {
       const A = 1 - seg(t, 5.8, 6.3);
       g.kicker(t < 6.2 ? 'COUPANG WING · 광고비 규모 (입사 전 평균 = 100)' : t < 9.6 ? 'REBUILD' : 'YoY · 26.7–8 vs 25.7–8');
@@ -528,7 +528,7 @@
         });
       });
       g.alpha(E.out(seg(t, 9.6, 10.1)), () => {
-        [['광고비', 100, 132.8, C.ink3, '+32.8%'], ['매출', 100, 200.2, C.c3p, '+100.2%']].forEach(([lb, a, b, col, d], k) => {
+        [['광고비', 100, 132.8, C.ink3, '+32.8%'], ['전환매출', 100, 200.2, C.c3p, '+100.2%']].forEach(([lb, a, b, col, d], k) => {
           const y = 200 + k * 150, cur = lerp(a, b, E.inOut(seg(t, 9.9 + k * .3, 11.4 + k * .3)));
           g.text(lb, 140, y - 18, { size: 22, weight: 700 });
           g.box(140, y, 760 * a / 210, 56, { stroke: C.before, dash: [6, 5], lw: 1.5, r: 8 });
@@ -543,7 +543,7 @@
   /* 6 · 네이버 */
   SCENES.naver = {
     duration: 13, poster: 11.8,
-    chapters: [[0, '파워링크·쇼핑검색에 몰려 있던 브랜드 키워드를 걷어냄'], [4.8, '지면별 효율을 평탄화한 뒤 쇼핑검색 예산 비중 40% → 70%'], [8.8, 'GFA ROAS 304% → 629% (+325%p) · 상반기 매출 +64.5%, 동일 매출 대비 지출 4.6% 절감']],
+    chapters: [[0, '파워링크·쇼핑검색에 몰려 있던 브랜드 키워드를 걷어냄'], [4.8, '지면별 효율을 평탄화한 뒤 쇼핑검색 예산 비중 40% → 70%'], [8.8, 'GFA ROAS 304% → 629% (+325%p) · 상반기 전환매출 +64.5%, 동일 전환매출 대비 지출 4.6% 절감']],
     draw(g, t) {
       g.kicker(t < 4.8 ? 'NAVER · 브랜드 키워드 비중' : t < 8.8 ? 'BUDGET MIX · 운영 보고서' : 'RESULT');
       g.alpha(1 - seg(t, 4.4, 4.9), () => {
@@ -585,8 +585,8 @@
           g.box(700, 200, 480, 250, { fill: C.panel, r: 14, stroke: C.line });
           g.text('26년 상반기 · 전년 동기 대비', 730, 244, { size: 17, color: C.ink2 });
           g.text('광고비', 730, 306, { size: 20, color: C.ink2 }); g.text('+56.9%', 1150, 310, { size: 38, weight: 600, font: 'num', align: 'right', color: C.ink2 });
-          g.text('매출', 730, 380, { size: 20, color: C.ink2 }); g.text('+64.5%', 1150, 386, { size: 46, weight: 600, font: 'num', align: 'right', color: C.good });
-          g.text('늘린 만큼 더 빠르게 따라온 매출', 730, 428, { size: 16, color: C.ink3 });
+          g.text('전환매출', 730, 380, { size: 20, color: C.ink2 }); g.text('+64.5%', 1150, 386, { size: 46, weight: 600, font: 'num', align: 'right', color: C.good });
+          g.text('늘린 만큼 더 빠르게 따라온 전환매출', 730, 428, { size: 16, color: C.ink3 });
         });
       });
     },
