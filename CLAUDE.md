@@ -4,8 +4,8 @@
 
 ## 1. 구조
 
-- 로컬에서 `index.html` 을 더블클릭하면 그대로 열리는 정적 사이트입니다. 빌드 과정 없음, 외부 요청 없음(CDN · 웹폰트 · 분석 도구를 넣지 않는다).
-- 스크립트 로드 순서: `series.js` → `data.js` → `motion.js` → `app.js` → `topics.js` → `mode-toggle.js` → `paged-guide.js`(뒤 셋은 2026-11-20 장 넘김 본판 — 5-5). 스타일은 `style.css` → `topics.css` → `paged.css`.
+- 로컬에서 `index.html` 을 더블클릭하면 그대로 열리는 정적 사이트입니다. 빌드 과정 없음, 외부 요청 없음(CDN · 웹폰트를 넣지 않는다). **예외 하나 — 방문 분석 `assets/track.js`(2026-11-25 본인 「GTM + GA4 + 클래리티」 · 5-7)**: GTM 컨테이너 ID 가 있고 공개 주소일 때만 페이지가 다 뜬 뒤 GTM 을 받는다(로컬 · 워크트리 · 아티팩트 · 자동 점검에서는 외부 요청 0). 다른 분석 도구 · 외부 스크립트를 따로 붙이지 않는다 — 더할 것은 GTM 안에서.
+- 스크립트 로드 순서: `series.js` → `data.js` → `motion.js` → `app.js` → `topics.js` → `mode-toggle.js` → `paged-guide.js`(뒤 셋은 2026-11-20 장 넘김 본판 — 5-5) → `track.js`(2026-11-25 — en.html · resume-pdf.html 끝에도 같은 파일). 스타일은 `style.css` → `topics.css` → `paged.css`.
 - **문구와 수치는 `assets/data.js` 한 곳에 모은다.** `app.js` 에는 차트 캡션 몇 개(VIEWS)와 첫 화면 차트 라벨만 하드코딩되어 있다.
 - `assets/series.js` 는 대시보드 월별 데이터에서 자동 생성된 시계열이다. 손으로 고치지 않는다.
 - 데모 3종 `dashboard-demo.html`(퍼포먼스 대시보드) · `briefing-demo.html`(브리핑룸) · `stock-demo.html`(재고 신호판)은 실제 운영 도구의 **숫자를 임의 값으로 바꾸고 품목 · 상품 이름을 코드로 가린 사본**이다. 금액 · 비율 · ROAS 모두 실제 값이 아니며, 원본으로 되돌리거나 원본 파일을 여기에 두지 않는다. 내용은 주간 동기화(`_work/sync`)가 다룬다 — 손으로 고치지 않는다.
@@ -268,6 +268,16 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 - 한계(본인에게 알림): 메일 · 전화 글자는 data.js · en.html 소스에는 남는다(화면 · 인쇄 · PDF 에만 안 나옴). 주소에서 `?share` 를 지우면(새 탭) 본판이 보인다 — 본판이 공개라 막을 수 없다.
 - 고칠 때: 연락처를 그리는 곳을 새로 만들면 `SHARE` 일 때 빼고, 이 페이지들 안에서 `./` · `index.html` 로 가는 링크를 새로 만들면 `shareQ()` 로 감싼다. 시험 = 세션 스크래치 `share-test.js`(일반 · 공유 · 장 넘김 · 인쇄 · 390 · en · resume-pdf, 메일 · 전화 정규식 0 · mailto/tel 0) + 작업 폴더 `_work/pdf/make-pdf-nocontact.js http://…/index.html?share` 로 PDF(실측 전체 16 · 요약 7장 — 일반판과 같음). 제출용 「연락처 제외」 PDF 도 이제 이 주소로 뽑을 수 있다.
 
+## 5-7. 방문 흐름 · 이탈 분석 — `assets/track.js` (2026-11-25)
+
+본인 「뷰저블 같은 방식으로 이탈 분석 — GTM 연동」 → 「GTM + GA4 + 클래리티 3개, 복합 분석」. 설정 순서 · 이벤트 표 · 보는 법은 `tools/analytics/GTM_설정.md`.
+
+- 사이트는 `dataLayer` 에만 넣는다 — 열 때 맥락(`psj_ctx`: 페이지 · 보기 방식 · `?for` · `?share` · `?src`/`utm_source`), 0.8초 넘게 머문 절 · 장(`psj_section` — 스크롤판은 화면 45% 줄을 지난 마지막 절, 장 넘김은 topics.js `tm:nav` · `tm:ready` 와 주소 `#work-3`), 떠날 때(`psj_leave` — 탭 숨김 · 닫기), 누른 것(`psj_click` — 이력서 · 데모 · 메일 · 복사 · EN · 인쇄 · 바깥 링크, 데모 모달은 `#demoModal` hidden 관찰), 보기 전환(`psj:view`), 인쇄. Clarity 는 `window.clarity` 대기열에 태그(`last_section` · `max_depth` …) · 이벤트를 넣고 GTM 의 공식 Clarity 코드가 이어받는다.
+- **GTM 을 받는 조건**: 파일 맨 위 `GTM_ID` 가 있음 · 주소가 `sjpark-growth.github.io` · `navigator.webdriver` 아님 · 본인 제외(`?notrack` → `localStorage psj-notrack`, `?notrack=0` 해제) · DNT/GPC 아님. 받는 때는 `load` 뒤 한가할 때(requestIdleCallback, 늦어도 4초) — 첫 화면 요청 · 용량은 그대로. 받을 때만 바닥글에 안내 한 줄 `.trk-note`(화면만 · 인쇄 숨김 — PDF 장 수 그대로).
+- 보내지 않는 것: 메일 · 전화 글자(클릭 종류만), 입력값, 사람 · 회사 실명(`?src` 는 영문 · 숫자 · `_` `-` 40자로 깎음).
+- 고칠 때: 절 id 를 바꾸거나 새 절을 만들면 `LIST.home` 도, 링크 종류(데모 파일 이름 · 이력서 경로)를 바꾸면 클릭 판정도 같이. 장 넘김 주제 id 는 영문 소문자라야 한다(주소에서 `^#([a-z]+)` 로 읽음). Clarity 맞춤 이벤트는 프로젝트당 20개 — 지금 15개.
+- 시험(2026-11-25 헤드리스, 세션 스크래치 `trk-test.js` — 외부 요청은 모두 막고 기록, 시험 ID 는 `window.PSJ_TRACK_TEST`): ID 없음 → 외부 요청 0 · 안내 없음 · 절 이벤트 intro … contact · 떠남 깊이 100 / 시험 ID → GTM 요청 1건 · load 뒤 · 다른 외부 요청 0 · dataLayer 첫 칸 gtm.js · clarity 대기열 · 클릭 5종 · 모달 데모 · 이벤트에 「@」 없음 / 장 넘김 → 장 이벤트 · last_section · 넓은 화면 장 수 29 = 안내 문구 없을 때와 같음 / 390 넘침 0 · 데모 미요청 / ?notrack 유지 · 해제 / en · resume-pdf · en 「포트폴리오로」 링크 — 30항목 통과, 오류 0. PDF 16 · 7장, site-gate 6화면 통과. **실제 GTM · GA4 · Clarity 수신은 `미검증`**(ID 를 넣고 게시한 뒤 GTM 미리보기로 본다).
+
 ## 6. 확인 방법
 
 1. `index.html` 을 브라우저로 열어 콘솔 에러가 없는지 본다(F12 → Console).
@@ -276,6 +286,7 @@ v136 자동 동기화(`_work/sync/sync-demo.js`)가 앞서 가려 둔 품목 · 
 4. 다크 모드(오른쪽 위 테마 버튼)에서도 글자가 읽히는지 본다.
 5. 첫 화면 로드가 무거워지지 않았는지 본다(F12 → Network → 새로고침 → 요청 수 · 전송량). 기준은 **7개 · 약 180KB**, `dashboard-demo.html` 이 목록에 없어야 한다.
    (2026-11-20 장 넘김 본판 · 주요 성과 절까지) 로컬 서버 · 압축 없이 잰 값 — 넓은 화면 · 휴대폰 모두 13개 · 673KB(같은 방법으로 예전 스크롤판 8개 · 480KB). topics · paged CSS/JS 5개가 늘었다(「기타 대시보드」 썸네일은 그 판에 갈 때 받음). `dashboard-demo.html` 은 두 폭 모두 안 받음. 공개 사이트(압축) 기준 값은 게시 뒤 다시 잰다.
+   (2026-11-25 방문 분석) `track.js` 한 요청이 늘었다(12.8KB · gzip 약 5.4KB, 본문 끝). GTM(약 90KB) · GA4(약 155KB) · Clarity(약 26KB — 압축 전송, 11-25 실측)는 공개 주소에서 load 뒤에만 받아 이 숫자에 들지 않는다.
    (2026-11-23 스크롤판 기본) 같은 방법 — 1463×800 · 390×844 모두 13개(문서 + 12) · 약 776KB(11-20 이후 data.js · app.js · CSS 가 늘어난 몫, 이번 변경은 약 3KB). 장 넘김 파일(topics · paged CSS/JS)은 「장으로 보기」를 바로 켜려고 그대로 받는다 — 줄이려면 늦게 불러오기로(지금은 안 함). `dashboard-demo.html` 은 두 폭 모두 안 받음.
 6. 「입사 후 N개월」 · 「N년 N개월」이 오늘 기준으로 맞는지 본다(자동 계산이 막히면 HTML 의 옛 숫자가 그대로 보인다).
 7. PDF: 「전체 PDF」 약 16장 · 「요약 PDF」 약 7~8장, 1쪽이 표지(소개 + 핵심 성과 + 대시보드 · 차트 4칸)로 끝나는지, 참고 자료 이미지가 빈 칸이 아닌지 본다. 장 수는 글꼴에 따라 달라진다 — 이 PC(Noto Sans KR 설치)에서는 전체 16장 · 요약 7장, 맑은 고딕이면 전체 16장 · 요약 8장, 용량 전체 4.7MB · 요약 2.2MB(2026-11-05 실측 — 그 전 09-27 은 전체 18장 · 요약 8장). 꼬리말 한 줄만 있는 장 · 반쯤 빈 장 · 내용 없이 테두리만 남은 카드가 없는지, 넓은 창 · 휴대폰 창에서 인쇄해도 차트 글자 크기가 같은지 같이 본다.
