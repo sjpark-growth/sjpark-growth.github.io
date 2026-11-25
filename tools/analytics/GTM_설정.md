@@ -13,6 +13,12 @@
 
 GTM 컨테이너 설정은 `gtm-container.json`(이 폴더)을 「관리자 → 컨테이너 가져오기 → 병합」으로 넣었다 — 다시 만들 때도 이 파일. 아래 1~3 은 손으로 할 때의 설명이다.
 
+**재점검 (2026-11-25 밤)** — 공개 3쪽(index · en · resume-pdf) track.js 포함 · 공개 track.js = 저장소 · GTM 게시본 v2 에 GA4 · Clarity · psj 트리거 있음. GA4 스트림 「최근 48시간 동안 수신」, Clarity 「세션 0 · 봇 세션 3 제외」(헤드리스 점검 방문 — 봇 감지 켜짐이라 정상). 이때 더한 것:
+- GA4 이벤트 데이터 보관 2개월 → **14개월**(탐색 · 유입경로 보고서가 2개월까지만 거슬러 올라가서).
+- GA4 맞춤 이벤트 4개 + **키 이벤트**(값 없음 · 이벤트당 한 번, 소스 매개변수 복사): `resume_download`(psj_click = resume_download) · `resume_view`(= resume_view) · `contact_email`(psj_click 포함 email_ — 클릭 · 복사) · `contact_phone`(= phone_click). 이벤트 목록 「주요 이벤트」 탭에는 데이터가 들어온 뒤 뜬다.
+- GA4 화면이 바뀌어 조건식 맞춤 이벤트는 「이벤트 → 커스텀 구성 → 맞춤 이벤트 → 만들기 → (URL 칸 아래) 옵션 더 보기」에 있다. 「이벤트 만들기」 첫 화면은 URL 조건만 된다.
+- Clarity–GA4 통합은 **연결 안 함**(Google 계정 권한 허용이 필요 — 본인 결정).
+
 ## 1. 계정 · ID 만들기 (본인)
 
 | 도구 | 만드는 것 | 받는 ID |
@@ -45,7 +51,7 @@ GA4 데이터 스트림 → 향상된 측정 → **페이지 조회 → 고급 �
 - GA4 관리 → 맞춤 정의
   - 측정기준(이벤트 범위): `psj_section` `psj_click` `psj_target` `psj_view` `psj_src` `psj_angle` `psj_share` `psj_page` `psj_via`
   - 측정항목: `psj_depth`(표준) · `psj_engaged_sec` · `psj_section_sec`(단위 초)
-- GA4 관리 → 이벤트 → 이벤트 만들기: `psj_click` 이고 `psj_click` = `resume_download` → 새 이벤트 `resume_download`, 키 이벤트로 표시(이메일 · 전화 · 이력서 보기도 같은 방법).
+- GA4 관리 → 이벤트 → 커스텀 구성 → 맞춤 이벤트 → 만들기 → 옵션 더 보기: `event_name` = `psj_click` 이고 `psj_click` = `resume_download` → 새 이벤트 `resume_download`, 키 이벤트로 표시(이메일 · 전화 · 이력서 보기도 같은 방법 — 2026-11-25 만듦, 위 0 절).
 - Clarity 설정에서 GA4 연결(있으면) — 두 쪽 세션을 잇는다(메뉴 이름은 `미검증`). 가림(masking)은 기본값 그대로.
 
 ## 5. 사이트에 ID 넣고 게시
