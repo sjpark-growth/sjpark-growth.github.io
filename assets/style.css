@@ -2890,3 +2890,13 @@ main:focus { outline: none; }
   html.fx-on.fx-cur :is(a[href], button, summary, label, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"]) { cursor: default !important; }
   html.fx-on.fx-cur :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, [contenteditable="true"]) { cursor: text !important; }
 }
+
+/* ===== (2026-11-26) 모바일 · PDF 재점검 2차 — 본인 「모바일, PDF 최적화 점검도 해줘」 =====
+   휴대폰(≤600px) 보조 글자 12px(5-1 「모바일 · PDF 재점검」 규칙) — 그 뒤(11-23)에 새로 생긴 곳과 빠졌던 곳:
+   주요 업무 바로 가기 꼬리표 · 주요 성과 짝 막대 「작년 = 100」 · 기타 대시보드 연결 줄 「중심」, 그리고 기간 비교 표의 기간 —
+   app.js 가 style 속성으로 11.5px 을 적어 11-22 의 `#cmpTable td div { 12px }` 가 먹지 않았다(!important 로 덮음). 화면만 · 인쇄 그대로 */
+@media screen and (max-width: 600px) {
+  #cmpTable td div { font-size: 12px !important; }
+  .work-jump .pill, .rs-ibt > span, .rs-pair2 .rp-base span, .xd-map .xm-hub small { font-size: 12px; }
+  .rs-pair2 .rp-base { height: 12px; }
+}
