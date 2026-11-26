@@ -92,6 +92,7 @@
 </script>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="mast" id="top">
   <div class="shell">
@@ -118,7 +119,7 @@
   </div>
 </header>
 
-<main class="en">
+<main class="en" id="main">
 
   <div class="en-top">
     <img class="en-photo" src="assets/profile.jpg" alt="Seongjoon Park" width="104" height="139">
@@ -226,6 +227,15 @@
 
 </main>
 <script>
+  /* (2026-11-26) 본문 바로가기 — 주소(#main)를 남기지 않고 본문으로 초점만(본판 app.js wireSkip 과 같은 동작) */
+  (function () {
+    var a = document.querySelector('.skip'), m = document.getElementById('main'); if (!a || !m) return;
+    a.addEventListener('click', function (e) {
+      e.preventDefault(); scrollTo({ top: 0 });
+      m.setAttribute('tabindex', '-1'); m.focus({ preventScroll: true });   // 초점을 받을 동안만(늘 달면 본문을 누를 때마다 <main> 이 초점을 가져간다)
+      m.addEventListener('blur', function () { m.removeAttribute('tabindex'); }, { once: true });
+    });
+  })();
   /* 테마 버튼 · PDF 버튼 — 본판(app.js wireChrome)과 같은 동작 */
   (function () {
     var root = document.documentElement, label = document.getElementById('themeLabel');

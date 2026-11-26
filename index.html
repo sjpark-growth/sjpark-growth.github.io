@@ -43,6 +43,8 @@
 </script>
 </head>
 <body>
+<!-- (2026-11-26) 키보드로 들어오면 첫 Tab 에 보이는 「본문 바로가기」 — 상단 메뉴를 건너뛴다. 주소(#)는 바꾸지 않는다(app.js wireSkip — 장 넘김 · 방문 분석이 #영문 주소를 읽어서) -->
+<a class="skip" href="#main">본문 바로가기</a>
 
 <header class="mast" id="top">
   <div class="shell">
@@ -87,7 +89,7 @@
   <div class="tk-viewport"><div class="tk-track" id="tkTrack"></div></div>
 </div>
 
-<main>
+<main id="main">
   <!-- ============================== HERO — 대제목과 움직이는 차트가 먼저 ============================== -->
   <section class="hero" aria-labelledby="h-name">
     <div class="shell">

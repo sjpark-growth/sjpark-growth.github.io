@@ -14,7 +14,7 @@ description: 박성준 포트폴리오(이 저장소)의 모션 · 시각 효과
 2. **한 화면에 주인공 하나** — 첫 화면은 빛(aurora), 주요 성과는 테두리 빛(beam), 절 머리는 꼬리표 해독(scramble). 같은 자리에 효과를 겹치지 않는다(이미 `wireReveal` 등장 · `wireSpot` 빛 번짐 · 숫자 굴림이 있다).
 3. **끄면 예전 그대로** — 모든 규칙은 `html.fx-on` 아래. `?fx=0`(이 탭) · `localStorage psj-fx=0`(이 브라우저)이면 스크립트가 클래스를 안 붙인다. 스크립트가 꺼져도 화면은 멀쩡해야 한다.
 4. **외부 요청 0** — 라이브러리(GSAP · three.js · Lottie · 웹폰트) 금지(CLAUDE.md 1절). WebGL · Web Animations · View Transitions · CSS `@property` 는 브라우저 기본이라 쓴다.
-5. **멈출 줄 아는 움직임** — 저절로 도는 장식은 **5초 안에 멈춘다**(WCAG 2.2.2 · `web-design-guidelines`) — 한 번 돌고 끝 · 마우스를 올리면 다시. 화면 밖 · 다른 탭 · 동작 줄이기 · 인쇄에서는 처음부터 멈춤. 마우스를 따라가는 것은 마우스(`(hover: hover) and (pointer: fine)`)일 때만.
+5. **멈출 줄 아는 움직임** — 저절로 도는 장식은 **5초 안에 멈춘다**(WCAG 2.2.2 · `web-design-guidelines`) — 한 번 돌고 끝 · 마우스를 올리면 다시. **`infinite` 장식 금지**(2026-11-26 본인 「장식 애니메이션은 한 번만 돌고 멈추게」 — 사이트의 옛 장식도 모두 한 번으로 바꿈, CLAUDE.md 5-1 「장식 애니메이션은 한 번만」). 안내 그림(넘기는 법 등)만 뜻을 알 만큼 2~3번. 화면 밖 · 다른 탭 · 동작 줄이기 · 인쇄에서는 처음부터 멈춤. 마우스를 따라가는 것은 마우스(`(hover: hover) and (pointer: fine)`)일 때만.
 6. **색은 `DESIGN.md` 안에서** — 강조색 코발트 · 하늘 · 청록. **보라 · 라벤더 · 무지개 그라데이션 금지**(「AI 가 만든 화면」의 대표 표시).
 
 ## 2. 지금 있는 장치 지도 — 새로 만들기 전에 여기서 찾는다
@@ -76,8 +76,8 @@ t.ready.then(() => document.documentElement.animate(
 @property --fx-ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 .x::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
   background: conic-gradient(from var(--fx-ang), transparent 0 228deg, var(--accent) 300deg, #fff 332deg, transparent);
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation: spin 6s linear infinite; }
-@keyframes spin { to { --fx-ang: 360deg; } }
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); opacity: 0; animation: spin 4.8s cubic-bezier(.45,.05,.25,1) 1 both; }
+@keyframes spin { 0% { --fx-ang: 0deg; opacity: 0; } 10%, 82% { opacity: 1; } 100% { --fx-ang: 720deg; opacity: 0; } }   /* 두 바퀴 돌고 사라짐 — infinite 금지 */
 ```
 
 **마우스 쪽으로 기울기 (개별 속성 + lerp)** — 부모에 `perspective`, 요소에 `el.style.rotate = \`${-ny} ${nx} 0 ${deg}deg\``(축-각). 매 프레임 `x += (target - x) * .16`, 0 에 닿으면 `removeProperty`. `transition` 은 쓰지 않는다.
@@ -93,7 +93,9 @@ t.ready.then(() => document.documentElement.animate(
 
 **WebGL 한 장짜리 셰이더** — 삼각형 하나(`[-1,-1, 3,-1, -1,3]`)로 화면을 덮고 프래그먼트 셰이더만. `premultipliedAlpha: true` 면 `gl_FragColor = vec4(col * a, a)`. 해상도는 CSS 크기 × 0.5 이하, fps 상한, IntersectionObserver · `visibilitychange` 로 멈춤, `webglcontextlost` 에서 CSS 그라데이션으로. `fx.js aurora()` 가 본보기.
 
-**한 번만 — 화면에 들어올 때**: `new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); run(e.target); } }), { threshold: .9 })`, 시작할 때 이미 화면 안인 것은 건드리지 않는다(깜빡임).
+**한 번만 — 화면에 들어올 때**: `new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); run(e.target); } }), { threshold: .9 })`, 시작할 때 이미 화면 안인 것은 건드리지 않는다(깜빡임). CSS 만으로 된 장식은 `animation-iteration-count: 1` + `fill-mode: both` 로 두고 app.js `LOOPERS` 에 더하면 화면 밖에서 시작 전 그대로 멈춰 있다가 들어올 때 돈다(`.anim-idle`). 효과 층만 멈추려면 fx.js 의 `.fx-idle`.
+
+**마우스를 올리면 다시** — app.js `wireReplay()` 의 `REPLAY_HOSTS`(카드 선택자) · `REPLAY_NAMES`(@keyframes 이름)에 더한다. 끝난(`finished`) 애니메이션만 기다림(delay)을 건너뛰어 처음으로 되감는다. **CSS `:hover` 에서 `animation-name` 을 바꾸지 말 것** — 마우스를 뗄 때 원래 이름으로 돌아가며 한 번 더 돈다(예전 fxBeamAgain · fxFlowAgain). 되감을 것은 `fill-mode: both` 라야 한다(끝나고 사라진 애니메이션은 `getAnimations()` 에 없다).
 
 ## 6. 점검
 
@@ -104,7 +106,7 @@ python -m http.server 8765
 node .claude/skills/web-motion/scripts/fx-audit.js --pdf            # 결과 표 + _fx-audit/ 에 그림 · json (✗ 있으면 종료 코드 1)
 node .claude/skills/web-motion/scripts/fx-audit.js --quick          # 빠르게(1463 · 390 라이트만, PDF 없음)
 ```
-- `errors` 스크립트 · 콘솔 오류 0 · `overflow` 가로 넘침 0 · `layout` 효과 끔과 위치 같음 · `text` 끝난 뒤 글자 같음 · `contrast` 첫 화면 글자 대비(효과 켬이 4.5 이상이거나 끔보다 안 나쁨) · `frames` 스크롤 중 25ms 넘는 프레임 비율(끔보다 8%p 넘게 나쁘면 △/✗ — 헤드리스는 GPU 없이 그려서 실제보다 무겁고 들쭉날쭉하다) · `loops` 동작 줄이기에서 루프 0 · `deck` 장 넘김 켜짐 · `pdf` 장 수 같음.
+- `errors` 스크립트 · 콘솔 오류 0 · `overflow` 가로 넘침 0 · `layout` 효과 끔과 위치 같음 · `text` 끝난 뒤 글자 같음 · `contrast` 첫 화면 글자 대비(효과 켬이 4.5 이상이거나 끔보다 안 나쁨) · `frames` 스크롤 중 25ms 넘는 프레임 비율(끔보다 8%p 넘게 나쁘면 △/✗ — 헤드리스는 GPU 없이 그려서 실제보다 무겁고 들쭉날쭉하다) · `endless` 끝없이 도는 CSS · 스크립트 애니메이션(iterations Infinity) 0(화면마다 · 장 넘김 — 2026-11-26) · `loops` 동작 줄이기에서 루프 0 · `deck` 장 넘김 켜짐 · `pdf` 장 수 같음.
 - playwright 가 필요하다(`npm i -D playwright` 뒤 `npx playwright install chromium`). 작업 폴더의 다른 점검(`node tools/demo-wash.js --check` · `check-numbers.js` · `site-gate.js`)도 그대로 돌린다.
 - 눈으로: 화면 기록(playwright `recordVideo`)으로 첫 화면 마우스 이동 · 테마 전환 · 스크롤을 찍어 본다. 실제 휴대폰 · 트랙패드 손맛은 `미검증` 으로 적는다.
 

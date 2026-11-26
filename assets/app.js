@@ -106,6 +106,8 @@
     $$('circle.enddot, circle.pulse', svg).forEach(c => {
       const k = $$('line.seg', svg).length;
       c.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: base + k * 85, fill: 'backwards' });
+      // (2026-11-26) 끝점 물결은 한 번만 — 선이 끝점에 닿은 뒤에 퍼지게(움직임 없이 그리면 CSS .pulse 대로 .3초 뒤)
+      if (c.classList.contains('pulse')) c.style.animationDelay = (base + k * 85 + 250) + 'ms';
     });
   }
   function growBars(svg, sel, base, step, originBottom = true) {
@@ -289,16 +291,14 @@
       a._draw = draw;
       a.addEventListener('mouseenter', () => { if (!a._busy) { a._busy = true; draw(true); setTimeout(() => a._busy = false, 1600); } });
     });
-    // 처음 한 번 + 보이는 동안 12초마다 다시 그린다(휴대폰 넘겨 보기에서는 넘어온 칸만 rollBoard 가 다시 그린다)
+    // 처음 한 번 그리며 움직이고, 그 뒤로는 마우스를 올릴 때 · 휴대폰 넘겨 보기로 넘어올 때(rollBoard)만 다시.
+    // (2026-11-26 본인 「장식 애니메이션은 한 번만 돌고 멈추게」 — 예전엔 보이는 동안 12초마다 다시 그렸다)
     const cards = $$('.mp', host).filter(c => c._draw);
     let rt = 0; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => cards.forEach(c => c._draw(false)), 120); });
     addEventListener('load', () => setTimeout(() => cards.forEach(c => c._draw(false)), 60)); // 창 높이가 확정된 뒤 한 번 더
     addEventListener('beforeprint', () => { PRINTING = true; cards.forEach(c => c._draw(false)); });
     addEventListener('afterprint', () => { PRINTING = false; cards.forEach(c => c._draw(false)); });
-    let visible = false;
-    if ('IntersectionObserver' in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { threshold: 0.2 }).observe(host);
     setTimeout(() => { cards.forEach((c, i) => setTimeout(() => c._draw(true), i * 180)); rollNumbers(host); }, reduceMotion ? 0 : 500);
-    if (!reduceMotion) setInterval(() => { if (visible && document.visibilityState === 'visible' && !ROLL.matches) cards.forEach((c, i) => setTimeout(() => c._draw(true), i * 220)); }, 12000);
   }
   function animateBoard(svg, id) {
     if (id === 'mix') { growBars(svg, 'rect.gcol', 0, 45); $$('path.mixline', svg).forEach(p => { const len = p.getTotalLength(); p.animate?.([{ strokeDasharray: `${len}`, strokeDashoffset: `${len}` }, { strokeDasharray: `${len}`, strokeDashoffset: '0' }], { duration: 900, delay: 950, easing: 'cubic-bezier(.4,.1,.2,1)', fill: 'backwards' }); }); }
@@ -1683,18 +1683,55 @@
   }
 
   /* ------------------------------------------------------------ 움직임 예산
-     끝없이 도는 장식 애니메이션(숫자 반짝임 · 띠 쓸림 · 점 깜빡임)은
-       · 화면 밖으로 나가면 멈추고
-       · 다른 탭을 보고 있으면 전부 멈춘다.
-     보고 있는 동안의 움직임은 그대로다 — 노트북 배터리와 발열만 줄인다. */
-  const LOOPERS = '.shine, .pulse, .job.is-now, .job-side .now, .gsweep, .gi-sweep, .mp-group.g-live i';
+     장식 애니메이션(숫자 반짝임 · 띠 쓸림 · 점 깜빡임 · 띠배너 흐름)은 (2026-11-26 부터) 한 번만 돌고 쉰다
+     (본인 「장식 애니메이션은 한 번만 돌고 멈추게 — 최종적으로 자연스러운 관점으로」 · style.css 맨 끝 「장식 애니메이션은 한 번만」).
+       · 화면 밖에서는 시작 전 그대로 멈춰 두었다가 화면에 들어올 때 그 한 번을 보여 주고
+       · 다른 탭을 보고 있으면 멈춘다.
+     이름은 예전 그대로 LOOPERS — 이제 끝없이 도는 것은 없다(fx-audit 「endless」가 0 인지 본다). */
+  const LOOPERS = '.shine, .pulse, .job.is-now, .job-side .now, .gsweep, .gi-sweep, .mp-group.g-live i, .tk-track';
   function wireAnimBudget() {
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('anim-idle', !e.isIntersecting)), { rootMargin: '150px 0px' });
       $$(LOOPERS).forEach(n => io.observe(n));
+      // 장 넘김 판 끝 「다음 주제」 띠의 화살표 — topics.js 가 켤 때 만든다. 그 띠에 닿았을 때 두 번 밀어 보인다
+      document.addEventListener('tm:ready', () => $$('.tm-end-a svg').forEach(n => io.observe(n)));
     }
     const hold = () => document.documentElement.classList.toggle('anim-hold', document.hidden);
     document.addEventListener('visibilitychange', hold); hold();
+    // 띠배너가 한 바퀴를 마치면(처음 자리 — 둘째 묶음이 첫 자리에 온 모습과 같다) 움직임을 떼고 손으로 옆으로 밀어 볼 수 있게
+    const tk = $('.ticker');
+    if (tk) tk.addEventListener('animationend', e => { if (e.target.classList.contains('tk-track')) tk.classList.add('tk-done'); });
+  }
+  /* (2026-11-26) 다시 보기 — 한 번 돌고 쉰 장식은 그 카드에 마우스를 올리면 처음부터 한 번 더(끝난 것만 · 도는 중이면 그대로).
+     CSS :hover 에서 애니메이션 이름을 바꾸는 방식은 마우스를 뗄 때 원래 이름으로 돌아가며 한 번 더 돌아서 쓰지 않는다.
+     fx.js 의 테두리 빛(fxBeam) · 흐르는 글자(fxFlow), 장 넘김 첫 방문 카드의 안내 그림(pg…)도 여기서.
+     마우스만 · 동작 줄이기면 애니메이션이 없어 아무것도 안 한다. 숫자 반짝임처럼 기다림(delay)이 있는 것은 기다림을 건너뛴다 */
+  const REPLAY_HOSTS = '.mp, .hk .kpi, .rs-lead, .score, .gcard, .job, .grow-row, .fx-beam, .thesis, .pg-ways li';
+  const REPLAY_NAMES = /^(shine|twinkle|jobsweep|nowpulse|gsweep|gisweep|fxBeam|fxFlow|pg[A-Z]\w*)$/;
+  function wireReplay() {
+    if (!Element.prototype.getAnimations) return;
+    document.addEventListener('pointerover', e => {
+      if (e.pointerType && e.pointerType !== 'mouse') return;
+      const host = e.target.closest && e.target.closest(REPLAY_HOSTS);
+      if (!host || (e.relatedTarget && host.contains(e.relatedTarget))) return;   // 카드 안에서 움직인 것은 빼고, 밖에서 들어올 때만
+      host.getAnimations({ subtree: true }).forEach(a => {
+        if (a.playState !== 'finished' || !REPLAY_NAMES.test(a.animationName || '')) return;
+        try { a.currentTime = a.effect.getTiming().delay || 0; a.play(); } catch (err) {}
+      });
+    }, { passive: true });
+  }
+  /* (2026-11-26) 본문 바로가기(index.html 맨 앞 .skip) — 키보드 첫 Tab 에 보이고, 누르면 상단 메뉴를 건너뛰어 본문(<main>)으로 초점.
+     주소에 #main 을 남기지 않는다 — 장 넘김(topics.js) · 방문 분석(track.js)이 #영문 주소를 주제 · 절 이름으로 읽는다.
+     스크롤판은 맨 위(첫 화면)로, 장 넘김은 지금 장 그대로 — 다음 Tab 은 지금 장의 첫 링크(다른 장은 inert 라 건너뜀) */
+  function wireSkip() {
+    const a = $('.skip'), main = $('main'); if (!a || !main) return;
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      if (!document.documentElement.classList.contains('tabmode')) scrollTo({ top: 0, behavior: 'auto' });
+      // 초점을 받을 동안만 tabindex — 늘 달아 두면 본문 아무 데나 마우스로 누를 때마다 <main> 이 초점을 가져간다
+      main.setAttribute('tabindex', '-1'); main.focus({ preventScroll: true });
+      main.addEventListener('blur', () => main.removeAttribute('tabindex'), { once: true });
+    });
   }
   /* ------------------------------------------------------------ chrome */
   function wireChrome() {
@@ -2102,6 +2139,8 @@
   wireSaveDefs();
   wireChrome();
   wireAnimBudget();
+  wireReplay();
+  wireSkip();
   wireMeta();
   wireReveal();
   wireSpot();

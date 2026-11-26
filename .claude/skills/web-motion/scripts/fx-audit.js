@@ -14,6 +14,7 @@
  *   4-1. 글자 — 끝까지 굴린 뒤 절 머리 · 첫 화면 글자가 효과 끔과 같은지(꼬리표 해독 같은 글자 효과가 원래 글자로 돌아왔는지)
  *   5. 스크롤 프레임 — 4초 동안 페이지를 끝까지 굴리며 rAF 간격(25ms 넘는 비율 · 가장 긴 프레임)을 효과 켬 / 끔으로
  *   6. 동작 줄이기(reduced motion) — fx 가 루프를 돌리지 않는지(FX.info().loops === 0)
+ *   6-1. endless — 끝없이 도는 CSS · 스크립트 애니메이션(iterations Infinity)이 페이지에 하나도 없는지(2026-11-26 본인 「장식 애니메이션은 한 번만」 — 화면마다 · 장 넘김에서도)
  *   7. 장 넘김 — 「장으로 보기」를 켠 뒤 → 키 5번 · 오류 0
  *   8. --pdf: 전체 · 요약 PDF 장 수(효과 켬 / 끔이 같아야 한다)
  *   결과: 표 + <out>/fx-audit.json, 화면 그림 <out>/*.png
@@ -38,6 +39,10 @@ const PROBES = ['.hero .shell', '.hero-l', '#h-thesis', '#kpis', '#mboard', '.mp
 const TEXTS = ['.eyebrow b', '#h-kicker', '#h-thesis', '.herosum li', '.hkey-h', '.hk .kpi .d', '.mb-h span', '.hk .kpi small'];
 
 const results = []; let fails = 0;
+// 끝없이 도는 애니메이션 — 이름 @ 대상(데모 iframe 안은 document.getAnimations 에 안 들어온다)
+const endless = page => page.evaluate(() => document.getAnimations().filter(a => {
+  try { return a.effect && a.effect.getComputedTiming().iterations === Infinity && a.playState !== 'idle'; } catch (e) { return false; }
+}).map(a => { const t = a.effect.target; const c = t && (t.id ? '#' + t.id : String((t.className && t.className.baseVal !== undefined) ? t.className.baseVal : (t.className || t.tagName)).split(' ')[0]); return (a.animationName || a.id || 'script') + ' @' + (c || '?') + (a.effect.pseudoElement || ''); }));
 const mark = (ok, warn) => ok ? '✓' : warn ? '△' : (fails++, '✗');
 
 function lum([r, g, b]) { const f = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); }
@@ -160,11 +165,13 @@ async function pdfPages(browser, q) {
     const [tOn, tOff] = [await txt(on.page), await txt(off.page)];
     const textDiff = tOn.map((t, i) => t === tOff[i] ? null : `${t.slice(0, 40)} ≠ ${String(tOff[i]).slice(0, 40)}`).filter(Boolean);
     const cOn = await contrastScan(on.page, path.join(OUT, `bg-${tag}.png`)), cOff = await contrastScan(off.page);
-    const row = { view: tag, fxOn, info, errors: on.errs.concat(off.errs), overflow, shifts, textDiff, frames: { on: fOn, off: fOff }, contrast: { on: cOn, off: cOff } };
+    const loopsLeft = [...new Set((await endless(on.page)).concat(await endless(off.page)))];
+    const row = { view: tag, fxOn, info, errors: on.errs.concat(off.errs), overflow, shifts, textDiff, frames: { on: fOn, off: fOff }, contrast: { on: cOn, off: cOff }, endless: loopsLeft };
     row.verdict = {
       errors: mark(!row.errors.length), overflow: mark(overflow <= 0), layout: mark(!shifts.length), text: mark(!textDiff.length),
       contrast: mark(cOn.min >= 4.5 || cOn.min >= cOff.min - 0.05, cOn.min >= 4.0),
       frames: mark(fOn.longPct <= fOff.longPct + 8, fOn.longPct <= fOff.longPct + 20),
+      endless: mark(!loopsLeft.length),
     };
     results.push(row);
     await on.ctx.close(); await off.ctx.close();
@@ -185,7 +192,8 @@ async function pdfPages(browser, q) {
     for (let i = 0; i < 5; i++) { await r.page.keyboard.press('ArrowRight'); await r.page.waitForTimeout(900); }
     await r.page.screenshot({ path: path.join(OUT, `deck-${w}x${h}.png`) });
     const info = await r.page.evaluate(() => window.FX && window.FX.info ? window.FX.info() : null);
-    results.push({ view: `deck ${w}x${h}`, deck, info, errors: r.errs, verdict: { errors: mark(!r.errs.length), deck: mark(deck) } });
+    const loopsLeft = await endless(r.page);
+    results.push({ view: `deck ${w}x${h}`, deck, info, errors: r.errs, endless: loopsLeft, verdict: { errors: mark(!r.errs.length), deck: mark(deck), endless: mark(!loopsLeft.length) } });
     await r.ctx.close();
   }
   if (PDF) {
@@ -204,6 +212,7 @@ async function pdfPages(browser, q) {
     if (r.errors && r.errors.length) r.errors.slice(0, 5).forEach(e => console.log('    ' + e));
     if (r.shifts && r.shifts.length) console.log('    배치 바뀜: ' + r.shifts.join(' · '));
     if (r.textDiff && r.textDiff.length) console.log('    글자 다름: ' + r.textDiff.slice(0, 4).join(' · '));
+    if (r.endless && r.endless.length) console.log('    끝없이 도는 것: ' + r.endless.slice(0, 8).join(' · '));
   });
   console.log(`\n${fails ? '✗ ' + fails + '개' : '모두 통과'} — 그림 · json: ${OUT}`);
   process.exit(fails ? 1 : 0);

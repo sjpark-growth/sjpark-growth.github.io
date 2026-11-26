@@ -2781,9 +2781,8 @@ a.rs-card[data-save] { cursor: pointer; }
     opacity: 0; animation: fxBeam 4.8s cubic-bezier(.45, .05, .25, 1) 1 both;
   }
   html.fx-on .hero .portrait.fx-beam::after { padding: 2px; }
-  html.fx-on .fx-beam:hover::after { animation-name: fxBeamAgain; }   /* 이름을 바꿔야 처음부터 다시 돈다 */
+  /* 마우스를 올리면 다시 — app.js wireReplay(끝난 애니메이션만 처음으로 되감음). 예전엔 :hover 에서 이름을 바꿨는데, 마우스를 떼면 원래 이름으로 돌아가며 한 번 더 돌았다 */
   @keyframes fxBeam { 0% { --fx-ang: 0deg; opacity: 0; } 10% { opacity: 1; } 82% { opacity: 1; } 100% { --fx-ang: 720deg; opacity: 0; } }
-  @keyframes fxBeamAgain { 0% { --fx-ang: 0deg; opacity: 0; } 10% { opacity: 1; } 82% { opacity: 1; } 100% { --fx-ang: 720deg; opacity: 0; } }
 
   /* 흐르는 그라데이션 글자 — 첫 화면 문장 강조(「광고 밖까지」). 형광펜 밑줄(em 바탕)은 그대로, 글자만 안쪽 span */
   html.fx-on .thesis .fx-grad {
@@ -2793,9 +2792,7 @@ a.rs-card[data-save] { cursor: pointer; }
     -webkit-box-decoration-break: clone; box-decoration-break: clone;
     animation: fxFlow 4.5s cubic-bezier(.45, .05, .25, 1) 1 both;
   }
-  html.fx-on .thesis:hover .fx-grad { animation-name: fxFlowAgain; }
-  @keyframes fxFlow { from { background-position: 0% 0; } to { background-position: 100% 0; } }
-  @keyframes fxFlowAgain { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+  @keyframes fxFlow { from { background-position: 0% 0; } to { background-position: 100% 0; } }   /* 문장에 마우스를 올리면 다시 — wireReplay */
 
   /* 카드 기울기(tilt) — 부모에 원근(perspective)만. 기울기는 fx.js 가 rotate 속성(hover 의 transform 과 따로 겹침)으로 */
   html.fx-on .fx-persp { perspective: 1100px; }
@@ -2846,3 +2843,40 @@ a.rs-card[data-save] { cursor: pointer; }
 }
 .grow-row:focus-visible .g-hl { opacity: .7 !important; }
 .grow-row.go:focus-visible .g-lab { fill: var(--accent-ink); text-decoration-thickness: 2px; text-decoration-color: var(--accent); }
+
+/* ===== (2026-11-26) 장식 애니메이션은 한 번만 — 본인 「장식 애니메이션은 한 번만 돌고 멈추게 해줘 (최종적으로 자연스러운 관점으로)」 =====
+   끝없이 돌던 장식(띠배너 흐름 · 숫자 빛 지나감 ✦ · 「대시보드」 메뉴 맥박 · 재직 중 쓸림 · 점 깜빡임 · 경력 막대 · 그로스 그림 쓸림 · 차트 끝점 물결)을
+   한 번만 보여 주고 쉰 모양(처음 모양)으로 둔다 — WCAG 2.2.2(5초 넘게 저절로 움직이는 것에 멈춤 수단). 화면 밖에서는 시작 전 그대로 멈춰 있다가
+   화면에 들어올 때 그 한 번이 돈다(app.js wireAnimBudget · LOOPERS). 카드에 마우스를 올리면 한 번 더(app.js wireReplay).
+   첫 화면 차트의 12초마다 다시 그리기도 뺐다(app.js renderBoard). 동작 줄이기 · 인쇄는 예전 그대로(움직임 없음). 데모 파일 안의 움직임은 주간 동기화 대상이라 그대로 */
+.shine, .shine::after, .pop { animation-iteration-count: 1; animation-fill-mode: both; }
+.job.is-now::after, .gsweep, .gi-sweep { animation-iteration-count: 1; animation-fill-mode: both; }
+.job-side .now::before, .tk-live i, .mp-group.g-live i { animation-iteration-count: 1; }
+.pulse { animation: ping 2.4s ease-out .3s 1 both; }   /* 끝점 물결 — 움직이며 그릴 때는 선이 끝점에 닿은 뒤(app.js animateSegs 가 delay 를 적는다) */
+.mast nav a.nav-hot { animation-iteration-count: 1; }
+.mast nav a.nav-hot::before { animation-delay: 1.2s; animation-iteration-count: 2; }   /* 점 깜빡임 두 번 = 맥박 한 번(2.8초)과 같은 길이 */
+/* 띠배너 — 같은 빠르기로 한 바퀴(둘째 묶음이 첫 자리에 오면 처음 모습과 같다), 끝 3초는 서서히 멈춘다(속도가 끊기지 않게 — 2차 감속 곡선).
+   다 돌면 app.js 가 .tk-done 을 붙여 움직임을 떼고 둘째 묶음을 숨긴 뒤 옆으로 밀어 볼 수 있게(스크롤 막대는 숨김). 마우스를 올리면 멈추는 것은 그대로 */
+.tk-track { animation: tkOnce 71.5s 1 both; }
+@keyframes tkOnce {
+  0% { transform: none; animation-timing-function: linear; }
+  95.8% { transform: translateX(-48.93%); animation-timing-function: cubic-bezier(.33, .67, .67, 1); }
+  100% { transform: translateX(-50%); }
+}
+.ticker.tk-done .tk-track { animation: none; will-change: auto; }
+.ticker.tk-done .tk-run + .tk-run { display: none; }
+.ticker.tk-done .tk-viewport { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+.ticker.tk-done .tk-viewport::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { .tk-run + .tk-run { display: none; } }   /* 움직이지 않을 때는 같은 묶음이 두 번 보이지 않게 */
+.job-side .now::before { animation-fill-mode: both; }   /* 끝난 뒤에도 남겨 둬야 카드에 마우스를 올릴 때 다시 돈다(wireReplay — 끝나고 사라진 애니메이션은 되감을 수 없다) */
+
+/* ===== (2026-11-26) 본문 바로가기 — 본인 「본문 바로가기 링크도 더 도움되면 넣어줘」 =====
+   키보드로 들어오면 첫 Tab 에 왼쪽 위로 내려온다(마우스 · 손가락으로는 안 보임 · 읽기 프로그램은 늘 읽음). 누르면 상단 메뉴를 건너뛰어 본문으로(app.js wireSkip · en.html 끝 스크립트).
+   본문(<main tabindex=-1>)은 초점을 받아도 테두리를 그리지 않는다 — 다음 Tab 부터 평소 초점 표시. 인쇄 · PDF 에는 없음 */
+.skip { position: fixed; left: 12px; top: 10px; z-index: 140; padding: 10px 16px; border-radius: 10px; background: var(--ink); color: var(--paper);
+  font-size: 14px; font-weight: 700; line-height: 1.2; text-decoration: none; box-shadow: 0 10px 28px rgba(12, 26, 43, .25);
+  transform: translateY(calc(-100% - 24px)); transition: transform .2s cubic-bezier(.2, .8, .2, 1); }
+.skip:focus { transform: none; outline: 2px solid var(--accent); outline-offset: 2px; }
+.skip:focus:not(:focus-visible) { transform: translateY(calc(-100% - 24px)); outline: none; }
+main:focus { outline: none; }
+@media print { .skip { display: none !important; } }
