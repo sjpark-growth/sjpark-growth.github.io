@@ -21,12 +21,12 @@ description: 박성준 포트폴리오(이 저장소)의 모션 · 시각 효과
 
 | 무엇 | 어디 | 메모 |
 |---|---|---|
-| 첫 화면 빛(WebGL) + 점 격자 | `fx.js aurora()` · CSS `.fx-stage` `.fx-grid` | 「핵심 과업」 칸(#mboard) 둘레를 도는 빛 4개 + 흐르는 잡음. 5초 안에 잦아들어 멈춤(`REST_AFTER`), 마우스 · 테마 · 탭 복귀가 깨움. 소개 · 「핵심 성과」 머리 · 「핵심 과업」 머리 자리는 `--fx-a-text` 만큼 옅게(글자 대비). 해상도 0.5배 · 40fps, 소프트웨어 GL(SwiftShader 등)은 0.25배 · 20fps, 1초 평균 28ms 넘으면 한 단계씩 낮추다 멈춘 한 장 |
+| 첫 화면 빛(WebGL) + 점 격자 | `fx.js aurora()` · CSS `.fx-stage` `.fx-grid` | 「핵심 과업」 칸(#mboard) 둘레를 도는 빛 4개 + 흐르는 잡음. 4초 안에 잦아들어 멈춤(`REST_AFTER` 1.5초 · 첫 그리기 뒤 한가할 때 만듦), 마우스 · 테마 · 탭 복귀가 깨움. 소개 · 「핵심 성과」 머리 · 「핵심 과업」 머리 자리는 `--fx-a-text` 만큼 옅게(글자 대비). 해상도 0.5배 · 40fps, 소프트웨어 GL(SwiftShader 등)은 0.25배 · 20fps, 1초 평균 28ms 넘으면 한 단계씩 낮추다 멈춘 한 장 |
 | 카드 기울기 · 단추 끌림 | `fx.js pointerFx()` (`TILT` · `MAG` 선택자) | `rotate` · `translate` **개별 속성**을 JS 가 직접 lerp — hover 의 `transform` 과 따로 겹친다. CSS `transition` 을 더하지 않는다(카드마다 있던 transition 목록을 덮어쓴다) |
-| 따라오는 고리 | `fx.js cursor()` · `.fx-cursor` | 기본 커서는 숨기지 않는다. 누를 것 위 `is-hot`, 차트 위 `is-chart`(작은 점), 입력 · iframe 위 `is-quiet`(숨김) |
+| 따라오는 고리 | `fx.js cursor()` · `.fx-cursor` · `html.fx-cur` | 기본 커서(화살표)는 숨기지 않되, 고리가 있는 동안 **손 모양(pointer · grab)은 쓰지 않는다**(2026-11-26 본인 「손 모양으로 바뀌는 게 너무 별로」 — style.css 맨 끝 「손 모양 포인터 끄기」가 덮는다). 누를 것 위 `is-hot`, 차트 위 `is-chart`(작은 점), 입력 · iframe 위 `is-quiet`(숨김) |
 | 꼬리표 해독 | `fx.js scramble()` (`SCR`) | 영문 · 숫자만 바꾸고 한글은 그대로, 고정폭 글꼴이라 폭이 안 바뀐다. 장 넘김에서는 안 돈다(장 넘김이 절 머리를 복사 · 줄바꿈 공백을 바꿈) |
-| 테두리 빛 | `fx.js beam()` (`BEAM`) · `.fx-beam::after` | 들어올 때 두 바퀴(4.8초) · 마우스 올리면 다시. `@property --fx-ang` + conic-gradient + mask exclude. 대상에 ::after 가 이미 있으면 쓰지 않는다 |
-| 흐르는 그라데이션 글자 | `fx.js grad()` · `.fx-grad` | 한 번(4.5초) · 마우스 올리면 다시. `.thesis em` 안에 span 을 넣어 글자만 — em 의 형광펜 밑줄 바탕은 그대로. 주기 반복 그라데이션(200% · 0→100%)이라 이음매 없음 |
+| 테두리 빛 | `fx.js beam()` (`BEAM`) · `.fx-beam::after` | 들어올 때 한 바퀴(2.6초 — 11-26 전엔 두 바퀴 4.8초) · 마우스 올리면 다시. `@property --fx-ang` + conic-gradient + mask exclude. 대상에 ::after 가 이미 있으면 쓰지 않는다 |
+| 흐르는 그라데이션 글자 | `fx.js grad()` · `.fx-grad` | 한 번(2.8초 — 11-26 전엔 4.5초) · 마우스 올리면 다시. `.thesis em` 안에 span 을 넣어 글자만 — em 의 형광펜 밑줄 바탕은 그대로. 주기 반복 그라데이션(200% · 0→100%)이라 이음매 없음 |
 | 테마 원형 전환 | `FX.themeSwap(apply, 단추)` ← `app.js wireChrome` | View Transitions 없으면 바로 바뀜 |
 | 스크롤 등장 · 빛 번짐 | `app.js wireReveal` · `wireSpot` (11-15) | 첫 화면 밖 카드 · 절 머리. 장 넘김에서는 안 돎 |
 | 숫자 굴림 | `app.js rollNumbers` · `[data-roll-to]` | 인쇄 직전 끝값으로 |
@@ -76,8 +76,8 @@ t.ready.then(() => document.documentElement.animate(
 @property --fx-ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 .x::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
   background: conic-gradient(from var(--fx-ang), transparent 0 228deg, var(--accent) 300deg, #fff 332deg, transparent);
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); opacity: 0; animation: spin 4.8s cubic-bezier(.45,.05,.25,1) 1 both; }
-@keyframes spin { 0% { --fx-ang: 0deg; opacity: 0; } 10%, 82% { opacity: 1; } 100% { --fx-ang: 720deg; opacity: 0; } }   /* 두 바퀴 돌고 사라짐 — infinite 금지 */
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); opacity: 0; animation: spin 2.6s cubic-bezier(.45,.05,.25,1) 1 both; }
+@keyframes spin { 0% { --fx-ang: 0deg; opacity: 0; } 12%, 78% { opacity: 1; } 100% { --fx-ang: 360deg; opacity: 0; } }   /* 한 바퀴 돌고 사라짐 — infinite 금지 */
 ```
 
 **마우스 쪽으로 기울기 (개별 속성 + lerp)** — 부모에 `perspective`, 요소에 `el.style.rotate = \`${-ny} ${nx} 0 ${deg}deg\``(축-각). 매 프레임 `x += (target - x) * .16`, 0 에 닿으면 `removeProperty`. `transition` 은 쓰지 않는다.
@@ -92,6 +92,8 @@ t.ready.then(() => document.documentElement.animate(
 `animation` 을 이미 쓰는 요소에 걸면 그 애니메이션을 덮어쓴다 — 안쪽 요소나 가상 요소에.
 
 **WebGL 한 장짜리 셰이더** — 삼각형 하나(`[-1,-1, 3,-1, -1,3]`)로 화면을 덮고 프래그먼트 셰이더만. `premultipliedAlpha: true` 면 `gl_FragColor = vec4(col * a, a)`. 해상도는 CSS 크기 × 0.5 이하, fps 상한, IntersectionObserver · `visibilitychange` 로 멈춤, `webglcontextlost` 에서 CSS 그라데이션으로. `fx.js aurora()` 가 본보기.
+
+**첫 로드를 붙잡지 않기**(2026-11-26 본인 「로딩이 길어졌다」): WebGL 컨텍스트 · 셰이더 같은 무거운 준비는 `requestIdleCallback(f, { timeout: 500 })` 로 첫 그리기 뒤에, 셰이더는 `KHR_parallel_shader_compile` 이 있으면 걸어 두고 `COMPLETION_STATUS_KHR` 만 프레임마다 묻는다(`fx.js aurora()`). 첫 화면에서 저절로 도는 효과는 3초 안팎으로 — 첫 화면이 다 멈추기 전까지는 「아직 로딩 중」으로 읽힌다. 처음 크기를 재는 일은 ResizeObserver 의 첫 알림에 맡긴다(그리는 도중 바로 재면 페이지 전체를 한 번 더 배치).
 
 **한 번만 — 화면에 들어올 때**: `new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); run(e.target); } }), { threshold: .9 })`, 시작할 때 이미 화면 안인 것은 건드리지 않는다(깜빡임). CSS 만으로 된 장식은 `animation-iteration-count: 1` + `fill-mode: both` 로 두고 app.js `LOOPERS` 에 더하면 화면 밖에서 시작 전 그대로 멈춰 있다가 들어올 때 돈다(`.anim-idle`). 효과 층만 멈추려면 fx.js 의 `.fx-idle`.
 

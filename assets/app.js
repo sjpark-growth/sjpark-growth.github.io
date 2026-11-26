@@ -295,7 +295,9 @@
     // (2026-11-26 본인 「장식 애니메이션은 한 번만 돌고 멈추게」 — 예전엔 보이는 동안 12초마다 다시 그렸다)
     const cards = $$('.mp', host).filter(c => c._draw);
     let rt = 0; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => cards.forEach(c => c._draw(false)), 120); });
-    addEventListener('load', () => setTimeout(() => cards.forEach(c => c._draw(false)), 60)); // 창 높이가 확정된 뒤 한 번 더
+    // 창 높이가 확정된 뒤 크기가 바뀌면 observeSize(ResizeObserver)가 다시 그린다 — load 때 무조건 다시 그리던 것은 뺐다(2026-11-26: 4칸을 한 번 더 그리는 데
+    // 4배 감속 약 0.2초, 게다가 막 시작한 그리기 움직임을 끊었다). ResizeObserver 가 없는 브라우저만 예전처럼
+    if (!('ResizeObserver' in window)) addEventListener('load', () => setTimeout(() => cards.forEach(c => c._draw(false)), 60));
     addEventListener('beforeprint', () => { PRINTING = true; cards.forEach(c => c._draw(false)); });
     addEventListener('afterprint', () => { PRINTING = false; cards.forEach(c => c._draw(false)); });
     setTimeout(() => { cards.forEach((c, i) => setTimeout(() => c._draw(true), i * 180)); rollNumbers(host); }, reduceMotion ? 0 : 500);
@@ -695,8 +697,8 @@
     if (document.readyState === 'complete') watchFrame(); else addEventListener('load', watchFrame, { once: true });
     // 축소판 박스가 오른쪽 설명 높이만큼 늘어나면, 늘어난 만큼 대시보드를 더 보여 준다
     const fitScale = () => { const w = view.clientWidth, h = view.clientHeight, sc = w / 1440; ifr.style.transform = `scale(${sc})`; ifr.style.height = Math.max(810, Math.ceil(h / sc)) + 'px'; };
-    fitScale();
-    if ('ResizeObserver' in window) new ResizeObserver(() => fitScale()).observe(view);
+    // (2026-11-26) ResizeObserver 는 처음 관찰할 때 한 번 저절로 부른다(배치가 끝난 뒤 · 그리기 전) — 그리는 도중 바로 재면 페이지 전체를 한 번 더 배치했다(4배 감속 약 0.35초)
+    if ('ResizeObserver' in window) new ResizeObserver(() => fitScale()).observe(view); else fitScale();
     /* (2026-11-21) 본인 「대시보드 부분 화면 비율 · 텍스트 배치가 약간 부자연스러워」 — 넓은 화면(861px 이상)은 2×2 배치이고 데모 칸은 늘 16:9.
        데모 칸 폭(--dash-fw) = 「판 폭 − 오른쪽 소개 칸 최소(판 폭 × --dash-intro, 372px 이상 — 더 좁으면 숫자 3칸 설명이 네 줄로 꺾인다)」과 「(판 높이 − 아래 줄(구축 내용 머리 · 칩 · 펼침 칸) − 영상 막대) × 16/9」 중 작은 값.
        높이가 넉넉하면 데모가 커지고(1920×950 약 890px), 창이 낮으면 비율을 지킨 채 줄어 그만큼 소개 칸이 넓어진다(대시보드는 fitScale 이 1440×810 으로 그린다) */
@@ -729,8 +731,7 @@
       if (near('--dash-fw', fw) && near('--dash-iw', iw)) return;
       wrap.style.setProperty('--dash-fw', fw + 'px'); wrap.style.setProperty('--dash-iw', iw + 'px');
     };
-    fitDash();
-    if ('ResizeObserver' in window) { const ro = new ResizeObserver(() => fitDash()); ro.observe(wrap); ro.observe(bar); }
+    if ('ResizeObserver' in window) { const ro = new ResizeObserver(() => fitDash()); ro.observe(wrap); ro.observe(bar); } else fitDash();   // 처음 한 번도 관찰자가(위 fitScale 과 같은 이유 · 2026-11-26)
     if (wideQ) wideQ.addEventListener ? wideQ.addEventListener('change', fitDash) : wideQ.addListener(fitDash);
     { let rq = 0; addEventListener('resize', () => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => requestAnimationFrame(fitDash)); }, { passive: true }); }   // 창 크기를 바꿀 때 장 넘김 ↔ 세로 흐름이 바뀌는 사이 값이 남지 않게(1536 → 1000 에서 예전 폭이 남았다)
     addEventListener('psj-masth', fitDash);   // (2026-11-22) 상단 바 높이가 바뀌면 절 최소 높이도 바뀐다 — 절이 이미 내용으로 늘어 있으면 판 크기가 그대로라 위 관찰자가 안 불려 다시 잰다

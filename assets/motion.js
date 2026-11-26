@@ -896,7 +896,8 @@
       if (q.k === sizeKey) { pend = null; return; }
       // 화면에 전혀 안 걸친 플레이어는 한가할 때 다시 그린다 — 장 넘김 도중 「주요 업무」 플레이어 10개가 한 프레임에 몰려 0.1초가 걸렸다(11-20).
       // 그때까지 캔버스는 예전 그림을 늘려 보여 주고, 화면에 걸치는 순간(IntersectionObserver) 바로 다시 그린다
-      if (sizeKey && !P.inView && window.requestIdleCallback) { pend = q; if (!pendT) pendT = requestIdleCallback(() => { pendT = 0; flushSize(); }, { timeout: 2000 }); return; }
+      // (2026-11-26) 처음 그리기도 같게 — 예전엔 첫 크기(sizeKey 빈 값)만은 바로 그려, 첫 로드 때 화면 밖 「주요 업무」 플레이어 10개를 한꺼번에 그렸다(4배 감속 약 0.4초)
+      if (!P.inView && window.requestIdleCallback) { pend = q; if (!pendT) pendT = requestIdleCallback(() => { pendT = 0; flushSize(); }, { timeout: 2000 }); return; }
       pend = null; applySize(q);
     }
     function render() {

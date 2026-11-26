@@ -10,8 +10,8 @@
      magnet   단추가 마우스 쪽으로 몇 px 끌려온다(상단 메뉴 · 도구 단추 · 표 단추)
      cursor   마우스를 느리게 따라오는 고리 — 누를 수 있는 것 위에서 커진다(마우스만)
      scramble 절 꼬리표(Performance · Projects …)의 영문 · 숫자가 화면에 들어올 때 한 번 해독되듯 맞춰진다(고정폭 글꼴이라 폭 그대로)
-     beam     테두리를 따라 도는 빛(LIVE DEMO 칸 · 주요 성과 머리 카드 · 프로필 사진) — 화면에 들어올 때 두 바퀴(4.8초) 뒤 사라짐, 마우스를 올리면 다시
-     grad     첫 화면 문장 강조(「광고 밖까지」)에 한 번 흐르는 그라데이션 글자(4.5초 · 문장에 마우스를 올리면 다시). 색은 사이트 강조색 계열만(보라 없음)
+     beam     테두리를 따라 도는 빛(LIVE DEMO 칸 · 주요 성과 머리 카드 · 프로필 사진) — 화면에 들어올 때 한 바퀴(2.6초 — 2026-11-26 전엔 두 바퀴 4.8초) 뒤 사라짐, 마우스를 올리면 다시
+     grad     첫 화면 문장 강조(「광고 밖까지」)에 한 번 흐르는 그라데이션 글자(2.8초 — 2026-11-26 전엔 4.5초 · 문장에 마우스를 올리면 다시). 색은 사이트 강조색 계열만(보라 없음)
      theme    테마 단추를 누르면 단추 자리에서 원이 퍼지며 바뀐다(View Transitions — 없으면 바로 바뀜)
 
    끄는 법: 주소 ?fx=0 (이 탭만 — sessionStorage) · localStorage psj-fx=0 (이 브라우저) · 한 가지만 끄려면 FX_CONF 의 그 이름을 false.
@@ -136,20 +136,24 @@ void main(){
     const grid = document.createElement('i'); grid.className = 'fx-grid';
     stage.append(cv, grid); host.prepend(stage); host.classList.add('fx-host');
     const gl = cv.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false, powerPreference: 'low-power' });
-    let prog = null, U = {};
+    let prog = null, U = {}, pre = null;
+    // 컴파일 · 링크를 걸기만 한다(결과는 build 가 본다 — 상태를 묻는 순간 끝날 때까지 기다리므로)
+    const mk = () => {
+      const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+      const o = { p: gl.createProgram() }; gl.attachShader(o.p, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(o.p, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(o.p);
+      return o;
+    };
     const build = () => {
-      const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
-      const vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
-      if (!vs || !fs) return false;
-      prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
-      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
-      gl.useProgram(prog);
+      const o = pre || mk(); pre = null;
+      if (!gl.getProgramParameter(o.p, gl.LINK_STATUS)) return false;   // 셰이더 컴파일이 실패해도 링크가 실패한다
+      prog = o.p; gl.useProgram(prog);
       const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
       const loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
       ['R', 'T', 'M', 'F', 'P', 'C1', 'C2', 'C3', 'A'].forEach(k => { U[k] = gl.getUniformLocation(prog, k === 'P' ? 'P[0]' : k); });
       return true;
     };
+    const init = () => {
     if (!gl || !build()) { stage.classList.add('fx-nogl'); mods.push('aurora(css)'); return; }
     mods.push('aurora');
 
@@ -157,7 +161,7 @@ void main(){
       tacc: 14, speed: 1, wake: 0, prev: 0, rest: false };
     // 쉬기(2026-11-23 — WCAG 2.2.2 「5초 넘게 저절로 움직이는 것은 멈출 수 있어야」 · 배터리): 마지막으로 깨운 뒤 REST_AFTER 가 지나면
     // 흐름이 2.5초 동안 느려져 멈춘 한 장이 되고 루프도 끈다. 첫 화면 위 마우스 움직임 · 테마 바꿈 · 탭 돌아옴 · 화면에 다시 들어옴이 깨운다
-    const REST_AFTER = 2500;                           // 2.5초 + 잦아듦 2.5초 = 5초 안에 멈춤(web-design-guidelines 「5초 넘는 자동 움직임」)
+    const REST_AFTER = 1500;                           // 1.5초 + 잦아듦 2.5초 = 4초 안에 멈춤(web-design-guidelines 「5초 넘는 자동 움직임」 · 2026-11-26 본인 「로딩이 길어졌다」 — 첫 화면이 더 빨리 자리 잡게 2.5 → 1.5초)
     // 캔버스 해상도 = CSS 크기 × 0.5 (흐린 빛이라 충분 · GPU 부담 ¼). 그래픽 카드 없이 CPU 로 그리는 브라우저(SwiftShader · llvmpipe —
     // 드라이버가 막힌 회사 PC 등)는 처음부터 0.25 · 20fps. 그려 보고 프레임이 밀리면(1초 평균 28ms 넘음) 한 단계씩 더 낮춘다(0.5 → 0.35 → 0.25 → 멈춘 한 장)
     let soft = false;
@@ -255,6 +259,15 @@ void main(){
       if (sr || tabmode() || RM.matches) return;
       sr = requestAnimationFrame(() => { sr = 0; const y = Math.max(0, Math.min(scrollY, stage.offsetHeight)); cv.style.transform = y ? `translate3d(0, ${(y * .32).toFixed(1)}px, 0)` : ''; });
     }, { passive: true });
+    };
+    // (2026-11-26 본인 「로딩도 길어졌다」) 셰이더 준비를 메인 스레드 밖에서 — KHR_parallel_shader_compile 이 있으면 컴파일 · 링크를 걸어 두고
+    // 끝났는지만 프레임마다 본다(윈도 그래픽 드라이버는 첫 컴파일이 수십~수백 ms 라 그동안 첫 화면이 멈췄다). 없으면 예전처럼 바로
+    const par = gl && gl.getExtension('KHR_parallel_shader_compile');
+    if (!par) { init(); return; }
+    pre = mk();
+    let tries = 0;
+    const poll = () => { if (gl.isContextLost() || gl.getProgramParameter(pre.p, par.COMPLETION_STATUS_KHR) || ++tries > 90) init(); else requestAnimationFrame(poll); };
+    requestAnimationFrame(poll);
   }
 
   /* =========================================================== tilt · magnet — 마우스 쪽으로 기울기 · 끌려오기 */
@@ -320,6 +333,8 @@ void main(){
   function cursor() {
     const ring = document.createElement('div'); ring.className = 'fx-cursor'; ring.setAttribute('aria-hidden', 'true');
     document.body.appendChild(ring); mods.push('cursor');
+    // (2026-11-26 본인 「마우스 포인트가 손 모양으로 바뀌는 게 너무 별로」) 고리가 있는 동안은 손 모양 대신 늘 화살표 — 누를 수 있는 곳은 고리가 커져 알려 준다(style.css 「손 모양 포인터 끄기」)
+    document.documentElement.classList.add('fx-cur');
     const HOT = 'a[href], button:not(:disabled), [role="button"], summary, label[for], .mp-shot, .tm-tab, .rail a';
     const QUIET = 'input, textarea, select, iframe, [contenteditable="true"], .tk-viewport';
     const CHART = '.chartbox, .mp-chart, .gantt, .player';
@@ -417,7 +432,9 @@ void main(){
     try { if (CONF.grad) grad(); } catch (e) { console.warn('fx grad', e); }
     try { if (CONF.beam) beam(); } catch (e) { console.warn('fx beam', e); }
     budget();
-    try { if (CONF.aurora && hero) aurora(hero); } catch (e) { console.warn('fx aurora', e); }
+    // 빛(WebGL)은 첫 화면이 그려진 뒤 한가할 때 — 예전엔 DOMContentLoaded 에서 바로 만들어 첫 그리기가 그만큼 늦었다(2026-11-26)
+    const later = f => ('requestIdleCallback' in window ? requestIdleCallback(f, { timeout: 500 }) : setTimeout(f, 120));
+    if (CONF.aurora && hero) later(() => { try { aurora(hero); } catch (e) { console.warn('fx aurora', e); } });
     if (RM.matches) { mods.push('reduced'); return; }       // 움직임 효과는 여기까지 — 동작 줄이기면 멈춘 빛 · 정적 그라데이션만
     try { if (FINE.matches && (CONF.tilt || CONF.magnet)) pointerFx(); } catch (e) { console.warn('fx pointer', e); }
     try { if (FINE.matches && CONF.cursor) cursor(); } catch (e) { console.warn('fx cursor', e); }

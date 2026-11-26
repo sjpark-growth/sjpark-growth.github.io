@@ -2778,11 +2778,11 @@ a.rs-card[data-save] { cursor: pointer; }
     background: conic-gradient(from var(--fx-ang), transparent 0deg 228deg, color-mix(in srgb, var(--accent) 55%, transparent) 290deg, var(--fx-beam-hi) 332deg, transparent 360deg);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
             mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-    opacity: 0; animation: fxBeam 4.8s cubic-bezier(.45, .05, .25, 1) 1 both;
+    opacity: 0; animation: fxBeam 2.6s cubic-bezier(.45, .05, .25, 1) 1 both;   /* 한 바퀴 — 2026-11-26 전엔 두 바퀴 4.8초(첫 화면이 그만큼 늦게 자리 잡았다) */
   }
   html.fx-on .hero .portrait.fx-beam::after { padding: 2px; }
   /* 마우스를 올리면 다시 — app.js wireReplay(끝난 애니메이션만 처음으로 되감음). 예전엔 :hover 에서 이름을 바꿨는데, 마우스를 떼면 원래 이름으로 돌아가며 한 번 더 돌았다 */
-  @keyframes fxBeam { 0% { --fx-ang: 0deg; opacity: 0; } 10% { opacity: 1; } 82% { opacity: 1; } 100% { --fx-ang: 720deg; opacity: 0; } }
+  @keyframes fxBeam { 0% { --fx-ang: 0deg; opacity: 0; } 12% { opacity: 1; } 78% { opacity: 1; } 100% { --fx-ang: 360deg; opacity: 0; } }
 
   /* 흐르는 그라데이션 글자 — 첫 화면 문장 강조(「광고 밖까지」). 형광펜 밑줄(em 바탕)은 그대로, 글자만 안쪽 span */
   html.fx-on .thesis .fx-grad {
@@ -2790,7 +2790,7 @@ a.rs-card[data-save] { cursor: pointer; }
     background-size: 200% 100%; background-repeat: repeat-x;
     -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
     -webkit-box-decoration-break: clone; box-decoration-break: clone;
-    animation: fxFlow 4.5s cubic-bezier(.45, .05, .25, 1) 1 both;
+    animation: fxFlow 2.8s cubic-bezier(.45, .05, .25, 1) 1 both;   /* 2026-11-26 전엔 4.5초 */
   }
   @keyframes fxFlow { from { background-position: 0% 0; } to { background-position: 100% 0; } }   /* 문장에 마우스를 올리면 다시 — wireReplay */
 
@@ -2880,3 +2880,13 @@ a.rs-card[data-save] { cursor: pointer; }
 .skip:focus:not(:focus-visible) { transform: translateY(calc(-100% - 24px)); outline: none; }
 main:focus { outline: none; }
 @media print { .skip { display: none !important; } }
+
+/* ===== (2026-11-26) 손 모양 포인터 끄기 — 본인 「마우스 포인트가 손 모양으로 바뀌는 게 너무 별로」 =====
+   따라오는 고리(fx.js cursor — html.fx-cur)가 있는 동안만: 링크 · 단추 · 카드 · 차트 · 장 넘김 끌기(grab)도 늘 화살표, 글을 고르는 곳은 원래대로(I자).
+   누를 수 있는 곳은 고리가 커지고(is-hot) 각자 hover 모양이 알려 준다. 고리가 없을 때(효과 끔 ?fx=0 · 동작 줄이기 · 손가락 기기)는 브라우저 기본 그대로.
+   데모 창(iframe) 안은 그 문서의 포인터 그대로(고리도 숨음) */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html.fx-on.fx-cur body * { cursor: inherit !important; }
+  html.fx-on.fx-cur :is(a[href], button, summary, label, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"]) { cursor: default !important; }
+  html.fx-on.fx-cur :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, [contenteditable="true"]) { cursor: text !important; }
+}
