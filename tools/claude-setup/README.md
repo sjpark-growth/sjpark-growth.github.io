@@ -38,7 +38,8 @@ powershell -ExecutionPolicy Bypass -File tools\claude-setup\install-global.ps1 -
 ```
 필요한 것: Node.js 22.20 이상(`node --version`), Claude Code(`claude --version`). 이미 있는 스킬은 건너뛰고(덮어쓰지 않음) 한 개씩 설치 · 확인한다.
 끝나면 Claude Code 를 완전히 껐다 켠다. 되돌리기: `%USERPROFILE%\.claude\skills\<이름>` 폴더 삭제 · `npm uninstall -g agent-browser`.
-※ 이 스크립트는 클라우드(리눅스)에서 만들어 **Windows 에서 실제로 돌려 보지 못했다** — 스킬마다 설치 명령은 이 세션에서 성공을 확인했다(전역 `-g` 는 find-skills · humanizer · hiring-panel 세 개로 확인). 실패하면 화면의 명령을 그대로 한 줄씩 실행하면 된다.
+※ 클라우드(리눅스)에서 만든 스크립트다. **2026-11-25 Windows 11 PC 에서 처음 돌려 성공했다**: 설치 4개(web-design-guidelines · emil-design-eng · humanizer · hiring-panel), 이미 있어 건너뜀 3개(design-taste-frontend · agent-browser · find-skills), 실패 0. 깔린 내용은 이 저장소 `.claude/skills` 검토본과 같다(줄바꿈만 CRLF).
+`--copy` 라 `%USERPROFILE%\.agents\skills` 에는 사본이 생기지 않고, `%USERPROFILE%\.agents\.skill-lock.json` 에 설치 기록만 남는다. 실패하면 화면의 명령을 그대로 한 줄씩 실행하면 된다.
 
 ## 참고 DESIGN.md 받기 (Awesome DESIGN.md — 새 프로젝트용)
 
