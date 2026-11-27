@@ -1,11 +1,11 @@
 {
  "exportFormatVersion": 2,
- "exportTime": "2026-11-25 12:00:00",
+ "exportTime": "2026-11-27 18:52:45",
  "containerVersion": {
   "accountId": "6407836635",
   "containerId": "288652423",
-  "path": "accounts/6407836635/containers/288652423/versions/0",
-  "containerVersionId": "0",
+  "path": "accounts/6407836635/containers/288652423/versions/7",
+  "containerVersionId": "7",
   "container": {
    "accountId": "6407836635",
    "containerId": "288652423",
@@ -13,397 +13,45 @@
    "name": "sjpark-growth.github.io",
    "publicId": "GTM-P9NRDTDV",
    "usageContext": [
-    "WEB"
+    "web"
    ]
   },
   "tag": [
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "tagId": "200",
+    "tagId": "8",
     "name": "Google 태그 — GA4",
     "type": "googtag",
     "parameter": [
      {
-      "type": "TEMPLATE",
+      "type": "template",
       "key": "tagId",
       "value": "G-D1KF2MWKJW"
-     },
-     {
-      "type": "LIST",
-      "key": "configSettingsTable",
-      "list": [
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_page"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_page}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_view"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_view}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_angle"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_angle}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_share"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_share}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_src"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_src}}"
-         }
-        ]
-       }
-      ]
      }
     ],
     "firingTriggerId": [
      "2147479573"
     ],
-    "tagFiringOption": "ONCE_PER_EVENT"
+    "tagFiringOption": "oncePerEvent",
+    "consentSettings": {
+     "consentStatus": "notSet"
+    }
    },
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "tagId": "201",
-    "name": "GA4 이벤트 — psj",
-    "type": "gaawe",
-    "parameter": [
-     {
-      "type": "BOOLEAN",
-      "key": "sendEcommerceData",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "eventName",
-      "value": "{{Event}}"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "measurementIdOverride",
-      "value": "G-D1KF2MWKJW"
-     },
-     {
-      "type": "LIST",
-      "key": "eventSettingsTable",
-      "list": [
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_page"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_page}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_view"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_view}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_angle"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_angle}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_share"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_share}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_src"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_src}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_section"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_section}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_section_index"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_section_index}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_section_total"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_section_total}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_depth"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_depth}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_via"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_via}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_seen"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_seen}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_engaged_sec"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_engaged_sec}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_section_sec"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_section_sec}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_leave_n"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_leave_n}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_click"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_click}}"
-         }
-        ]
-       },
-       {
-        "type": "MAP",
-        "map": [
-         {
-          "type": "TEMPLATE",
-          "key": "parameter",
-          "value": "psj_target"
-         },
-         {
-          "type": "TEMPLATE",
-          "key": "parameterValue",
-          "value": "{{psj_target}}"
-         }
-        ]
-       }
-      ]
-     }
-    ],
-    "firingTriggerId": [
-     "100"
-    ],
-    "tagFiringOption": "ONCE_PER_EVENT"
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
-    "tagId": "202",
+    "tagId": "11",
     "name": "Microsoft Clarity",
     "type": "html",
     "parameter": [
      {
-      "type": "TEMPLATE",
+      "type": "template",
       "key": "html",
       "value": "<script type=\"text/javascript\">\n(function(c,l,a,r,i,t,y){\n  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n  t=l.createElement(r);t.async=1;t.src=\"https://www.clarity.ms/tag/\"+i;\n  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n})(window, document, \"clarity\", \"script\", \"zizzedwvba\");\n</script>"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "supportDocumentWrite",
       "value": "false"
      }
@@ -411,29 +59,610 @@
     "firingTriggerId": [
      "2147479573"
     ],
-    "tagFiringOption": "ONCE_PER_LOAD"
+    "tagFiringOption": "oncePerLoad",
+    "consentSettings": {
+     "consentStatus": "notSet"
+    }
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "tagId": "22",
+    "name": "GA4 이벤트 — psj",
+    "type": "gaawe",
+    "parameter": [
+     {
+      "type": "boolean",
+      "key": "sendEcommerceData",
+      "value": "false"
+     },
+     {
+      "type": "list",
+      "key": "eventSettingsTable",
+      "list": [
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_page"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_page}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_view"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_view}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_angle"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_angle}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_share"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_share}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_src"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_src}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_section"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_section}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_section_index"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_section_index}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_section_total"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_section_total}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_depth"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_depth}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_via"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_via}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_seen"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_seen}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_engaged_sec"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_engaged_sec}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_section_sec"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_section_sec}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_leave_n"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_leave_n}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_click"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_click}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_target"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_target}}"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "template",
+      "key": "eventName",
+      "value": "{{Event}}"
+     },
+     {
+      "type": "template",
+      "key": "measurementIdOverride",
+      "value": "G-D1KF2MWKJW"
+     }
+    ],
+    "firingTriggerId": [
+     "9"
+    ],
+    "tagFiringOption": "oncePerEvent",
+    "consentSettings": {
+     "consentStatus": "notSet"
+    }
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "tagId": "24",
+    "name": "GA4 psj_open — 페이지 맥락",
+    "type": "gaawe",
+    "parameter": [
+     {
+      "type": "boolean",
+      "key": "sendEcommerceData",
+      "value": "false"
+     },
+     {
+      "type": "list",
+      "key": "eventSettingsTable",
+      "list": [
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_page"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_page}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_view"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_view}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_angle"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_angle}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_share"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_share}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_src"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_src}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_section"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_section}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_section_index"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_section_index}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_section_total"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_section_total}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_depth"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_depth}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_via"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_via}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_seen"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_seen}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_engaged_sec"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_engaged_sec}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_section_sec"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_section_sec}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_leave_n"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_leave_n}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_click"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_click}}"
+         }
+        ]
+       },
+       {
+        "type": "map",
+        "map": [
+         {
+          "type": "template",
+          "key": "parameter",
+          "value": "psj_target"
+         },
+         {
+          "type": "template",
+          "key": "parameterValue",
+          "value": "{{psj_target}}"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "template",
+      "key": "eventName",
+      "value": "psj_open"
+     },
+     {
+      "type": "template",
+      "key": "measurementIdOverride",
+      "value": "G-D1KF2MWKJW"
+     }
+    ],
+    "firingTriggerId": [
+     "23"
+    ],
+    "tagFiringOption": "oncePerEvent",
+    "consentSettings": {
+     "consentStatus": "notSet"
+    }
    }
   ],
   "trigger": [
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "triggerId": "100",
+    "triggerId": "9",
     "name": "psj 이벤트",
-    "type": "CUSTOM_EVENT",
+    "type": "customEvent",
     "customEventFilter": [
      {
-      "type": "MATCH_REGEX",
+      "type": "matchRegex",
       "parameter": [
        {
-        "type": "TEMPLATE",
+        "type": "template",
         "key": "arg0",
         "value": "{{_event}}"
        },
        {
-        "type": "TEMPLATE",
+        "type": "template",
         "key": "arg1",
         "value": "^psj_(section|leave|click|print|view_change)$"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "triggerId": "23",
+    "name": "psj 맥락 (psj_ctx)",
+    "type": "customEvent",
+    "customEventFilter": [
+     {
+      "type": "equals",
+      "parameter": [
+       {
+        "type": "template",
+        "key": "arg0",
+        "value": "{{_event}}"
+       },
+       {
+        "type": "template",
+        "key": "arg1",
+        "value": "psj_ctx"
        }
       ]
      }
@@ -444,94 +673,22 @@
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "variableId": "1",
-    "name": "psj_page",
-    "type": "v",
-    "parameter": [
-     {
-      "type": "INTEGER",
-      "key": "dataLayerVersion",
-      "value": "2"
-     },
-     {
-      "type": "BOOLEAN",
-      "key": "setDefaultValue",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "name",
-      "value": "psj_page"
-     }
-    ]
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
-    "variableId": "2",
-    "name": "psj_view",
-    "type": "v",
-    "parameter": [
-     {
-      "type": "INTEGER",
-      "key": "dataLayerVersion",
-      "value": "2"
-     },
-     {
-      "type": "BOOLEAN",
-      "key": "setDefaultValue",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "name",
-      "value": "psj_view"
-     }
-    ]
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
     "variableId": "3",
-    "name": "psj_angle",
-    "type": "v",
-    "parameter": [
-     {
-      "type": "INTEGER",
-      "key": "dataLayerVersion",
-      "value": "2"
-     },
-     {
-      "type": "BOOLEAN",
-      "key": "setDefaultValue",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "name",
-      "value": "psj_angle"
-     }
-    ]
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
-    "variableId": "4",
     "name": "psj_share",
     "type": "v",
     "parameter": [
      {
-      "type": "INTEGER",
+      "type": "integer",
       "key": "dataLayerVersion",
       "value": "2"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "setDefaultValue",
       "value": "false"
      },
      {
-      "type": "TEMPLATE",
+      "type": "template",
       "key": "name",
       "value": "psj_share"
      }
@@ -540,22 +697,94 @@
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "variableId": "5",
-    "name": "psj_src",
+    "variableId": "4",
+    "name": "psj_angle",
     "type": "v",
     "parameter": [
      {
-      "type": "INTEGER",
+      "type": "integer",
       "key": "dataLayerVersion",
       "value": "2"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "setDefaultValue",
       "value": "false"
      },
      {
-      "type": "TEMPLATE",
+      "type": "template",
+      "key": "name",
+      "value": "psj_angle"
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "variableId": "5",
+    "name": "psj_view",
+    "type": "v",
+    "parameter": [
+     {
+      "type": "integer",
+      "key": "dataLayerVersion",
+      "value": "2"
+     },
+     {
+      "type": "boolean",
+      "key": "setDefaultValue",
+      "value": "false"
+     },
+     {
+      "type": "template",
+      "key": "name",
+      "value": "psj_view"
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "variableId": "6",
+    "name": "psj_page",
+    "type": "v",
+    "parameter": [
+     {
+      "type": "integer",
+      "key": "dataLayerVersion",
+      "value": "2"
+     },
+     {
+      "type": "boolean",
+      "key": "setDefaultValue",
+      "value": "false"
+     },
+     {
+      "type": "template",
+      "key": "name",
+      "value": "psj_page"
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "variableId": "7",
+    "name": "psj_src",
+    "type": "v",
+    "parameter": [
+     {
+      "type": "integer",
+      "key": "dataLayerVersion",
+      "value": "2"
+     },
+     {
+      "type": "boolean",
+      "key": "setDefaultValue",
+      "value": "false"
+     },
+     {
+      "type": "template",
       "key": "name",
       "value": "psj_src"
      }
@@ -564,22 +793,22 @@
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "variableId": "6",
+    "variableId": "10",
     "name": "psj_section",
     "type": "v",
     "parameter": [
      {
-      "type": "INTEGER",
+      "type": "integer",
       "key": "dataLayerVersion",
       "value": "2"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "setDefaultValue",
       "value": "false"
      },
      {
-      "type": "TEMPLATE",
+      "type": "template",
       "key": "name",
       "value": "psj_section"
      }
@@ -588,46 +817,22 @@
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "variableId": "7",
-    "name": "psj_section_index",
-    "type": "v",
-    "parameter": [
-     {
-      "type": "INTEGER",
-      "key": "dataLayerVersion",
-      "value": "2"
-     },
-     {
-      "type": "BOOLEAN",
-      "key": "setDefaultValue",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "name",
-      "value": "psj_section_index"
-     }
-    ]
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
-    "variableId": "8",
+    "variableId": "12",
     "name": "psj_section_total",
     "type": "v",
     "parameter": [
      {
-      "type": "INTEGER",
+      "type": "integer",
       "key": "dataLayerVersion",
       "value": "2"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "setDefaultValue",
       "value": "false"
      },
      {
-      "type": "TEMPLATE",
+      "type": "template",
       "key": "name",
       "value": "psj_section_total"
      }
@@ -636,94 +841,22 @@
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "variableId": "9",
-    "name": "psj_depth",
-    "type": "v",
-    "parameter": [
-     {
-      "type": "INTEGER",
-      "key": "dataLayerVersion",
-      "value": "2"
-     },
-     {
-      "type": "BOOLEAN",
-      "key": "setDefaultValue",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "name",
-      "value": "psj_depth"
-     }
-    ]
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
-    "variableId": "10",
-    "name": "psj_via",
-    "type": "v",
-    "parameter": [
-     {
-      "type": "INTEGER",
-      "key": "dataLayerVersion",
-      "value": "2"
-     },
-     {
-      "type": "BOOLEAN",
-      "key": "setDefaultValue",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "name",
-      "value": "psj_via"
-     }
-    ]
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
-    "variableId": "11",
-    "name": "psj_seen",
-    "type": "v",
-    "parameter": [
-     {
-      "type": "INTEGER",
-      "key": "dataLayerVersion",
-      "value": "2"
-     },
-     {
-      "type": "BOOLEAN",
-      "key": "setDefaultValue",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "name",
-      "value": "psj_seen"
-     }
-    ]
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
-    "variableId": "12",
+    "variableId": "13",
     "name": "psj_engaged_sec",
     "type": "v",
     "parameter": [
      {
-      "type": "INTEGER",
+      "type": "integer",
       "key": "dataLayerVersion",
       "value": "2"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "setDefaultValue",
       "value": "false"
      },
      {
-      "type": "TEMPLATE",
+      "type": "template",
       "key": "name",
       "value": "psj_engaged_sec"
      }
@@ -732,48 +865,24 @@
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "variableId": "13",
-    "name": "psj_section_sec",
-    "type": "v",
-    "parameter": [
-     {
-      "type": "INTEGER",
-      "key": "dataLayerVersion",
-      "value": "2"
-     },
-     {
-      "type": "BOOLEAN",
-      "key": "setDefaultValue",
-      "value": "false"
-     },
-     {
-      "type": "TEMPLATE",
-      "key": "name",
-      "value": "psj_section_sec"
-     }
-    ]
-   },
-   {
-    "accountId": "6407836635",
-    "containerId": "288652423",
     "variableId": "14",
-    "name": "psj_leave_n",
+    "name": "psj_section_index",
     "type": "v",
     "parameter": [
      {
-      "type": "INTEGER",
+      "type": "integer",
       "key": "dataLayerVersion",
       "value": "2"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "setDefaultValue",
       "value": "false"
      },
      {
-      "type": "TEMPLATE",
+      "type": "template",
       "key": "name",
-      "value": "psj_leave_n"
+      "value": "psj_section_index"
      }
     ]
    },
@@ -781,21 +890,93 @@
     "accountId": "6407836635",
     "containerId": "288652423",
     "variableId": "15",
-    "name": "psj_click",
+    "name": "psj_seen",
     "type": "v",
     "parameter": [
      {
-      "type": "INTEGER",
+      "type": "integer",
       "key": "dataLayerVersion",
       "value": "2"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "setDefaultValue",
       "value": "false"
      },
      {
-      "type": "TEMPLATE",
+      "type": "template",
+      "key": "name",
+      "value": "psj_seen"
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "variableId": "16",
+    "name": "psj_via",
+    "type": "v",
+    "parameter": [
+     {
+      "type": "integer",
+      "key": "dataLayerVersion",
+      "value": "2"
+     },
+     {
+      "type": "boolean",
+      "key": "setDefaultValue",
+      "value": "false"
+     },
+     {
+      "type": "template",
+      "key": "name",
+      "value": "psj_via"
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "variableId": "17",
+    "name": "psj_depth",
+    "type": "v",
+    "parameter": [
+     {
+      "type": "integer",
+      "key": "dataLayerVersion",
+      "value": "2"
+     },
+     {
+      "type": "boolean",
+      "key": "setDefaultValue",
+      "value": "false"
+     },
+     {
+      "type": "template",
+      "key": "name",
+      "value": "psj_depth"
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "variableId": "18",
+    "name": "psj_click",
+    "type": "v",
+    "parameter": [
+     {
+      "type": "integer",
+      "key": "dataLayerVersion",
+      "value": "2"
+     },
+     {
+      "type": "boolean",
+      "key": "setDefaultValue",
+      "value": "false"
+     },
+     {
+      "type": "template",
       "key": "name",
       "value": "psj_click"
      }
@@ -804,24 +985,72 @@
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "variableId": "16",
+    "variableId": "19",
     "name": "psj_target",
     "type": "v",
     "parameter": [
      {
-      "type": "INTEGER",
+      "type": "integer",
       "key": "dataLayerVersion",
       "value": "2"
      },
      {
-      "type": "BOOLEAN",
+      "type": "boolean",
       "key": "setDefaultValue",
       "value": "false"
      },
      {
-      "type": "TEMPLATE",
+      "type": "template",
       "key": "name",
       "value": "psj_target"
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "variableId": "20",
+    "name": "psj_leave_n",
+    "type": "v",
+    "parameter": [
+     {
+      "type": "integer",
+      "key": "dataLayerVersion",
+      "value": "2"
+     },
+     {
+      "type": "boolean",
+      "key": "setDefaultValue",
+      "value": "false"
+     },
+     {
+      "type": "template",
+      "key": "name",
+      "value": "psj_leave_n"
+     }
+    ]
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "variableId": "21",
+    "name": "psj_section_sec",
+    "type": "v",
+    "parameter": [
+     {
+      "type": "integer",
+      "key": "dataLayerVersion",
+      "value": "2"
+     },
+     {
+      "type": "boolean",
+      "key": "setDefaultValue",
+      "value": "false"
+     },
+     {
+      "type": "template",
+      "key": "name",
+      "value": "psj_section_sec"
      }
     ]
    }
@@ -830,7 +1059,31 @@
    {
     "accountId": "6407836635",
     "containerId": "288652423",
-    "type": "EVENT",
+    "type": "pageUrl",
+    "name": "Page URL"
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "type": "pageHostname",
+    "name": "Page Hostname"
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "type": "pagePath",
+    "name": "Page Path"
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "type": "referrer",
+    "name": "Referrer"
+   },
+   {
+    "accountId": "6407836635",
+    "containerId": "288652423",
+    "type": "event",
     "name": "Event"
    }
   ]

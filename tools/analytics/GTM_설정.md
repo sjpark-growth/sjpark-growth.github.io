@@ -7,11 +7,12 @@
 
 | 도구 | ID | 계정 · 이름 |
 |---|---|---|
-| GTM | `GTM-P9NRDTDV` (계정 6407836635 · 컨테이너 288652423) | 계정 sjpark-growth · 컨테이너 sjpark-growth.github.io · 버전 2 「v1 방문 흐름 분석」 게시 |
+| GTM | `GTM-P9NRDTDV` (계정 6407836635 · 컨테이너 288652423) | 계정 sjpark-growth · 컨테이너 sjpark-growth.github.io · 게시본 **버전 7** 「v7 맥락은 psj_open 이벤트로 · page_view 는 기본」(2026-11-27 GTM API 로 확인 · 태그 4 · 트리거 2 — 처음 게시는 버전 2 「v1 방문 흐름 분석」) |
 | GA4 | 측정 ID `G-D1KF2MWKJW` · 스트림 16410100727 | 계정 sjpark-growth · 속성 sjpark-growth portfolio(대한민국 시간) · 데이터 공유 4개 모두 끔 · 「브라우저 기록 기반 페이지 변경」 끔 |
 | Clarity | `zizzedwvba` | 프로젝트 sjpark-growth portfolio |
 
 GTM 컨테이너 설정은 `gtm-container.json`(이 폴더)을 「관리자 → 컨테이너 가져오기 → 병합」으로 넣었다 — 다시 만들 때도 이 파일. 아래 1~3 은 손으로 할 때의 설명이다.
+(2026-11-27) 이 파일은 게시본 v7 을 GTM API(읽기 전용 서비스 계정 — 컨테이너 사용자 관리 「읽기」)로 받아 작업 폴더 도구 `gtm_export.py` 로 옮긴 판이다 — 계정 메일 · 로그인 주소 · 지문(fingerprint)은 빼고, 메일 꼴 값이 있으면 쓰지 않는다. 게시본을 바꾸면 이 파일도 같은 도구로 다시 만든다(매일 점검 「저장소 사본 ↔ 게시본(태그 수)」이 어긋나면 ✕).
 
 **재점검 (2026-11-25 밤)** — 공개 3쪽(index · en · resume-pdf) track.js 포함 · 공개 track.js = 저장소 · GTM 게시본 v2 에 GA4 · Clarity · psj 트리거 있음. GA4 스트림 「최근 48시간 동안 수신」, Clarity 「세션 0 · 봇 세션 3 제외」(헤드리스 점검 방문 — 봇 감지 켜짐이라 정상). 이때 더한 것:
 - GA4 이벤트 데이터 보관 2개월 → **14개월**(탐색 · 유입경로 보고서가 2개월까지만 거슬러 올라가서).
@@ -30,21 +31,24 @@ GTM 컨테이너 설정은 `gtm-container.json`(이 폴더)을 「관리자 → 
 GA4 데이터 스트림 → 향상된 측정 → **페이지 조회 → 고급 설정 → 「브라우저 기록 이벤트 기반 페이지 변경」 끄기**.
 장 넘김은 넘길 때마다 주소(`#work-3`)를 바꾸므로 켜 두면 page_view 가 장마다 쌓인다. 장 · 절은 `psj_section` 으로 따로 받는다.
 
-## 2. GTM — 변수 (데이터 영역 변수, 버전 2)
+## 2. GTM — 변수 (데이터 영역 변수, 버전 2 부터 v7 까지 같은 16개)
 
 이름 그대로 만든다: `psj_page` `psj_view` `psj_angle` `psj_share` `psj_src` `psj_section` `psj_section_index` `psj_section_total`
 `psj_depth` `psj_via` `psj_seen` `psj_engaged_sec` `psj_section_sec` `psj_leave_n` `psj_click` `psj_target`
 
 ## 3. GTM — 태그 · 트리거
 
-1. **Google 태그** — 태그 ID `G-XXXXXXXXXX`, 트리거 「Initialization - All Pages」.
-   구성 매개변수(모든 이벤트에 실림): `psj_page` `psj_view` `psj_angle` `psj_share` `psj_src` ← 같은 이름 변수.
-2. **GA4 이벤트 「psj 이벤트」** — 측정 ID 같음, 이벤트 이름 `{{Event}}`,
-   트리거 = 맞춤 이벤트 · 정규식 사용 `^psj_(section|leave|click|print|view_change)$`.
+게시본 v7 기준(2026-11-27). 버전 2 까지는 Google 태그의 구성 매개변수로 맥락(`psj_page` …)을 모든 이벤트에 실었는데, v7 은 Google 태그를 태그 ID 만 두고(page_view 는 기본 그대로) 맥락을 `psj_open` 이벤트 하나로 따로 보낸다.
+
+1. **Google 태그 「Google 태그 — GA4」** — 태그 ID `G-XXXXXXXXXX`, 트리거 「Initialization - All Pages」. 구성 매개변수 없음.
+2. **GA4 이벤트 「GA4 psj_open — 페이지 맥락」** — 측정 ID 같음, 이벤트 이름 `psj_open`,
+   트리거 「psj 맥락 (psj_ctx)」 = 맞춤 이벤트 · 이벤트 이름 `psj_ctx` 와 같음. 이벤트 매개변수: 2 의 변수 전부.
+3. **GA4 이벤트 「GA4 이벤트 — psj」** — 측정 ID 같음, 이벤트 이름 `{{Event}}`,
+   트리거 「psj 이벤트」 = 맞춤 이벤트 · 정규식 사용 `^psj_(section|leave|click|print|view_change)$`.
    이벤트 매개변수: 2 의 변수 전부(값이 없는 것은 비어서 간다 — 괜찮다).
-3. **맞춤 HTML 「Clarity」** — Clarity 설정 → 설치에 나오는 **공식 코드 그대로**, 트리거 「Initialization - All Pages」.
+4. **맞춤 HTML 「Microsoft Clarity」** — Clarity 설정 → 설치에 나오는 **공식 코드 그대로**, 트리거 「Initialization - All Pages」.
    공식 코드는 `window.clarity` 대기열을 이어받으므로 `track.js` 가 먼저 넣은 태그(`set`) · 이벤트가 사라지지 않는다. 대기열을 새로 만드는 다른 코드로 바꾸지 않는다.
-4. 미리보기(Tag Assistant)로 공개 주소를 열어 세 태그가 뜨는지 본 뒤 **제출(게시)**.
+5. 미리보기(Tag Assistant)로 공개 주소를 열어 네 태그가 뜨는지 본 뒤 **제출(게시)**.
 
 ## 4. GA4 · Clarity 정리
 
@@ -74,7 +78,7 @@ GTM 은 **공개 주소에서만** 받는다(로컬 · 워크트리 · 아티팩
 
 | 이벤트 | 언제 | 주요 매개변수 |
 |---|---|---|
-| `psj_ctx` | 페이지 열 때(GA4 로 안 보냄 — 맥락만) | `psj_page` home · en · resume_pdf, `psj_view` scroll · deck · page, `psj_angle`, `psj_share` on · off, `psj_src` |
+| `psj_ctx` | 페이지 열 때(GA4 에는 GTM v7 이 `psj_open` 이벤트로 보냄 — 3절 2) | `psj_page` home · en · resume_pdf, `psj_view` scroll · deck · page, `psj_angle`, `psj_share` on · off, `psj_src` |
 | `psj_section` | 한 절(스크롤) · 한 장(장 넘김)에 **0.8초 넘게** 머물 때 | `psj_section`(스크롤 intro · summary · results · dash · xdash · perf · growth · work · pillars · career · beliefs · contact / 장 넘김 `work-3` 처럼 주제-장 / en 은 h2 id / 이력서 보기 p1~p7), `psj_section_index` · `_total`, `psj_depth`(가장 깊이 본 곳 %), `psj_via`(scroll · wheel · key · drag · swipe …) |
 | `psj_leave` | 탭을 숨기거나 닫을 때(다시 돌아오면 또 생김 — `psj_leave_n`) | 마지막 `psj_section`, `psj_depth`, `psj_seen`(본 곳 수), `psj_engaged_sec`(보이던 시간), `psj_section_sec`(마지막 곳에 머문 시간) |
 | `psj_click` | 누를 때 | `psj_click` = resume_view · resume_open · resume_download · demo_open · demo_newtab · email_click · email_copy · phone_click · en_open · home_open(en · 이력서 보기 → 포트폴리오) · print_click · outbound, `psj_target`(데모 이름 · full/short · 바깥 도메인), `psj_section`(누를 때 본 곳) |
