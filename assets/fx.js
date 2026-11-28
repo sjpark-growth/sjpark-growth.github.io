@@ -336,28 +336,45 @@ void main(){
     // (2026-11-26 본인 「마우스 포인트가 손 모양으로 바뀌는 게 너무 별로」) 고리가 있는 동안은 손 모양 대신 늘 화살표 — 누를 수 있는 곳은 고리가 커져 알려 준다(style.css 「손 모양 포인터 끄기」)
     document.documentElement.classList.add('fx-cur');
     const HOT = 'a[href], button:not(:disabled), [role="button"], summary, label[for], .mp-shot, .tm-tab, .rail a';
-    const QUIET = 'input, textarea, select, iframe, [contenteditable="true"], .tk-viewport';
+    // (2026-11-28) 띠배너(.tk-viewport)는 뺐다 — 상단 바에서 본문으로 내려올 때마다 고리가 깜빡 어두워지거나(400ms 에 지나면 opacity .34) 사라졌다 나타났다
+    const QUIET = 'input, textarea, select, iframe, [contenteditable="true"]';
     const CHART = '.chartbox, .mp-chart, .gantt, .player';
-    let x = -99, y = -99, rx = -99, ry = -99, raf = 0, shown = false, mode = '';
-    const step = () => {
+    /* (2026-11-28 본인 「마우스 오버레이가 이상하게 따라간다」 — 헤드리스 측정으로 원인 확정)
+       ① 위치는 개별 속성 translate 로. 예전엔 transform: translate3d 에 두었는데 CSS 는 translate → rotate → scale → transform 순으로 합성해서
+          is-hot(1.55) · is-chart(.42) · down(.78) 의 scale 이 이동값까지 곱했다 — 고리가 「배율 × 포인터 좌표」에 그려져 링크 위에서 234~500px 떨어지고 오른쪽 단추에서는 화면 밖으로 나갔다.
+       ② 따라오는 속도는 시간 기준(TAU ms 동안 남은 거리가 1/e). 예전 lerp .2 는 프레임마다 20% 라 144Hz 31ms · 60Hz 75ms · 바쁠 때 수백 ms 로 화면마다 달랐다.
+       ③ 모드(커짐 · 점 · 숨김)는 pointerover 에서도 다시 — 마우스는 그대로인데 아래가 바뀌는 때(스크롤 · 휠로 장 넘김 · 보기 전환 · 데모 창 iframe 으로 들어감)엔 pointermove 가 안 와서 옛 모드가 몇 초씩 남았다.
+       ④ 창 밖으로 나가거나 창이 초점을 잃으면 모드도 푼다 — is-hot 이 남아 다시 들어올 때 고리가 1.55배 자리에서 날아왔다. */
+    const TAU = 40;
+    let x = -99, y = -99, rx = -99, ry = -99, raf = 0, shown = false, mode = '', last = 0;
+    const modeOf = t => !t || !t.closest ? '' : t.closest(QUIET) ? 'quiet' : t.closest(HOT) ? 'hot' : t.closest(CHART) ? 'chart' : '';
+    const place = () => { ring.style.translate = `${rx.toFixed(1)}px ${ry.toFixed(1)}px`; };
+    const step = now => {
       raf = 0;
-      rx = lerp(rx, x, .2); ry = lerp(ry, y, .2);
-      ring.style.transform = `translate3d(${rx.toFixed(1)}px, ${ry.toFixed(1)}px, 0)`;
-      if (Math.abs(rx - x) + Math.abs(ry - y) > .3) { raf = requestAnimationFrame(step); loops.add('cursor'); } else loops.delete('cursor');
+      const dt = last ? Math.min(100, now - last) : 16.7; last = now;
+      const k = 1 - Math.exp(-dt / TAU);
+      rx = lerp(rx, x, k); ry = lerp(ry, y, k);
+      if (Math.abs(rx - x) + Math.abs(ry - y) > .3) { place(); raf = requestAnimationFrame(step); loops.add('cursor'); }
+      else { rx = x; ry = y; place(); last = 0; loops.delete('cursor'); }   // 끝은 포인터 자리에 딱 맞춘다(예전엔 .3px 앞에서 멈춰 소수점 자리에 섰다)
     };
     const setMode = m => { if (m !== mode) { if (mode) ring.classList.remove('is-' + mode); mode = m; if (m) ring.classList.add('is-' + m); } };
-    addEventListener('pointermove', e => {
-      if (e.pointerType !== 'mouse' || printing) { ring.classList.remove('on'); shown = false; return; }
+    const hide = () => { ring.classList.remove('on'); shown = false; setMode(''); };
+    // pointermove · pointerover 같은 처리 — pointerover 는 스크롤 · 장 넘김 · iframe 경계에서 pointermove 없이도 온다(좌표도 함께)
+    const onPtr = e => {
+      if (e.pointerType !== 'mouse' || printing) { hide(); return; }
       x = e.clientX; y = e.clientY;
-      if (!shown) { rx = x; ry = y; shown = true; ring.classList.add('on'); }
-      const t = e.target.closest ? e.target : null;
-      setMode(!t ? '' : t.closest(QUIET) ? 'quiet' : t.closest(HOT) ? 'hot' : t.closest(CHART) ? 'chart' : '');
+      const was = mode;
+      if (!shown) { rx = x; ry = y; shown = true; ring.classList.add('on'); place(); }
+      setMode(modeOf(e.target));
+      if (was === 'quiet' && mode !== 'quiet') { rx = x; ry = y; place(); }   // 숨어 있던 동안(입력칸 · iframe 안) 움직인 거리를 날아오지 않게
       if (!raf) { raf = requestAnimationFrame(step); loops.add('cursor'); }
-    }, { passive: true });
+    };
+    addEventListener('pointermove', onPtr, { passive: true });
+    addEventListener('pointerover', onPtr, { passive: true });
     addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') ring.classList.add('down'); }, { passive: true });
     addEventListener('pointerup', () => ring.classList.remove('down'), { passive: true });
-    document.addEventListener('mouseout', e => { if (!e.relatedTarget) { ring.classList.remove('on'); shown = false; } });
-    addEventListener('blur', () => { ring.classList.remove('on'); shown = false; });
+    document.addEventListener('mouseout', e => { if (!e.relatedTarget) hide(); });
+    addEventListener('blur', hide);
   }
 
   /* =========================================================== scramble — 꼬리표 해독 */

@@ -2798,7 +2798,8 @@ a.rs-card[data-save] { cursor: pointer; }
   html.fx-on .fx-persp { perspective: 1100px; }
   html.fx-on .fx-tilting { will-change: rotate; }
 
-  /* 따라오는 고리(cursor) — 마우스일 때만 fx.js 가 만든다. 위치는 transform, 크기는 scale 속성 */
+  /* 따라오는 고리(cursor) — 마우스일 때만 fx.js 가 만든다. 위치는 translate 속성(fx.js), 크기는 scale 속성.
+     위치를 transform 에 두지 않는다 — 합성 순서(translate → rotate → scale → transform) 때문에 scale 이 이동값까지 곱해 고리가 「배율 × 포인터 좌표」로 날아간다(2026-11-28 고침) */
   .fx-cursor {
     position: fixed; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%;
     border: 1.5px solid color-mix(in srgb, var(--accent) 75%, transparent); background: transparent;
