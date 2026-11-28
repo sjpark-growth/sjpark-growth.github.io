@@ -167,7 +167,20 @@
     if (el.id === 'enBtn' || /(^|\/)en\.html/.test(h)) return act('en_open');
     if (page !== 'home' && (/^\.\/(\?[^#]*)?$/.test(h) || /(^|\/)index\.html/.test(h))) return act('home_open');   // en · 이력서 보기 → 포트폴리오
     if (el.host && el.host !== location.host && /^https?:/i.test(el.href || '')) return act('outbound', el.hostname);
+    // (2026-11-28 「UI/UX 개선 자동화」) 화면 안 이동(#링크 — 상단 메뉴 · 레일 · 바로 가기 칩 · 사례 링크)과 화면 제어 단추 — 어떤 장치가 실제로 쓰이는지.
+    // GA4 는 기존 psj_click(종류 nav · ui, 대상 = 영문 이름)이라 GTM 을 바꾸지 않는다. Clarity 는 이벤트를 늘리지 않고 태그(nav · ui)로만 쌓는다
+    if (el.tagName === 'A' && /^#[A-Za-z]/.test(h)) return ui('nav', h.slice(1));
+    var u = el.tagName !== 'BUTTON' ? '' : el.id === 'themeBtn' ? 'theme' : el.id === 'labelBtn' ? 'perf_labels' : el.id === 'tableBtn' ? 'perf_table'
+      : el.getAttribute('data-view') ? 'perf_view_' + el.getAttribute('data-view') : el.id === 'toolMoreBtn' ? 'tools_more'
+      : el.classList.contains('how-tg') ? 'how_toggle' : el.classList.contains('tip-chip') ? 'tip_chip' : el.classList.contains('sk-more') ? 'skills_more'
+      : el.classList.contains('pbtn') || el.classList.contains('bigplay') ? 'motion_play' : el.classList.contains('pg-help') ? 'guide' : '';
+    if (u) ui('ui', u);
   }, true);
+  function ui(type, target) {
+    target = clean(target); if (!target) return;
+    push({ event: 'psj_click', psj_click: type, psj_target: target, psj_section: cur || '', psj_view: view() });
+    once(type, target);
+  }
   // 대시보드 데모 크게 보기(모달 — app.js openDemo, 링크가 아니라 단추 · 그림에서 연다)
   var modal = D.getElementById('demoModal');
   if (modal && W.MutationObserver) new MutationObserver(function () {

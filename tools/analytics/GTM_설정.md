@@ -81,7 +81,7 @@ GTM 은 **공개 주소에서만** 받는다(로컬 · 워크트리 · 아티팩
 | `psj_ctx` | 페이지 열 때(GA4 에는 GTM v7 이 `psj_open` 이벤트로 보냄 — 3절 2) | `psj_page` home · en · resume_pdf, `psj_view` scroll · deck · page, `psj_angle`, `psj_share` on · off, `psj_src` |
 | `psj_section` | 한 절(스크롤) · 한 장(장 넘김)에 **0.8초 넘게** 머물 때 | `psj_section`(스크롤 intro · summary · results · dash · xdash · perf · growth · work · pillars · career · beliefs · contact / 장 넘김 `work-3` 처럼 주제-장 / en 은 h2 id / 이력서 보기 p1~p7), `psj_section_index` · `_total`, `psj_depth`(가장 깊이 본 곳 %), `psj_via`(scroll · wheel · key · drag · swipe …) |
 | `psj_leave` | 탭을 숨기거나 닫을 때(다시 돌아오면 또 생김 — `psj_leave_n`) | 마지막 `psj_section`, `psj_depth`, `psj_seen`(본 곳 수), `psj_engaged_sec`(보이던 시간), `psj_section_sec`(마지막 곳에 머문 시간) |
-| `psj_click` | 누를 때 | `psj_click` = resume_view · resume_open · resume_download · demo_open · demo_newtab · email_click · email_copy · phone_click · en_open · home_open(en · 이력서 보기 → 포트폴리오) · print_click · outbound, `psj_target`(데모 이름 · full/short · 바깥 도메인), `psj_section`(누를 때 본 곳) |
+| `psj_click` | 누를 때 | `psj_click` = resume_view · resume_open · resume_download · demo_open · demo_newtab · email_click · email_copy · phone_click · en_open · home_open(en · 이력서 보기 → 포트폴리오) · print_click · outbound, (2026-11-28) **nav**(화면 안 #링크 — 상단 메뉴 · 레일 · 바로 가기 칩 · 사례 링크, `psj_target` = # 뒤 이름) · **ui**(화면 제어 단추 — `psj_target` = theme · perf_view_<보기> · perf_labels · perf_table · tip_chip · skills_more · tools_more · how_toggle · motion_play · guide), `psj_target`(데모 이름 · full/short · 바깥 도메인), `psj_section`(누를 때 본 곳). nav · ui 는 기존 트리거 · 측정기준 그대로라 GTM · GA4 설정을 바꾸지 않았다 |
 | `psj_view_change` | 「장으로 보기 · 스크롤로 보기」 | `psj_view` |
 | `psj_print` | 인쇄 창(Ctrl+P 포함 — 「전체 · 요약 PDF」 단추로 열면 `psj_click` print_click 도 같이 남는다) | `psj_section` |
 
@@ -117,6 +117,7 @@ Clarity 쪽은 11절(2026-11-28 다시 짬 — 태그는 같은 이름으로 다
 | `section` | 한 절 · 주제에 0.8초 넘게 머물 때 한 번 | 주제 이름만(`intro` `summary` `results` `dash` `xdash` `perf` `growth` `work` `pillars` `career` `beliefs` `contact`, en 은 h2 id, 이력서 보기 p1~p7) → `section = work` = 주요 업무를 본 세션 |
 | `depth_reached` | 25 · 50 · 75 · 100 % 를 지날 때 한 번 | `depth_reached = 75` = 4분의 3 넘게 내려간 세션 |
 | `action` | 핵심 행동 때 한 번 | resume_view · resume_open · resume_download · email_click · email_copy · phone_click · demo_open · demo_newtab |
+| `ui` · `nav` | 화면 제어 단추 · 화면 안 #링크를 처음 누를 때 한 번 | GA4 psj_click ui · nav 와 같은 이름(8절) — 이벤트를 늘리지 않으려고 태그로만 |
 | `exit_section` | 탭을 숨기거나 닫을 때 | 그때 보던 곳(장 번호까지 `work-3`). Clarity 는 pagehide 때 마지막 묶음을 보내며 태그도 싣는다(upload.ts — track.js 듣개가 먼저 돈다). 탭을 오가면 값이 여럿 — 녹화 끝을 보면 마지막이 진짜 나간 곳 |
 
 옛 태그 `last_section` · `max_depth`(11-25 ~ 11-28 공개본)는 지나친 곳 · 깊이가 모두 쌓여 「나간 곳」 필터로 쓸 수 없었다 — 그 기간 녹화는 새 태그가 없다.
@@ -140,3 +141,7 @@ Clarity 쪽은 11절(2026-11-28 다시 짬 — 태그는 같은 이름으로 다
 2. `step_contact` 편집 → API 이벤트 `email_copy` · `phone_click` 더하기(들어온 뒤).
 3. 퍼널 **F1 resume** 편집 → 포트폴리오 방문 → `step_reach_results` → `step_reach_work` → `step_resume_view` → `step_resume_download` 차례로. **F2 contact** → 포트폴리오 방문 → `step_reach_contact` → `step_contact`.
 4. 대시보드 · 녹화 필터를 저장해 두면 좋은 묶음(세그먼트): 「핵심 행동 세션」(태그 `action` 아무 값) · 「주요 업무까지 본 세션」(`section = work`) · 「지원처 유입」(`src` = wanted · saramin …) · 「휴대폰」(기기).
+
+### 11-4. 주간 인사이트 · 개선안 (2026-11-28 — 대시보드 「포트폴리오 유입·이탈」)
+
+매일 07:30 갱신(작업 폴더 `_work/analytics/ga4_pull.py`)이 `insights.py` 를 불러 **지난 월~일 주**를 규칙으로 읽고 대시보드 「이번 주 인사이트 · 개선안」 칸에 올린다(집계 첫 주 전엔 부분 주 · 주가 끝나고 3일 뒤 굳힘 · `out/insights-history.json` 에 26주까지). 영역: 수집(점검 실패) · 규모 · 퍼널(첫 화면 → 주요 성과 → 주요 업무 → 연락처) · 이탈 · 기기(휴대폰 · PC 나갈 때 깊이) · 전환(이력서 보기 → 받기) · 유입(?src 별 핵심 행동) · UI(위 nav · ui — 안 쓰이는 장치) · 사용성(클래리티 dead · rage · quickback · 스크립트 오류). 줄마다 근거 숫자 · 할 일 · **고칠 곳(파일 · 선택자)** · 확신(표본)이 붙는다 — 방문자 5명 아래 주는 관찰만. 사이트 쪽 이름(절 id · `MILE` · ui 대상 이름)을 바꾸면 `insights.py` 의 `ORDER` · `MILES` · `FIX` · `UI_KNOWN` 도 맞춘다.
