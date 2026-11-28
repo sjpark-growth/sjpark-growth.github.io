@@ -2798,36 +2798,6 @@ a.rs-card[data-save] { cursor: pointer; }
   html.fx-on .fx-persp { perspective: 1100px; }
   html.fx-on .fx-tilting { will-change: rotate; }
 
-  /* 마우스 자리 표시(cursor) — 마우스일 때만 fx.js 가 만들고, 보이는 동안은 기본 커서를 숨긴다(아래 「손 모양 포인터 끄기」 · html.fx-cur-on — 2026-11-28).
-     위치는 fx.js 가 translate 속성으로(마우스 자리 그대로), 모양은 두 가상 요소의 scale · opacity 만: 평소 = 점 8px, 누를 것 위 = 렌즈 44px 가 퍼지고 점은 작게,
-     차트 위 = 더 작은 점(세부 값을 짚기 쉽게), 누르는 중 = 살짝 오므림. 켜고 끌 때는 바로(기본 커서와 겹치는 틈이 없게).
-     위치를 transform 에 두지 않는다 — 합성 순서(translate → rotate → scale → transform) 때문에 scale 이 이동값까지 곱해 「배율 × 포인터 좌표」로 날아간다
-     (2026-11-28 — 차트 위에서 다른 데로 튐 · 링크 위에서 화면 밖, fx.js cursor 주석 ①) */
-  .fx-cursor {
-    position: fixed; left: 0; top: 0; width: 0; height: 0;
-    pointer-events: none; z-index: 2147483000; opacity: 0; will-change: translate;
-  }
-  .fx-cursor::before, .fx-cursor::after { content: ""; position: absolute; border-radius: 50%; }
-  .fx-cursor::before {   /* 렌즈 */
-    left: -22px; top: -22px; width: 44px; height: 44px; box-sizing: border-box;
-    border: 1.5px solid color-mix(in srgb, var(--accent) 60%, transparent);
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    scale: .2; opacity: 0;
-    transition: scale .24s cubic-bezier(.2, .8, .2, 1), opacity .16s ease-out;
-  }
-  .fx-cursor::after {    /* 점 — 바탕색 테두리로 강조색 단추 위에서도 보이게 */
-    left: -4px; top: -4px; width: 8px; height: 8px;
-    background: var(--accent); box-shadow: 0 0 0 1.5px var(--paper);
-    transition: scale .2s cubic-bezier(.2, .8, .2, 1);
-  }
-  .fx-cursor.on { opacity: 1; }
-  .fx-cursor.is-hot::before { scale: 1; opacity: 1; }
-  .fx-cursor.is-hot::after { scale: .6; }
-  .fx-cursor.is-chart::after { scale: .75; }
-  .fx-cursor.is-quiet, .fx-cursor.on.is-quiet, html.fx-vt .fx-cursor { opacity: 0; }
-  .fx-cursor.down::after { scale: .7; }
-  .fx-cursor.is-hot.down::before { scale: .86; }
-
   /* 스크롤 진행 막대 — 강조색 그라데이션 + 빛 */
   html.fx-on .mast::after { background: linear-gradient(90deg, var(--accent), var(--fx-g2), var(--fx-g3)); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent); }
 
@@ -2837,10 +2807,9 @@ a.rs-card[data-save] { cursor: pointer; }
   /* 움직임 예산 — 화면 밖(.anim-idle) · 다른 탭(.anim-hold)이면 멈춘다 */
   .anim-hold .fx-beam::after, .anim-hold .fx-grad, .fx-idle.fx-beam::after, .fx-grad.fx-idle { animation-play-state: paused !important; }
 }
-@media (hover: none), (pointer: coarse) { .fx-cursor { display: none; } }
-@media (prefers-reduced-motion: reduce) { .fx-stage { animation: none; } .fx-cursor { display: none; } }
+@media (prefers-reduced-motion: reduce) { .fx-stage { animation: none; } }
 @media print {
-  .fx-stage, .fx-cursor { display: none !important; }
+  .fx-stage { display: none !important; }
   .fx-beam::after { content: none !important; }
   .thesis .fx-grad { background: none !important; color: inherit !important; -webkit-text-fill-color: currentColor !important; animation: none !important; }
   .fx-persp { perspective: none !important; }
@@ -2897,17 +2866,18 @@ a.rs-card[data-save] { cursor: pointer; }
 main:focus { outline: none; }
 @media print { .skip { display: none !important; } }
 
-/* ===== (2026-11-26) 손 모양 포인터 끄기 — 본인 「마우스 포인트가 손 모양으로 바뀌는 게 너무 별로」 =====
-   따라오는 고리(fx.js cursor — html.fx-cur)가 있는 동안만: 링크 · 단추 · 카드 · 차트 · 장 넘김 끌기(grab)도 늘 화살표, 글을 고르는 곳은 원래대로(I자).
-   누를 수 있는 곳은 고리가 커지고(is-hot) 각자 hover 모양이 알려 준다. 고리가 없을 때(효과 끔 ?fx=0 · 동작 줄이기 · 손가락 기기)는 브라우저 기본 그대로.
-   데모 창(iframe) 안은 그 문서의 포인터 그대로(고리도 숨음) */
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  html.fx-on.fx-cur body * { cursor: inherit !important; }
-  html.fx-on.fx-cur :is(a[href], button, summary, label, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"]) { cursor: default !important; }
-  html.fx-on.fx-cur :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, [contenteditable="true"]) { cursor: text !important; }
-  /* (2026-11-28 본인 「마우스 커서와 둘이 동시에 뜨는 게 싫다 — 한 쪽만」) 표시가 보이는 동안(fx-cur-on)은 기본 커서도 숨긴다.
-     입력 · 선택 칸은 표시가 숨고 기본 커서(fx.js QUIET), 스크롤 막대 · 데모 창(iframe) 안은 브라우저가 늘 기본 커서를 그려 fx.js 가 표시를 숨긴다.
-     테마 바꾸는 0.7초(fx-vt — 화면을 사진으로 바꿔 그림)는 기본 커서로. 동작 줄이기 · 손가락 기기 · 효과 끔은 이 블록 밖이라 브라우저 기본 */
-  html.fx-on.fx-cur.fx-cur-on:not(.fx-vt), html.fx-on.fx-cur.fx-cur-on:not(.fx-vt) body, html.fx-on.fx-cur.fx-cur-on:not(.fx-vt) body * { cursor: none !important; }
-  html.fx-on.fx-cur.fx-cur-on:not(.fx-vt) :is(input, textarea, select, [contenteditable="true"], [contenteditable="true"] *) { cursor: auto !important; }
+/* ===== (2026-11-28) 맞춤 화살표 — 본인 「커서 파란 점 너무 별로 — 다른 괜찮은 커서」 → 미리보기 넷 중 「맞춤 화살표로」 =====
+   마우스 커서 = 화살표 모양 그대로, 사이트 글자색(라이트 먹색 #0c1a2b + 흰 테두리 · 다크 #e9eef6 + 바탕색 테두리)으로 그린 커서 그림 하나.
+   브라우저가 직접 그리므로 늦게 따라오거나 메인 스레드가 바쁠 때(데모 3MB 읽기 · 장으로 보기 전환) 멈추는 일이 없고 스크립트도 없다(fx.js cursor 는 html.fx-cur 만 붙임).
+   (2026-11-26 본인 「손 모양으로 바뀌는 게 너무 별로」) 링크 · 단추 · 카드 · 차트 · 장 넘김 끌기(grab)도 이 화살표 — 누를 수 있는 곳은 각자 hover 모양이 알려 준다. 글 입력 칸만 I자.
+   1x · 2x 그림(image-set — 125~200% 배율 화면에서 흐리지 않게, 지원 안 하면 앞 줄 1x), 끝점(5, 3)이 클릭 자리. 효과 끔(?fx=0) · 손가락 기기는 브라우저 기본.
+   데모 창(iframe) 안 · 스크롤 막대는 브라우저 기본 화살표. 예전(11-23 ~ 11-28) 따라오는 고리 · 점 표시는 걷어냈다(scale 이 위치까지 곱해 튐 · 커서와 둘이 겹침 · 바쁠 때 멈춤) */
+@media (hover: hover) and (pointer: fine) {
+  html.fx-on.fx-cur, html.fx-on.fx-cur body, html.fx-on.fx-cur body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%230c1a2b' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, default !important; cursor: image-set(url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%230c1a2b' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 1x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%230c1a2b' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 2x) 5 3, default !important; }
+  html.fx-on.fx-cur[data-theme="dark"], html.fx-on.fx-cur[data-theme="dark"] body, html.fx-on.fx-cur[data-theme="dark"] body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, default !important; cursor: image-set(url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 1x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 2x) 5 3, default !important; }
+  html.fx-on.fx-cur :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, [contenteditable="true"], [contenteditable="true"] *) { cursor: text !important; }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-color-scheme: dark) {
+  html.fx-on.fx-cur:not([data-theme="light"]), html.fx-on.fx-cur:not([data-theme="light"]) body, html.fx-on.fx-cur:not([data-theme="light"]) body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, default !important; cursor: image-set(url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 1x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 2x) 5 3, default !important; }
+  html.fx-on.fx-cur:not([data-theme="light"]) :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, [contenteditable="true"], [contenteditable="true"] *) { cursor: text !important; }
 }

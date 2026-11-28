@@ -8,7 +8,7 @@
      aurora   첫 화면 뒤 흐르는 빛(WebGL — 「핵심 과업」 칸 둘레를 돌고 소개 글자 쪽은 옅게) + 마우스를 따라 켜지는 점 격자. 5초 안에 잦아들어 멈춘 한 장, 마우스가 깨운다
      tilt     카드가 마우스 쪽으로 살짝 기운다(성과 리포트 칸 · 주요 성과 카드 · 그로스 · 역량 · 원칙 · 점수)
      magnet   단추가 마우스 쪽으로 몇 px 끌려온다(상단 메뉴 · 도구 단추 · 표 단추)
-     cursor   기본 커서 대신 마우스 자리 표시 하나(점) — 누를 수 있는 것 위에서 렌즈로 커지고 차트 위에서 작아진다(마우스만 · 2026-11-28 — 예전 늦게 따라오던 고리)
+     cursor   마우스 커서를 사이트 글자색 화살표 그림으로(CSS — 브라우저가 그려 늦거나 멈추지 않음 · 손 모양 없음 · 2026-11-28 — 예전 따라오는 고리 · 점 표시는 걷어냄)
      scramble 절 꼬리표(Performance · Projects …)의 영문 · 숫자가 화면에 들어올 때 한 번 해독되듯 맞춰진다(고정폭 글꼴이라 폭 그대로)
      beam     테두리를 따라 도는 빛(LIVE DEMO 칸 · 주요 성과 머리 카드 · 프로필 사진) — 화면에 들어올 때 한 바퀴(2.6초 — 2026-11-26 전엔 두 바퀴 4.8초) 뒤 사라짐, 마우스를 올리면 다시
      grad     첫 화면 문장 강조(「광고 밖까지」)에 한 번 흐르는 그라데이션 글자(2.8초 — 2026-11-26 전엔 4.5초 · 문장에 마우스를 올리면 다시). 색은 사이트 강조색 계열만(보라 없음)
@@ -329,77 +329,13 @@ void main(){
     holds.push(() => { items.forEach((s, n) => { n.style.removeProperty('rotate'); n.style.removeProperty('translate'); n.classList.remove('fx-tilting'); }); items.clear(); curT = curM = null; });
   }
 
-  /* =========================================================== cursor — 마우스 자리 표시(기본 커서 대신 하나만)
-     (2026-11-28 본인 「표(차트)에만 마우스를 올리면 고리가 다른 데로 휙 · 마우스 커서와 둘이 동시에 뜨는 게 싫다 — 한 쪽만」)
-     ① 위치는 개별 속성 translate 로 — 예전엔 transform 으로 옮기고 크기만 scale 속성으로 바꿨는데, CSS 는 scale 을 transform 바깥
-        (화면 왼쪽 위 원점 기준)에서 곱한다. 그래서 차트(.42배) · 누를 것(1.55배) · 누르는 중(.78배)에서 고리가 「마우스 좌표 × 배율」 자리로
-        미끄러져 갔다(1463×800 실측 — 첫 화면 차트 702px · 상단 메뉴 254px · 누름 127px 어긋남). translate → scale 순서라 이제 크기만 바뀐다.
-     ② 기본 커서(화살표)를 숨기고 이 표시 하나만(html.fx-cur-on — style.css 「손 모양 포인터 끄기」). 하나뿐이니 늦게 따라가지 않고
-        (예전 lerp .2 — 누르는 곳과 보이는 곳이 어긋난다) 마우스 자리 그대로, 모양만 부드럽게 바뀐다: 평소 점 · 누를 것 위 둥근 렌즈 · 차트 위 작은 점.
-     ③ 기본 커서로 돌아가고 표시는 숨는 곳: 입력 칸 · 데모 창(iframe — 그 문서가 커서를 그린다) · 스크롤 막대 · 창 밖 · 다른 탭 · 인쇄 · 손가락 · 펜.
-     ④ 메인 스레드가 막혀(데모 3MB 읽기 등) 표시가 멈췄던 것이 보이면(가장 이른 이동 이벤트가 150ms 넘게 밀림) 1.5초 동안 기본 커서로,
-        20초 안에 3번이면 이 페이지에서는 표시를 거두고 브라우저 기본(손 모양 포함)으로 — 커서가 안 보이는 순간이 생기지 않게.
-     동작 줄이기 · 손가락 기기 · ?fx=0 에서는 만들지 않는다(start). 인쇄에는 없음(CSS). 장 넘김에서도 그대로(body 바로 아래라 장과 함께 움직이지 않음) */
-  function cursor() {
-    const ring = document.createElement('div'); ring.className = 'fx-cursor'; ring.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(ring); mods.push('cursor');
-    // (2026-11-26 본인 「마우스 포인트가 손 모양으로 바뀌는 게 너무 별로」) 표시가 있는 동안은 손 모양을 쓰지 않는다 — 누를 수 있는 곳은 표시가 렌즈로 커져 알려 준다
-    root.classList.add('fx-cur');
-    const HOT = 'a[href], button:not(:disabled), [role="button"], [role="link"], [role="tab"], summary, label[for], .mp-shot, .tm-tab, .rail a';
-    const QUIET = 'input, textarea, select, iframe, [contenteditable="true"]';   // 띠배너(.tk-viewport)는 뺐다(016f806 — 지날 때마다 깜빡였다)
-    const CHART = '.chartbox, .mp-chart, .gantt, .player';
-    let x = -99, y = -99, shown = false, mode = '', rest = 0, gone = false;
-    const stalls = [];
-    const place = () => { ring.style.translate = `${x}px ${y}px`; };
-    const show = () => { if (gone || shown) return; shown = true; ring.classList.add('on'); root.classList.add('fx-cur-on'); };
-    const setMode = m => { if (m !== mode) { if (mode) ring.classList.remove('is-' + mode); mode = m; if (m) ring.classList.add('is-' + m); } };
-    const hide = () => { setMode(''); if (!shown) return; shown = false; ring.classList.remove('on', 'down'); root.classList.remove('fx-cur-on'); };
-    // 스크롤 막대 위 — 막대는 늘 기본 커서를 그려 둘이 겹친다(창 막대 · 칸 안 막대)
-    const onBar = (t, e) => {
-      if (e.clientX >= root.clientWidth || e.clientY >= root.clientHeight) return true;
-      if (t === root || t === document.body || !(t instanceof HTMLElement)) return false;
-      if (t.scrollHeight <= t.clientHeight + 1 && t.scrollWidth <= t.clientWidth + 1) return false;   // 넘치는 칸만(대부분 여기서 끝)
-      const cs = getComputedStyle(t);
-      const bw = t.offsetWidth - t.clientWidth - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth);    // 세로 막대 폭(숨긴 막대 = 0)
-      const bh = t.offsetHeight - t.clientHeight - parseFloat(cs.borderTopWidth) - parseFloat(cs.borderBottomWidth);  // 가로 막대 높이
-      return (bw > .5 && e.offsetX >= t.clientWidth) || (bh > .5 && e.offsetY >= t.clientHeight);
-    };
-    const modeOf = (t, e) => !t || !t.closest ? '' : t.closest(QUIET) || (e && onBar(t, e)) ? 'quiet' : t.closest(HOT) ? 'hot' : t.closest(CHART) ? 'chart' : '';
-    const stalled = (now, lag) => {   // ④ — 방금 표시가 멈춰 있었다. 기본 커서로 쉬는 1.5초 안의 지연은 같은 막힘으로(한 번만 센다 — 데모 읽기 한 번에 긴 작업이 여럿)
-      if (!rest) {
-        while (stalls.length && now - stalls[0].t > 20000) stalls.shift();
-        stalls.push({ t: now, lag: Math.round(lag) });
-        if (stalls.length >= 3) { gone = true; hide(); ring.remove(); root.classList.remove('fx-cur'); const i = mods.indexOf('cursor'); if (i >= 0) mods.splice(i, 1); mods.push('cursor-off'); return; }
-      }
-      hide(); clearTimeout(rest); rest = setTimeout(() => { rest = 0; }, 1500);
-    };
-    // pointermove · pointerover 같은 처리 — pointerover 는 마우스는 그대로인데 아래가 바뀔 때(스크롤 · 휠로 장 넘김 · 보기 전환)도 좌표와 함께 온다(016f806)
-    const onPtr = e => {
-      if (gone) return;
-      if (e.pointerType !== 'mouse' || printing) { hide(); return; }
-      const now = performance.now();
-      let t0 = e.timeStamp;
-      try { const ce = e.getCoalescedEvents && e.getCoalescedEvents(); if (ce && ce.length) t0 = Math.min(t0, ce[0].timeStamp); } catch (err) {}
-      const lag = t0 > 0 && now - t0 < 60000 ? now - t0 : 0;
-      // 보이던 표시가 멈춰 있었을 때만 센다 — 이미 기본 커서였으면(장으로 보기 전환은 hold 로 미리 숨김 · 창 밖) 사람 눈에는 멈춘 게 없다
-      if (lag > 150 && shown) { stalled(now, lag); return; }
-      if (rest) { if (lag > 150) { clearTimeout(rest); rest = setTimeout(() => { rest = 0; }, 1500); } return; }   // 막힌 직후 1.5초는 기본 커서로(아직 버벅이면 늘림)
-      x = e.clientX; y = e.clientY; place();
-      setMode(modeOf(e.target, e));
-      show();
-    };
-    addEventListener('pointermove', onPtr, { passive: true });
-    addEventListener('pointerover', onPtr, { passive: true });
-    addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') ring.classList.add('down'); else hide(); }, { passive: true });
-    addEventListener('pointerup', () => ring.classList.remove('down'), { passive: true });
-    addEventListener('pointercancel', () => ring.classList.remove('down'), { passive: true });
-    // 창 밖 · 데모 창(iframe) 안으로 — 부모 문서에는 이동 이벤트가 더 안 온다
-    document.addEventListener('mouseout', e => { const r = e.relatedTarget; if (!r || r.tagName === 'IFRAME') hide(); });
-    addEventListener('blur', hide);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) hide(); });
-    holds.push(() => hide());
-    FX._cursor = () => ({ shown, mode, gone, resting: !!rest, stalls: stalls.map(s => s.lag) });
-  }
+  /* =========================================================== cursor — 맞춤 화살표(사이트 글자색 커서 그림)
+     (2026-11-28 본인 「커서 파란 점 너무 별로」 → 미리보기 넷 중 「맞춤 화살표로」) 커서 모양은 style.css 맨 끝 「맞춤 화살표」 CSS 가 그린다 —
+     여기서는 html.fx-cur 만 붙인다. 브라우저가 그리는 커서라 늦게 따라오거나 바쁠 때 멈추지 않고, 루프 · 이벤트가 없다.
+     예전 판(11-23 따라오는 고리 → 11-28 점 표시)은 걷어냈다: transform 위치에 scale 이 곱해져 차트 · 링크 위에서 튐(016f806 · 07cf8d6 에서 고침),
+     기본 커서와 둘이 겹침, 기본 커서를 숨기면 메인 스레드가 막힐 때 같이 멈춤. 다시 따라오는 장식을 만들지 않는다(web-motion 스킬 「하지 말 것」).
+     움직이지 않는 그림이라 동작 줄이기에서도 쓴다(start 의 동작 줄이기 return 앞). 손가락 기기는 CSS 미디어가 거른다. */
+  function cursor() { root.classList.add('fx-cur'); mods.push('cursor'); }
 
   /* =========================================================== scramble — 꼬리표 해독 */
   const SCR = '.sec-h .tag, .growth-h .tag';
@@ -476,9 +412,9 @@ void main(){
     // 빛(WebGL)은 첫 화면이 그려진 뒤 한가할 때 — 예전엔 DOMContentLoaded 에서 바로 만들어 첫 그리기가 그만큼 늦었다(2026-11-26)
     const later = f => ('requestIdleCallback' in window ? requestIdleCallback(f, { timeout: 500 }) : setTimeout(f, 120));
     if (CONF.aurora && hero) later(() => { try { aurora(hero); } catch (e) { console.warn('fx aurora', e); } });
+    if (CONF.cursor) cursor();                               // 맞춤 화살표 — 그림이라 동작 줄이기에서도
     if (RM.matches) { mods.push('reduced'); return; }       // 움직임 효과는 여기까지 — 동작 줄이기면 멈춘 빛 · 정적 그라데이션만
     try { if (FINE.matches && (CONF.tilt || CONF.magnet)) pointerFx(); } catch (e) { console.warn('fx pointer', e); }
-    try { if (FINE.matches && CONF.cursor) cursor(); } catch (e) { console.warn('fx cursor', e); }
     try { if (CONF.scramble) scramble(); } catch (e) { console.warn('fx scramble', e); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
