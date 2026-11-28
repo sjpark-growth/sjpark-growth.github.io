@@ -67,7 +67,16 @@
 </style>
 <script>
   /* 테마: 본판과 같은 저장값(psj-theme)을 먼저 찍어 깜빡임을 막는다 */
-  try { var t = localStorage.getItem('psj-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  /* (2026-11-28 본인 「다크 모드를 기본 화면으로 · 밝기 직접 조정」) 저장된 선택이 없으면 다크로 시작. psj-theme = dark · light · system(자동),
+     psj-dim = 0 · 2 · 3(다크 바탕 밝기 — 1 기본은 저장 안 함, app.js wireChrome 테마 창). 브라우저 위 막대 색(theme-color)도 맞춘다 */
+  (function () { var h = document.documentElement, t = null, d = null;
+    try { t = localStorage.getItem('psj-theme'); d = localStorage.getItem('psj-dim'); } catch (e) {}
+    if (t !== 'light' && t !== 'system') t = 'dark';
+    if (t !== 'system') h.setAttribute('data-theme', t);
+    if (d === '0' || d === '2' || d === '3') h.setAttribute('data-dim', d); else d = '1';
+    var pc = ['#05080d', '#0a1019', '#131b27', '#1b2431'][+d], ms = document.querySelectorAll('meta[name="theme-color"]');
+    for (var i = 0; i < ms.length; i++) { var dk = /dark/.test(ms[i].media); ms[i].content = t === 'light' ? '#f3f5f9' : (t === 'dark' || dk) ? pc : ms[i].content; }
+  })();
   /* (2026-11-23) 공유판(?share) — 본판 index.html 머리와 같은 판정. 이 페이지에는 연락처가 없고(이력서 PDF 도 연락처 제외판), 포트폴리오로 돌아가는 링크에만 ?share 를 붙인다. CLAUDE.md 5-6 */
   (function () { var m = /[?&]share(?:=([^&#]*))?(?:&|#|$)/.exec(location.search), on = !!m && m[1] !== '0';
     try { if (m) { if (on) sessionStorage.setItem('psj-share', '1'); else sessionStorage.removeItem('psj-share'); } on = on || (!m && sessionStorage.getItem('psj-share') === '1'); } catch (e) {}

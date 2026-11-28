@@ -1740,17 +1740,77 @@
     const names = { system: '자동', light: '라이트', dark: '다크' };
     const cur = () => root.getAttribute('data-theme') || 'system';
     label.textContent = names[cur()];
-    $('#themeBtn').addEventListener('click', e => {
-      const next = { system: 'light', light: 'dark', dark: 'system' }[cur()];
+    /* (2026-11-28 본인 「다크 모드를 기본 화면으로 하고 밝기를 직접 조정」 → 「셋 다 적용」) 테마 단추 = 작은 창 — 테마(다크 · 라이트 · 자동) + 다크 바탕 밝기 4단계.
+       예전엔 누를 때마다 자동 → 라이트 → 다크로 돌았다. 단추를 더하지 않아 상단 바 · 장 넘김 GNB 배치는 그대로.
+       저장 psj-theme = dark · light · system(없으면 다크 — 머리 스크립트), psj-dim = 0 · 2 · 3(1 기본은 지움). 밝기는 html[data-dim](style.css 「다크 바탕 밝기 4단계」).
+       테마를 바꿀 때는 예전처럼 고른 칸에서 원이 퍼지고(fx.js themeSwap), 밝기는 바로. 창 안 키는 창에서 멈춰 장 넘김 방향키 · Space 와 겹치지 않는다 */
+    const DIM = ['어둡게', '기본', '밝게', '더 밝게'], PAPER = ['#05080d', '#0a1019', '#131b27', '#1b2431'];
+    const sysDark = matchMedia('(prefers-color-scheme: dark)');
+    const dimOf = () => { const v = +(root.getAttribute('data-dim') || 1); return v >= 0 && v <= 3 ? v : 1; };
+    const darkNow = () => cur() === 'dark' || (cur() === 'system' && sysDark.matches);
+    const store = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e2) {} };
+    const tBtn = $('#themeBtn');
+    const pop = document.createElement('div');
+    pop.className = 'theme-pop'; pop.id = 'themePop'; pop.hidden = true;
+    pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', '화면 테마 · 바탕 밝기');
+    pop.innerHTML = '<p class="tp-h" id="tpThemeH">화면 테마</p>'
+      + '<div class="tp-seg" role="group" aria-labelledby="tpThemeH">' + ['dark', 'light', 'system'].map(t => `<button type="button" data-t="${t}" aria-pressed="false">${names[t]}</button>`).join('') + '</div>'
+      + '<p class="tp-h"><label for="tpDim">바탕 밝기</label><small id="tpDimNote">다크 화면</small></p>'
+      + '<input type="range" id="tpDim" min="0" max="3" step="1">'
+      + '<div class="tp-ticks" aria-hidden="true">' + DIM.map(n => `<span>${n}</span>`).join('') + '</div>';
+    document.body.appendChild(pop);
+    const range = $('#tpDim', pop), note = $('#tpDimNote', pop);
+    tBtn.setAttribute('aria-haspopup', 'dialog'); tBtn.setAttribute('aria-expanded', 'false'); tBtn.setAttribute('aria-controls', 'themePop');
+    const syncMeta = () => { const t = cur(), pc = PAPER[dimOf()]; $$('meta[name="theme-color"]').forEach(m => { m.content = t === 'light' ? '#f3f5f9' : (t === 'dark' || /dark/.test(m.media)) ? pc : '#f3f5f9'; }); };
+    const sync = () => {
+      const t = cur(), d = dimOf(), dk = darkNow();
+      label.textContent = names[t];
+      $$('[data-t]', pop).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === t)));
+      range.value = d; range.disabled = !dk; range.setAttribute('aria-valuetext', DIM[d]);
+      note.textContent = dk ? DIM[d] : '다크에서만';
+      pop.classList.toggle('tp-light', !dk);
+      $$('.tp-ticks span', pop).forEach((s, i) => s.classList.toggle('on', i === d));
+      syncMeta();
+    };
+    const place = () => {
+      const r = tBtn.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight, m = 8;
+      let left, top;
+      if (root.classList.contains('tm-wide')) { const g = tBtn.closest('.mast'); left = (g ? g.getBoundingClientRect().right : r.right) + m; top = r.bottom - ph; }   // 장 넘김 넓은 화면 — 왼쪽 GNB 바깥, 단추 높이에 맞춰
+      else { left = r.right - pw; top = r.bottom + m; if (top + ph > innerHeight - m) top = r.top - ph - m; }
+      pop.style.left = Math.round(Math.min(Math.max(m, left), innerWidth - pw - m)) + 'px';
+      pop.style.top = Math.round(Math.min(Math.max(m, top), innerHeight - ph - m)) + 'px';
+    };
+    const openPop = () => { sync(); pop.hidden = false; tBtn.setAttribute('aria-expanded', 'true'); place(); const on = $('[data-t][aria-pressed="true"]', pop); (on || $('[data-t]', pop)).focus({ preventScroll: true }); };
+    const closePop = refocus => { if (pop.hidden) return; pop.hidden = true; tBtn.setAttribute('aria-expanded', 'false'); if (refocus) tBtn.focus({ preventScroll: true }); };
+    tBtn.addEventListener('click', () => { pop.hidden ? openPop() : closePop(); });
+    pop.addEventListener('click', e => {
+      const b = e.target.closest('[data-t]'); if (!b) return;
+      const next = b.dataset.t; if (next === cur()) return;
       const apply = () => {
         if (next === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', next);
-        try { next === 'system' ? localStorage.removeItem('psj-theme') : localStorage.setItem('psj-theme', next); } catch (e2) {}
-        label.textContent = names[next];
+        store('psj-theme', next);   // 「자동」도 적는다 — 안 적으면 다음에 다크로 시작한다
+        sync();
         window.MOTION && window.MOTION.redrawAll();
       };
-      // (2026-11-23) 단추 자리에서 원이 퍼지며 바뀐다(assets/fx.js themeSwap — View Transitions 가 없거나 효과를 끄면 바로 바뀜)
-      if (window.FX && window.FX.themeSwap) window.FX.themeSwap(apply, e.currentTarget); else apply();
+      // (2026-11-23) 고른 칸에서 원이 퍼지며 바뀐다(assets/fx.js themeSwap — View Transitions 가 없거나 효과를 끄면 바로 바뀜)
+      if (window.FX && window.FX.themeSwap) window.FX.themeSwap(apply, b); else apply();
     });
+    range.addEventListener('input', () => {
+      const v = +range.value;
+      if (v === 1) root.removeAttribute('data-dim'); else root.setAttribute('data-dim', String(v));
+      store('psj-dim', v === 1 ? null : String(v));
+      sync();
+    });
+    pop.addEventListener('keydown', e => { if (e.key !== 'Escape' && e.key !== 'Tab') e.stopPropagation(); });   // 장 넘김 키(← → Space)와 겹치지 않게
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !pop.hidden) { e.stopPropagation(); closePop(true); } }, true);
+    // 바깥 누름 → 닫기. 테마 전환 0.7초(fx-vt — 화면이 사진으로 덮여 무엇을 눌러도 html 로 잡힘) 동안은 닫지 않는다(연달아 고를 때 창이 닫히던 것)
+    document.addEventListener('pointerdown', e => { if (!pop.hidden && !root.classList.contains('fx-vt') && !pop.contains(e.target) && !tBtn.contains(e.target)) closePop(); }, true);
+    pop.addEventListener('focusout', e => { if (!pop.hidden && e.relatedTarget && !pop.contains(e.relatedTarget) && e.relatedTarget !== tBtn) closePop(); });
+    addEventListener('resize', () => closePop());
+    document.addEventListener('tm:nav', () => closePop());
+    document.addEventListener('tm:mode', () => closePop());
+    (sysDark.addEventListener ? sysDark.addEventListener('change', sync) : sysDark.addListener(sync));
+    sync();
     /* (2026-09-26) 인쇄 전 지연 로딩 이미지(참고 자료 · 대시보드 썸네일)를 먼저 받는다.
        맨 위에서 바로 「PDF」를 누르면 아직 안 받은 이미지가 빈 회색 칸으로 찍히던 것 방지.
        다 받았으면 바로, 아니면 최대 2.5초 기다렸다가 인쇄 창을 연다 */

@@ -28,17 +28,22 @@ colors:
   series-coupang-wing: "#eb6834"
   series-naver: "#1baf7a"
   series-small: "#eda100"
-  # 다크 — @media (prefers-color-scheme: dark) 와 [data-theme="dark"] 두 곳이 같은 값
+  # 다크 — @media (prefers-color-scheme: dark) 와 [data-theme="dark"] 두 곳이 같은 값. (2026-11-28) 기본 화면 = 다크, 글자 조금 밝게
   dark-paper: "#0a1019"
   dark-surface: "#111a26"
   dark-sunk: "#172232"
-  dark-ink: "#e9eef6"
-  dark-ink-2: "#aab6c7"
-  dark-ink-3: "#8593a8"
+  dark-ink: "#eff3f9"          # 2026-11-28 전 #e9eef6
+  dark-ink-2: "#c3ccd9"        # 본문 — 전 #aab6c7
+  dark-ink-3: "#9ca8ba"        # 전 #8593a8
+  dark-before: "#7f8da2"       # 줄 그은 옛 숫자 — 전 #5d6b80
   dark-rule: "#1f2b3c"
   dark-accent: "#8b9bff"
-  dark-accent-ink: "#a9b5ff"
+  dark-accent-ink: "#b7c1ff"   # 전 #a9b5ff
   dark-accent-soft: "#1b2447"
+  # 다크 바탕 밝기 4단계(html[data-dim] — 테마 창 막대). paper / surface / sunk, 1 기본 = 위 값
+  dark-dim-0: ["#05080d", "#0b121b", "#111a26"]   # 어둡게
+  dark-dim-2: ["#131b27", "#1a2433", "#212c3d"]   # 밝게
+  dark-dim-3: ["#1b2431", "#232e3e", "#2b374a"]   # 더 밝게
   # 효과(FX) 토큰 — style.css 맨 끝 FX 블록. 보라 · 라벤더는 쓰지 않는다(코발트 · 하늘 · 청록만)
   fx-light-glow: ["#c7d1ff", "#c4e3ff", "#bfeee3"]
   fx-dark-glow: ["#3a4fd8", "#2f7fe0", "#0e8f80"]

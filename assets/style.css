@@ -55,16 +55,16 @@
     --paper:      #0a1019;
     --surface:    #111a26;
     --sunk:       #172232;
-    --ink:        #e9eef6;
-    --ink-2:      #aab6c7;
+    --ink:        #eff3f9;   /* (2026-11-28 본인 「다크 글자 좀만 밝게」) #e9eef6 → */
+    --ink-2:      #c3ccd9;   /* #aab6c7 → (본문 · 대비 7.8 → 9.9) */
     --ink-3:      #707f94;
     --rule:       #1f2b3c;
     --rule-2:     #2e3d52;
     --ring:       rgba(255,255,255,0.08);
     --accent:     #8b9bff;
-    --accent-ink: #a9b5ff;
+    --accent-ink: #b7c1ff;   /* (2026-11-28) #a9b5ff → */
     --accent-soft:#1b2447;
-    --before:     #5d6b80;
+    --before:     #7f8da2;   /* (2026-11-28) 줄 그은 옛 숫자 #5d6b80(3.0:1) → 4.8:1 */
     --c-1p:   #3987e5;
     --c-3p:   #d95926;
     --c-nv:   #199e70;
@@ -85,16 +85,16 @@
   --paper:      #0a1019;
   --surface:    #111a26;
   --sunk:       #172232;
-  --ink:        #e9eef6;
-  --ink-2:      #aab6c7;
+  --ink:        #eff3f9;   /* (2026-11-28) #e9eef6 → */
+  --ink-2:      #c3ccd9;   /* #aab6c7 → */
   --ink-3:      #707f94;
   --rule:       #1f2b3c;
   --rule-2:     #2e3d52;
   --ring:       rgba(255,255,255,0.08);
   --accent:     #8b9bff;
-  --accent-ink: #a9b5ff;
+  --accent-ink: #b7c1ff;   /* (2026-11-28) #a9b5ff → */
   --accent-soft:#1b2447;
-  --before:     #5d6b80;
+  --before:     #7f8da2;   /* (2026-11-28) #5d6b80 → */
   --c-1p:   #3987e5;
   --c-3p:   #d95926;
   --c-nv:   #199e70;
@@ -2000,8 +2000,8 @@ body { overflow-x: clip; }
    더 연하게 되돌리지 않는다(CLAUDE.md 5-1 색 대비).
    ========================================================================= */
 :root { --ink-3: #5d6b80; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink-3: #8593a8; } }
-:root[data-theme="dark"] { --ink-3: #8593a8; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink-3: #9ca8ba; } }   /* (2026-11-28) #8593a8 → 밝게(바탕 밝기 「더 밝게」에서도 4.5:1 넘게) */
+:root[data-theme="dark"] { --ink-3: #9ca8ba; }
 :root[data-theme="light"] { --ink-3: #5d6b80; }
 /* 인쇄도 같은 값 — 인쇄 블록의 #6b7a90 은 흰 종이 4.36 · 회색 칸(#eef1f6) 3.85 라 AA 미만이었다.
    인쇄 블록과 같은 :not(#p) 특이도로 뒤에서 덮는다 → 흰 종이 5.41 · 회색 칸 4.78 */
@@ -2904,3 +2904,36 @@ main:focus { outline: none; }
   html.fx-on.fx-cur:not([data-theme="light"]), html.fx-on.fx-cur:not([data-theme="light"]) body, html.fx-on.fx-cur:not([data-theme="light"]) body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, default !important; cursor: image-set(url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 1x, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24'%3E%3Cpath d='M5 3.2L5 18.6L9.1 14.9L11.9 21.1L14.6 19.9L11.9 13.8L17.4 13.6Z' fill='%23e9eef6' stroke='%230a1019' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 2x) 5 3, default !important; }
   html.fx-on.fx-cur:not([data-theme="light"]) :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, [contenteditable="true"], [contenteditable="true"] *) { cursor: text !important; }
 }
+
+/* ===== (2026-11-28) 다크 바탕 밝기 4단계 — 본인 「다크 모드를 기본 화면으로 하고 밝기를 직접 조정」 → 「셋 다 적용」 =====
+   html[data-dim] 0 어둡게 · (1 기본 = 속성 없음, 위 다크 토큰 그대로) · 2 밝게 · 3 더 밝게 — 바탕 · 칸 · 선 · 차트 격자만 바꾸고 글자색은 그대로.
+   고르는 곳: 테마 단추를 누르면 여는 창(app.js wireChrome · 아래 .theme-pop), 저장 localStorage psj-dim(머리 스크립트 index · en · resume-pdf 가 첫 그리기 전에 찍음).
+   라이트 · 인쇄에는 안 먹는다(다크 선택자 안에서만 · 인쇄는 인쇄용 색). 대비(가장 밝은 칸 기준, 같은 날 밝힌 글자색): 본문 7.4 · 보조 글자 5.0 · 줄 그은 옛 숫자 3.6(라이트 3.1 정책 위) 이상 */
+:root[data-theme="dark"][data-dim="0"] { --paper: #05080d; --surface: #0b121b; --sunk: #111a26; --rule: #182233; --rule-2: #26334a; --grid: #141d2b; --axis: #26334a; --accent-soft: #151c3a; --player-bg: #030609; }   /* 어둡게 */
+:root[data-theme="dark"][data-dim="2"] { --paper: #131b27; --surface: #1a2433; --sunk: #212c3d; --rule: #2a374a; --rule-2: #3a4a62; --grid: #253245; --axis: #3a4a62; --accent-soft: #222c55; --player-bg: #0d141e; }   /* 밝게 */
+:root[data-theme="dark"][data-dim="3"] { --paper: #1b2431; --surface: #232e3e; --sunk: #2b374a; --rule: #35435a; --rule-2: #465872; --grid: #2e3c51; --axis: #465872; --accent-soft: #293463; --player-bg: #141c28; }   /* 더 밝게 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-dim="0"] { --paper: #05080d; --surface: #0b121b; --sunk: #111a26; --rule: #182233; --rule-2: #26334a; --grid: #141d2b; --axis: #26334a; --accent-soft: #151c3a; --player-bg: #030609; }
+  :root:not([data-theme="light"])[data-dim="2"] { --paper: #131b27; --surface: #1a2433; --sunk: #212c3d; --rule: #2a374a; --rule-2: #3a4a62; --grid: #253245; --axis: #3a4a62; --accent-soft: #222c55; --player-bg: #0d141e; }
+  :root:not([data-theme="light"])[data-dim="3"] { --paper: #1b2431; --surface: #232e3e; --sunk: #2b374a; --rule: #35435a; --rule-2: #465872; --grid: #2e3c51; --axis: #465872; --accent-soft: #293463; --player-bg: #141c28; }
+}
+
+/* 테마 · 바탕 밝기 창 — 테마 단추(#themeBtn)를 누르면 연다(상단 바 · 장 넘김 GNB 단추 수 그대로). 바깥 누름 · Esc · 창 크기 바뀜 · 장 넘김에서 닫힘. 인쇄에 없음 */
+.theme-pop { position: fixed; left: 0; top: 0; z-index: 60; width: 252px; max-width: calc(100vw - 16px); box-sizing: border-box; padding: 14px 14px 12px;
+  border-radius: 14px; background: var(--surface); border: 1px solid var(--rule-2); box-shadow: var(--shadow); color: var(--ink); font-size: 13px; line-height: 1.4; }
+.theme-pop[hidden] { display: none; }
+.tp-h { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 8px; font-size: 12px; font-weight: 700; color: var(--ink-2); }
+.tp-h small { font-size: 11.5px; font-weight: 500; color: var(--ink-3); }
+.tp-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; margin: 0 0 14px; padding: 3px; border-radius: 10px; background: var(--sunk); }
+.tp-seg button { appearance: none; border: 0; margin: 0; padding: 7px 0; border-radius: 8px; background: transparent; color: var(--ink-2); font: inherit; font-weight: 600; }
+.tp-seg button:hover { color: var(--ink); }
+.tp-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .22); }
+.theme-pop :is(button, input):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-pop input[type="range"] { display: block; width: 100%; margin: 2px 0 0; accent-color: var(--accent); }
+.theme-pop input[type="range"]:disabled { opacity: .45; }
+.tp-ticks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 4px; font-size: 11.5px; color: var(--ink-3); text-align: center; }
+.tp-ticks span:first-child { text-align: left; }
+.tp-ticks span:last-child { text-align: right; }
+.tp-ticks .on { color: var(--accent-ink); font-weight: 700; }
+.theme-pop.tp-light .tp-ticks .on { color: var(--ink-3); font-weight: 500; }
+@media print { .theme-pop { display: none !important; } }
