@@ -85,15 +85,15 @@ GTM 은 **공개 주소에서만** 받는다(로컬 · 워크트리 · 아티팩
 | `psj_view_change` | 「장으로 보기 · 스크롤로 보기」 | `psj_view` |
 | `psj_print` | 인쇄 창(Ctrl+P 포함 — 「전체 · 요약 PDF」 단추로 열면 `psj_click` print_click 도 같이 남는다) | `psj_section` |
 
-Clarity 에는 태그 `page` `view` `angle` `share` `src` `last_section` `max_depth` 와 이벤트(위 `psj_click` 종류 · `print` · `view_deck` · `view_scroll`)가 같이 간다. Clarity 맞춤 이벤트 한도는 프로젝트당 20개 — 지금 15개.
+Clarity 쪽은 11절(2026-11-28 다시 짬 — 태그는 같은 이름으로 다시 넣으면 **덮이지 않고 쌓인다**).
 
 ## 9. 보는 법
 
-- **어디서 나갔나**: Clarity 녹화 → 필터 「맞춤 태그 `last_section`」 = `work-3` 등 → 녹화를 연다. GA4 탐색 → 자유 형식: 이벤트 이름 = `psj_leave`, `psj_leave_n` = 1, 행 `psj_section`, 값 사용자 수.
+- **어디서 나갔나**: Clarity 녹화 → 필터 「맞춤 태그 `exit_section`」 = `work-3` 등 → 녹화를 연다(11-28 전 `last_section` 은 지나친 곳이 모두 쌓여 나간 곳이 아니었다). GA4 탐색 → 자유 형식: 이벤트 이름 = `psj_leave`, `psj_leave_n` = 1, 행 `psj_section`, 값 사용자 수.
 - **얼마나 깊이**: 같은 표에 `psj_depth` 평균, 또는 행에 `psj_depth`.
 - **퍼널**: GA4 유입경로 탐색(개방형) — `psj_section` intro → results/dash → work → `psj_click`(resume_view · resume_download · email_*). 분류 기준 `psj_src` · `psj_view`.
 - **지원처별**: 아무 표에 `psj_src` 를 행 · 비교로.
-- **히트맵**: Clarity 히트맵은 **스크롤판만** 의미가 있다(필터 `view` = scroll). 장 넘김은 창이 스크롤되지 않아 스크롤 히트맵이 비고, 클릭 위치도 어긋날 수 있다 — 장 넘김은 녹화와 `last_section` 으로 본다.
+- **히트맵**: Clarity 히트맵은 **스크롤판만** 의미가 있다. 장 넘김은 창이 스크롤되지 않아 스크롤 히트맵이 비고, 클릭 위치도 어긋날 수 있다 — 장 넘김은 녹화와 `section` · `exit_section` 으로 본다. `view` 태그는 쌓이므로(모든 세션이 scroll 로 시작) 「view = scroll」로는 장 넘김 세션이 안 빠진다 — 장 넘김은 「장으로 보기」를 누른 세션만(스마트 이벤트 `view_deck`)이라 드물다.
 - (선택) GA4 → BigQuery 내보내기를 켜면 세션 단위 원본 이벤트를 SQL 로 엮을 수 있다.
 
 ## 10. 한계
@@ -101,3 +101,42 @@ Clarity 에는 태그 `page` `view` `angle` `share` `src` `last_section` `max_de
 - 방문이 적으면 GA4 가 일부 보고서 값을 가린다(기준점). 비율보다 「누가 · 어디까지 · 무엇을 눌렀나」로 본다. GA4 보고서는 하루쯤 늦게 찬다.
 - Clarity 녹화 · 데이터 보관 30일.
 - 메일 · 전화 글자, 입력값은 보내지 않는다. 사이트 바닥글에 안내 한 줄(화면만 · 인쇄 숨김)이 저절로 붙는다(공개 주소 + ID 가 있을 때).
+
+## 11. Clarity 태그 · 스마트 이벤트 · 퍼널 · 가림 (2026-11-28 본인 「클래리티 스마트 이벤트 등 세팅값 디벨롭」)
+
+근거: Clarity 공식 문서(learn.microsoft.com/clarity — smart-events · clarity-api · custom-tags · funnels · clarity-masking)와 공개 스크립트 원본(github.com/microsoft/clarity — `clarity-js/src/data/variable.ts` · `custom.ts` · `upgrade.ts` · `upload.ts` · `core/scrub.ts`).
+
+### 11-1. 사이트가 보내는 것 (`track.js`)
+
+**태그는 쌓인다** — `clarity("set", 키, 값)` 을 같은 키로 다시 부르면 값이 덮이지 않고 더해진다(variable.ts `validValues.push` · 문서 「set 배열 = set 두 번」). 그래서 셋으로 나눴다.
+
+| 태그 | 넣는 때 | 값 · 필터 뜻 |
+|---|---|---|
+| `page` `angle` `share` `src` `entry` | 열 때 한 번 | `entry` = 처음 열린 주소의 #(`p-cp1` · `work` …, 없으면 `top`) — 절 · 카드로 바로 들어온 링크 |
+| `view` | 열 때 + 「장으로 보기」 | 쌓임 → `view = deck` = 장 넘김을 써 본 세션 |
+| `section` | 한 절 · 주제에 0.8초 넘게 머물 때 한 번 | 주제 이름만(`intro` `summary` `results` `dash` `xdash` `perf` `growth` `work` `pillars` `career` `beliefs` `contact`, en 은 h2 id, 이력서 보기 p1~p7) → `section = work` = 주요 업무를 본 세션 |
+| `depth_reached` | 25 · 50 · 75 · 100 % 를 지날 때 한 번 | `depth_reached = 75` = 4분의 3 넘게 내려간 세션 |
+| `action` | 핵심 행동 때 한 번 | resume_view · resume_open · resume_download · email_click · email_copy · phone_click · demo_open · demo_newtab |
+| `exit_section` | 탭을 숨기거나 닫을 때 | 그때 보던 곳(장 번호까지 `work-3`). Clarity 는 pagehide 때 마지막 묶음을 보내며 태그도 싣는다(upload.ts — track.js 듣개가 먼저 돈다). 탭을 오가면 값이 여럿 — 녹화 끝을 보면 마지막이 진짜 나간 곳 |
+
+옛 태그 `last_section` · `max_depth`(11-25 ~ 11-28 공개본)는 지나친 곳 · 깊이가 모두 쌓여 「나간 곳」 필터로 쓸 수 없었다 — 그 기간 녹화는 새 태그가 없다.
+
+**API 이벤트(`clarity("event", 이름)`) 16종**: `resume_view` `resume_open` `resume_download` `email_click` `email_copy` `phone_click` `demo_open` `demo_newtab` `en_open` `home_open` `outbound` `print` `view_deck` + 퍼널용 도달 이벤트 `reach_results` `reach_work` `reach_contact`(포트폴리오만 · 한 번씩 · 0.8초 머문 뒤). 11-28 에 뺀 것: `print_click`(Clarity 는 beforeprint 의 `print` 하나 — GA4 는 둘 다), `view_scroll`(되돌리기는 GA4 `psj_view_change` 에만).
+**녹화 우선(`clarity("upgrade", 종류)`)**: 핵심 행동(위 `action` 8종) 때. 문서상 하루 10만 세션을 넘어 녹화를 고를 때 이 세션을 남긴다 — 지금 방문 수에서는 차이 없음(보험).
+
+### 11-2. Clarity 화면 설정 (2026-11-28 Claude 가 본인 Chrome 으로 — 설정 → …)
+
+| 메뉴 | 지금 값 | 비고 |
+|---|---|---|
+| 스마트 이벤트 | 자동 「다운로드」(Clarity) · API 이벤트(데이터가 들어온 것만 목록에 뜸 — 11-28 email_click · resume_download · resume_view) · **사용자 정의 5개**: `page_en`(페이지 방문 · URL 포함 `sjpark-growth.github.io/en.html`) · `page_resume_pdf`(포함 `…/resume-pdf.html` — 채용 사이트에서 이력서 보기로 바로 온 방문까지) · `step_resume_view` · `step_resume_download` · `step_contact`(API 이벤트를 감싼 것) | 사용자 정의는 프로젝트당 최대 20개. **퍼널 단계 목록에는 API 이벤트가 바로 안 뜨고 사용자 정의 스마트 이벤트만 뜬다** — 그래서 API 이벤트를 `step_` 이름으로 감쌌다. 「API 이벤트」 탭은 데이터가 들어온 이름만 고를 수 있다. 이름은 문자로 시작 |
+| 퍼널 | **F1 resume** = 포트폴리오 방문(정규식 `^https://sjpark-growth\.github\.io/(index\.html)?(\?.*)?$`) → `step_resume_view` → `step_resume_download` · **F2 contact** = 포트폴리오 방문 → `step_contact` | 대시보드 퍼널 카드 · 필터에서 본다 |
+| 마스킹 | 모드 **균형(기본 그대로)** + 요소별: `a[href^="mailto:"], a[href^="tel:"], li.ct` = **마스킹** · `main` = **마스킹 해제** | 균형 모드는 **숫자가 든 낱말을 모두 가린다**(scrub.ts `redact` — 통화 기호 없는 숫자 낱말) → 녹화 · 히트맵에서 1,331% 같은 성과 숫자가 안 보였다. 본문(main)만 풀고 메일 · 전화는 따로 가림. 입력칸은 모든 모드에서 가림(사이트에 입력칸 없음). 바꾼 뒤 새 녹화부터 · 최대 1시간 |
+| 설정 → 고급 | 쿠키 켬 · 봇 감지 켬 · Google Analytics 통합 연결됨 | 그대로 |
+| IP 차단 | 없음 | 본인 방문은 `?notrack`(6절)으로 뺀다 — 집 · 휴대폰 IP 가 바뀌어 IP 차단은 안 씀 |
+
+### 11-3. 공개(push) 뒤 할 일 — 새 이벤트가 들어온 다음(하루쯤)
+
+1. 설정 → 스마트 이벤트 → 새로운 이벤트 → 처음부터 → **API 이벤트** 탭에서 `reach_results` · `reach_work` · `reach_contact` 를 각각 감싸 `step_reach_results` · `step_reach_work` · `step_reach_contact` 로 저장.
+2. `step_contact` 편집 → API 이벤트 `email_copy` · `phone_click` 더하기(들어온 뒤).
+3. 퍼널 **F1 resume** 편집 → 포트폴리오 방문 → `step_reach_results` → `step_reach_work` → `step_resume_view` → `step_resume_download` 차례로. **F2 contact** → 포트폴리오 방문 → `step_reach_contact` → `step_contact`.
+4. 대시보드 · 녹화 필터를 저장해 두면 좋은 묶음(세그먼트): 「핵심 행동 세션」(태그 `action` 아무 값) · 「주요 업무까지 본 세션」(`section = work`) · 「지원처 유입」(`src` = wanted · saramin …) · 「휴대폰」(기기).

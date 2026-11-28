@@ -49,10 +49,16 @@
     W.clarity = W.clarity || function () { (W.clarity.q = W.clarity.q || []).push(arguments); };
     try { W.clarity.apply(null, arguments); } catch (e) {}
   };
+  /* Clarity 태그는 같은 이름으로 다시 넣으면 값이 덮이지 않고 **쌓인다**(clarity-js data/variable.ts · 문서 「set 배열 = 두 번 set」, 2026-11-28 확인).
+     그래서 태그는 「한 번만 넣는 것」(page · angle · share · src · entry) · 「쌓여서 뜻이 되는 것」(view = 써 본 보기, section = 본 곳,
+     depth_reached = 지난 깊이 구간 25 · 50 · 75 · 100) · 「떠날 때만 넣는 것」(exit_section)으로 나눈다 — 필터 「section = work」 = 주요 업무를 본 세션.
+     옛 이름 last_section · max_depth(11-25 ~ 11-28)는 지나친 곳이 모두 쌓여 「나간 곳」으로 쓸 수 없었다 — tools/analytics/GTM_설정.md 11절 */
+  var entry = clean((/^#([A-Za-z0-9_-]+)/.exec(location.hash || '') || [])[1]) || 'top';   // 처음 열린 주소의 # — 절 · 카드로 바로 들어온 링크
   var ctx = function () { return { psj_page: page, psj_view: view(), psj_angle: angle, psj_share: share, psj_src: src }; };
   var setCtx = function () {
     var c = ctx(); push(Object.assign({ event: 'psj_ctx' }, c));
     Object.keys(c).forEach(function (k) { clarity('set', k.replace('psj_', ''), c[k]); });
+    clarity('set', 'entry', entry);
   };
   setCtx();
 
@@ -60,16 +66,26 @@
   var cur = null, curIdx = -1, curN = 0, since = 0, maxIdx = -1, maxN = 0, seen = {}, nSeen = 0, secT = 0;
   var dwell = 0, visAt = D.visibilityState === 'visible' ? now() : 0, leaves = 0;
   var depth = function () { return maxN ? Math.round((maxIdx + 1) / maxN * 100) : 0; };
+  // Clarity — 본 곳 · 깊이 구간 · 도달 이벤트(퍼널 단계)는 한 번씩만. 도달 이벤트는 포트폴리오(home)만:
+  // 주요 성과(results) → 주요 업무(work) → 연락처(contact — 스크롤판 마지막 절 · 장 넘김 마지막 주제)
+  var tagged = {}, MILE = { results: 'reach_results', work: 'reach_work', contact: 'reach_contact' };
+  var once = function (k, v) { if (tagged[k + '=' + v]) return; tagged[k + '=' + v] = 1; clarity('set', k, v); };
+  function marksClarity(id) {
+    var base = id.replace(/-\d+$/, '');                            // 장 넘김 work-3 → work (장 번호는 exit_section 과 GA4 에)
+    once('section', base);
+    for (var b = 25, d = depth(); b <= 100; b += 25) if (d >= b) once('depth_reached', String(b));
+    if (page === 'home' && MILE[base] && !tagged['ev=' + base]) { tagged['ev=' + base] = 1; clarity('event', MILE[base]); }
+  }
   function enter(id, idx, n, via) {
     if (!id || id === cur) return;
     cur = id; curIdx = idx; curN = n; since = now();
     if (!seen[id]) { seen[id] = 1; nSeen++; }
     if (n !== maxN) { maxN = n; maxIdx = -1; }                     // 장 넘김 ↔ 스크롤로 바뀌면 전체 수가 달라져 깊이를 새로 센다
     if (idx > maxIdx) maxIdx = idx;
-    clarity('set', 'last_section', id); clarity('set', 'max_depth', String(depth()));
-    clearTimeout(secT);                                             // 빨리 지나친 곳(0.8초 안)은 이벤트를 남기지 않는다 — 마지막 위치 표시는 바로 바뀜
+    clearTimeout(secT);                                             // 빨리 지나친 곳(0.8초 안)은 GA4 이벤트 · Clarity 「본 곳」에 남기지 않는다
     secT = setTimeout(function () {
       push({ event: 'psj_section', psj_section: id, psj_section_index: idx + 1, psj_section_total: n, psj_depth: depth(), psj_via: via || '', psj_view: view() });
+      marksClarity(id);
     }, 800);
   }
 
@@ -108,7 +124,8 @@
   D.addEventListener('tm:nav', function (e) { deckNow(e.detail && e.detail.via); });
   D.addEventListener('psj:view', function (e) {
     var v = e.detail === 'deck' ? 'deck' : 'scroll';
-    push(Object.assign({ event: 'psj_view_change' }, ctx(), { psj_view: v })); clarity('set', 'view', v); clarity('event', 'view_' + v);
+    push(Object.assign({ event: 'psj_view_change' }, ctx(), { psj_view: v })); once('view', v);   // view 가 쌓여 「deck 을 써 본 세션」
+    if (v === 'deck') clarity('event', 'view_deck');                // 스크롤로 되돌리기는 GA4(psj_view_change)에만 — Clarity 이벤트 수 아끼기
     cur = null; setTimeout(function () { if (v === 'deck') deckNow('toggle'); else onScroll(); }, 50);
   });
 
@@ -117,6 +134,9 @@
     if (visAt) { dwell += now() - visAt; visAt = 0; }
     if (!cur) return;
     leaves++;
+    // Clarity 「나간 곳」 — 숨길 때만 넣는다. Clarity 는 pagehide 때 마지막 묶음을 보내며 그때 태그도 싣는다(clarity-js data/upload.ts —
+    // 이 파일의 pagehide 듣개가 Clarity 보다 먼저 붙어 먼저 돈다). 탭을 오가면 값이 여럿 — 녹화 끝을 보면 마지막이 진짜 나간 곳
+    clarity('set', 'exit_section', cur);
     push({ event: 'psj_leave', psj_section: cur, psj_section_index: curIdx + 1, psj_section_total: curN, psj_depth: depth(), psj_seen: nSeen,
       psj_engaged_sec: Math.round(dwell / 1000), psj_section_sec: Math.round((now() - since) / 1000), psj_leave_n: leaves, psj_view: view() });
   }
@@ -124,9 +144,13 @@
   addEventListener('pagehide', function () { if (D.visibilityState !== 'hidden') hidden(); });
 
   /* ---------- 누른 것 ---------- */
+  // 핵심 행동 — Clarity 녹화 우선(upgrade: 하루 세션이 많아 녹화를 고를 때 이 세션을 남김 · 문서 clarity-api) + 태그 action 으로 쌓음
+  var KEY = /^(resume_(view|open|download)|email_(click|copy)|phone_click|demo_(open|newtab))$/;
   var act = function (type, target) {
     push({ event: 'psj_click', psj_click: type, psj_target: target || '', psj_section: cur || '', psj_view: view() });
+    if (type === 'print_click') return;                             // Clarity 에는 beforeprint 의 print 하나로(단추 · Ctrl+P 둘 다) — GA4 는 둘 다
     clarity('event', type);
+    if (KEY.test(type)) { once('action', type); clarity('upgrade', type); }
   };
   D.addEventListener('click', function (e) {
     var el = e.target && e.target.closest && e.target.closest('a,button'); if (!el) return;
@@ -181,5 +205,5 @@
   if (D.readyState === 'complete') boot(); else addEventListener('load', boot, { once: true });
 
   // 시험 · 진단용(콘솔에서 PSJTrack.state())
-  W.PSJTrack = { state: function () { return { live: live, gtm: gtm, optout: optout, page: page, view: view(), src: src, angle: angle, share: share, cur: cur, depth: depth(), seen: nSeen }; } };
+  W.PSJTrack = { state: function () { return { live: live, gtm: gtm, optout: optout, page: page, view: view(), src: src, angle: angle, share: share, cur: cur, depth: depth(), seen: nSeen, entry: entry, clarity: Object.keys(tagged) }; } };
 })();
