@@ -2798,20 +2798,35 @@ a.rs-card[data-save] { cursor: pointer; }
   html.fx-on .fx-persp { perspective: 1100px; }
   html.fx-on .fx-tilting { will-change: rotate; }
 
-  /* 따라오는 고리(cursor) — 마우스일 때만 fx.js 가 만든다. 위치는 translate 속성(fx.js), 크기는 scale 속성.
-     위치를 transform 에 두지 않는다 — 합성 순서(translate → rotate → scale → transform) 때문에 scale 이 이동값까지 곱해 고리가 「배율 × 포인터 좌표」로 날아간다(2026-11-28 고침) */
+  /* 마우스 자리 표시(cursor) — 마우스일 때만 fx.js 가 만들고, 보이는 동안은 기본 커서를 숨긴다(아래 「손 모양 포인터 끄기」 · html.fx-cur-on — 2026-11-28).
+     위치는 fx.js 가 translate 속성으로(마우스 자리 그대로), 모양은 두 가상 요소의 scale · opacity 만: 평소 = 점 8px, 누를 것 위 = 렌즈 44px 가 퍼지고 점은 작게,
+     차트 위 = 더 작은 점(세부 값을 짚기 쉽게), 누르는 중 = 살짝 오므림. 켜고 끌 때는 바로(기본 커서와 겹치는 틈이 없게).
+     위치를 transform 에 두지 않는다 — 합성 순서(translate → rotate → scale → transform) 때문에 scale 이 이동값까지 곱해 「배율 × 포인터 좌표」로 날아간다
+     (2026-11-28 — 차트 위에서 다른 데로 튐 · 링크 위에서 화면 밖, fx.js cursor 주석 ①) */
   .fx-cursor {
-    position: fixed; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%;
-    border: 1.5px solid color-mix(in srgb, var(--accent) 75%, transparent); background: transparent;
-    pointer-events: none; z-index: 130; opacity: 0;
-    transition: opacity .25s, scale .32s cubic-bezier(.2,.8,.2,1), background-color .25s, border-color .25s;
+    position: fixed; left: 0; top: 0; width: 0; height: 0;
+    pointer-events: none; z-index: 2147483000; opacity: 0; will-change: translate;
   }
-  .fx-cursor.on { opacity: .9; }
-  .fx-cursor.is-hot { scale: 1.55; background: color-mix(in srgb, var(--accent) 12%, transparent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
-  .fx-cursor.is-chart { scale: .42; background: var(--accent); border-color: transparent; }
-  .fx-cursor.is-quiet, .fx-cursor.on.is-quiet { opacity: 0; }
-  .fx-cursor.down { scale: .78; }
-  .fx-cursor.is-hot.down { scale: 1.25; }
+  .fx-cursor::before, .fx-cursor::after { content: ""; position: absolute; border-radius: 50%; }
+  .fx-cursor::before {   /* 렌즈 */
+    left: -22px; top: -22px; width: 44px; height: 44px; box-sizing: border-box;
+    border: 1.5px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    scale: .2; opacity: 0;
+    transition: scale .24s cubic-bezier(.2, .8, .2, 1), opacity .16s ease-out;
+  }
+  .fx-cursor::after {    /* 점 — 바탕색 테두리로 강조색 단추 위에서도 보이게 */
+    left: -4px; top: -4px; width: 8px; height: 8px;
+    background: var(--accent); box-shadow: 0 0 0 1.5px var(--paper);
+    transition: scale .2s cubic-bezier(.2, .8, .2, 1);
+  }
+  .fx-cursor.on { opacity: 1; }
+  .fx-cursor.is-hot::before { scale: 1; opacity: 1; }
+  .fx-cursor.is-hot::after { scale: .6; }
+  .fx-cursor.is-chart::after { scale: .75; }
+  .fx-cursor.is-quiet, .fx-cursor.on.is-quiet, html.fx-vt .fx-cursor { opacity: 0; }
+  .fx-cursor.down::after { scale: .7; }
+  .fx-cursor.is-hot.down::before { scale: .86; }
 
   /* 스크롤 진행 막대 — 강조색 그라데이션 + 빛 */
   html.fx-on .mast::after { background: linear-gradient(90deg, var(--accent), var(--fx-g2), var(--fx-g3)); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent); }
@@ -2890,4 +2905,9 @@ main:focus { outline: none; }
   html.fx-on.fx-cur body * { cursor: inherit !important; }
   html.fx-on.fx-cur :is(a[href], button, summary, label, select, [role="button"], [role="link"], [role="tab"], [role="option"], [role="menuitem"]) { cursor: default !important; }
   html.fx-on.fx-cur :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, [contenteditable="true"]) { cursor: text !important; }
+  /* (2026-11-28 본인 「마우스 커서와 둘이 동시에 뜨는 게 싫다 — 한 쪽만」) 표시가 보이는 동안(fx-cur-on)은 기본 커서도 숨긴다.
+     입력 · 선택 칸은 표시가 숨고 기본 커서(fx.js QUIET), 스크롤 막대 · 데모 창(iframe) 안은 브라우저가 늘 기본 커서를 그려 fx.js 가 표시를 숨긴다.
+     테마 바꾸는 0.7초(fx-vt — 화면을 사진으로 바꿔 그림)는 기본 커서로. 동작 줄이기 · 손가락 기기 · 효과 끔은 이 블록 밖이라 브라우저 기본 */
+  html.fx-on.fx-cur.fx-cur-on:not(.fx-vt), html.fx-on.fx-cur.fx-cur-on:not(.fx-vt) body, html.fx-on.fx-cur.fx-cur-on:not(.fx-vt) body * { cursor: none !important; }
+  html.fx-on.fx-cur.fx-cur-on:not(.fx-vt) :is(input, textarea, select, [contenteditable="true"], [contenteditable="true"] *) { cursor: auto !important; }
 }
