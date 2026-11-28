@@ -2727,6 +2727,7 @@ a.rs-card[data-save] { cursor: pointer; }
   --fx-a1: #c7d1ff; --fx-a2: #c4e3ff; --fx-a3: #bfeee3; --fx-a-max: .9; --fx-a-text: .25;
   --fx-g1: #1c34b0; --fx-g2: #1a5fc7; --fx-g3: #0e7490;
   --fx-dot: rgba(12, 26, 43, .16); --fx-dot-hi: rgba(39, 67, 212, .55);
+  --fx-spot-glow: color-mix(in srgb, var(--fx-a1) 20%, transparent);
   --fx-beam-hi: #8cc4ff;
 }
 @media (prefers-color-scheme: dark) {
@@ -2734,6 +2735,7 @@ a.rs-card[data-save] { cursor: pointer; }
     --fx-a1: #3a4fd8; --fx-a2: #2f7fe0; --fx-a3: #0e8f80; --fx-a-max: .72; --fx-a-text: .1;
     --fx-g1: #a9b5ff; --fx-g2: #8fc8ff; --fx-g3: #6ee7d8;
     --fx-dot: rgba(255, 255, 255, .11); --fx-dot-hi: rgba(169, 181, 255, .6);
+    --fx-spot-glow: color-mix(in srgb, var(--fx-a1) 14%, transparent);
     --fx-beam-hi: #ffffff;
   }
 }
@@ -2741,6 +2743,7 @@ a.rs-card[data-save] { cursor: pointer; }
   --fx-a1: #3a4fd8; --fx-a2: #2f7fe0; --fx-a3: #0e8f80; --fx-a-max: .72; --fx-a-text: .1;
   --fx-g1: #a9b5ff; --fx-g2: #8fc8ff; --fx-g3: #6ee7d8;
   --fx-dot: rgba(255, 255, 255, .11); --fx-dot-hi: rgba(169, 181, 255, .6);
+  --fx-spot-glow: color-mix(in srgb, var(--fx-a1) 14%, transparent);
   --fx-beam-hi: #ffffff;
 }
 @media screen {
@@ -2769,6 +2772,26 @@ a.rs-card[data-save] { cursor: pointer; }
     opacity: 0; transition: opacity .45s;
   }
   .fx-stage.fx-lit .fx-grid::after { opacity: 1; }
+  /* 화면 전체 마우스 빛(spot — fx.js spot, 2026-11-28 본인 「마우스 오버 효과가 첫 화면 외에도 화면 전체적으로」) — 첫 화면 점 격자 · 빛을 페이지 전체로.
+     늘 바탕 위 · 내용 아래: ① 페이지 층(body 첫 자식 fixed · z-index −1 — body 가 isolation 으로 쌓임 맥락) ② 바탕색이 있는 절 안 층(.fx-spot-stage —
+     절 = position relative · isolation, 층 = absolute inset 0 · 넘침 자름 · z-index −1, 스크롤판만). 위치는 fx.js 가 translate 로만(바깥 원 = 마우스 자리,
+     안쪽 점 무늬 = 화면 22px 격자에 고정 — ①② 가 경계에서 이어짐). 마스크 · 빛은 층과 함께 움직여 다시 그리지 않는다. 켜고 끄기는 html.fx-spot-lit(첫 화면 · iframe · 창 밖에서 꺼짐).
+     빛 세기 --fx-spot-glow(라이트 --fx-a1 20% · 다크 14%) — 보조 글자 대비가 가운데서도 4.5:1 넘게(라이트 바탕 약 4.7 · 흰 칸 약 5.0 · 다크 약 5.3) */
+  html.fx-on.fx-spot-on body { isolation: isolate; }
+  html.fx-on.fx-spot-on:not(.tabmode) .fx-spot-host { position: relative; isolation: isolate; }
+  .fx-spot-stage { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; contain: strict; }
+  html.tabmode .fx-spot-stage { display: none; }
+  .fx-spot {
+    position: absolute; left: 0; top: 0; width: 440px; height: 440px; pointer-events: none; contain: strict;
+    opacity: 0; transition: opacity .45s; will-change: translate, opacity;
+    background: radial-gradient(200px circle at 50% 50%, var(--fx-spot-glow), transparent 75%);
+    -webkit-mask-image: radial-gradient(210px circle at 50% 50%, #000, transparent 72%);
+            mask-image: radial-gradient(210px circle at 50% 50%, #000, transparent 72%);
+  }
+  body > .fx-spot { position: fixed; z-index: -1; }
+  .fx-spot > i { position: absolute; inset: -22px; will-change: translate;
+    background-image: radial-gradient(circle, var(--fx-dot-hi) 0 1.1px, transparent 1.6px); background-size: 22px 22px; }
+  html.fx-spot-lit .fx-spot { opacity: 1; }
   @keyframes fxIn { from { opacity: 0; } to { opacity: 1; } }
 
   /* 테두리를 따라 도는 빛(beam) — LIVE DEMO 칸 · 주요 성과 머리 카드 · 프로필 사진 */
@@ -2809,7 +2832,7 @@ a.rs-card[data-save] { cursor: pointer; }
 }
 @media (prefers-reduced-motion: reduce) { .fx-stage { animation: none; } }
 @media print {
-  .fx-stage { display: none !important; }
+  .fx-stage, .fx-spot, .fx-spot-stage { display: none !important; }
   .fx-beam::after { content: none !important; }
   .thesis .fx-grad { background: none !important; color: inherit !important; -webkit-text-fill-color: currentColor !important; animation: none !important; }
   .fx-persp { perspective: none !important; }

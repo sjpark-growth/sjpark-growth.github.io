@@ -6,6 +6,7 @@
    그래서 첫 화면 한 장 맞춤 · 장 넘김 장 나눔 · PDF 장 수(16 · 7)가 그대로다(fx-audit 가 ?fx=0 과 위치를 비교한다).
 
      aurora   첫 화면 뒤 흐르는 빛(WebGL — 「핵심 과업」 칸 둘레를 돌고 소개 글자 쪽은 옅게) + 마우스를 따라 켜지는 점 격자. 5초 안에 잦아들어 멈춘 한 장, 마우스가 깨운다
+     spot     첫 화면 밖 페이지 바탕 전체에서 마우스 둘레 점 격자가 켜지고 옅은 빛이 따라온다(첫 화면 빛의 마우스 효과를 넓힘 · 마우스만 · 2026-11-28)
      tilt     카드가 마우스 쪽으로 살짝 기운다(성과 리포트 칸 · 주요 성과 카드 · 그로스 · 역량 · 원칙 · 점수)
      magnet   단추가 마우스 쪽으로 몇 px 끌려온다(상단 메뉴 · 도구 단추 · 표 단추)
      cursor   마우스 커서를 사이트 글자색 화살표 그림으로(CSS — 브라우저가 그려 늦거나 멈추지 않음 · 손 모양 없음 · 2026-11-28 — 예전 따라오는 고리 · 점 표시는 걷어냄)
@@ -21,7 +22,7 @@
 (function () {
   'use strict';
   const root = document.documentElement;
-  const CONF = Object.assign({ aurora: true, tilt: true, magnet: true, cursor: true, scramble: true, beam: true, grad: true, theme: true }, window.FX_CONF || {});
+  const CONF = Object.assign({ aurora: true, tilt: true, magnet: true, cursor: true, spot: true, scramble: true, beam: true, grad: true, theme: true }, window.FX_CONF || {});
 
   /* ---------------------------------------------------------- 켜고 끄기 */
   let off = false;
@@ -337,6 +338,66 @@ void main(){
      움직이지 않는 그림이라 동작 줄이기에서도 쓴다(start 의 동작 줄이기 return 앞). 손가락 기기는 CSS 미디어가 거른다. */
   function cursor() { root.classList.add('fx-cur'); mods.push('cursor'); }
 
+  /* =========================================================== spot — 화면 전체 마우스 빛(점 격자 + 옅은 빛)
+     (2026-11-28 본인 「마우스 오버 효과가 첫 화면 외에도 화면 전체적으로」) 첫 화면 빛(aurora)의 「마우스 둘레 점 격자 켜짐 · 빛이 따라옴」을
+     페이지 전체로 넓힌다. 글자 · 숫자 · 카드는 덮지 않는다 — 늘 바탕 위 · 내용 아래에 깐다:
+       ① 페이지 층: body 첫 자식 fixed(z-index −1 — body 가 isolation 으로 쌓임 맥락). 바탕이 투명한 절 · 장 넘김에서 보인다.
+       ② 절 층: 바탕색이 있는 절(스크롤판 — 핵심 요약 · 대시보드 · 성과 추이 · 그로스 · 주요 업무 · 경력 · 원칙)은 그 바탕이 ①을 가려서,
+          절 안에 같은 층을 하나 더(절 = position relative · isolation, 층 = absolute inset 0 · 넘침 자름 · z-index −1). 장 넘김에서는 절 바탕이 투명이라 숨김(CSS).
+     ①② 모두 같은 화면 좌표 · 같은 22px 점 격자로 놓아 절 경계에서 끊김 없이 이어진다. 움직임은 translate 만(합성 — 다시 그리기 없음):
+     바깥 440px 원(가장자리 흐림 마스크 · 옅은 빛)을 마우스 자리로, 안쪽 점 무늬는 (화면 위치 mod 22)만큼 되밀어 점이 화면 격자에 고정된 채 둘레만 켜진다.
+     첫 화면(.hero) 위에서는 숨김(첫 화면 빛이 따로 함) · 데모 창 iframe 안 · 창 밖 · 다른 탭 · 인쇄에서 숨김. 마우스만(FINE) · 동작 줄이기에서는 만들지 않음(start). */
+  function spot() {
+    const R = 220, G = 22;
+    const mk = () => { const el = document.createElement('div'); el.className = 'fx-spot'; el.setAttribute('aria-hidden', 'true'); el.appendChild(document.createElement('i')); return el; };
+    const base = mk(); document.body.prepend(base);
+    const clear = v => v === 'transparent' || v.replace(/\s/g, '').endsWith(',0)');
+    const SKIP = new Set(['SCRIPT', 'TEMPLATE', 'STYLE']);
+    const hosts = [];
+    if (!tabmode()) $$('main > *').forEach(n => {            // 스크롤판(처음 열 때 늘 스크롤판)에서 바탕이 칠해진 절만
+      if (n.classList.contains('hero') || SKIP.has(n.tagName)) return;
+      const c = getComputedStyle(n);
+      if (c.backgroundImage === 'none' && clear(c.backgroundColor)) return;
+      const st = document.createElement('div'); st.className = 'fx-spot-stage'; st.setAttribute('aria-hidden', 'true');
+      const sp = mk(); st.appendChild(sp); n.appendChild(st); n.classList.add('fx-spot-host');
+      hosts.push({ n, sp, near: true });
+    });
+    root.classList.add('fx-spot-on'); mods.push('spot');
+    let x = 0, y = 0, raf = 0, on = false;
+    const mod = v => ((v % G) + G) % G;
+    const put = (sp, px, py, P, Q) => { sp.style.translate = `${px}px ${py}px`; sp.firstChild.style.translate = `${-mod(P)}px ${-mod(Q)}px`; };
+    const paint = () => {
+      raf = 0; if (!on) return;
+      const P = Math.round(x - R), Q = Math.round(y - R);
+      put(base, P, Q, P, Q);
+      const flat = !tabmode();
+      for (const h of hosts) {
+        const r = flat ? h.n.getBoundingClientRect() : null;
+        const near = !!r && x > r.left - R && x < r.right + R && y > r.top - R && y < r.bottom + R;
+        if (near) put(h.sp, P - r.left, Q - r.top, P, Q);
+        else if (h.near) h.sp.style.translate = '-9999px -9999px';   // 멀면 한 번 치워 두고 더 안 건드림(절 층은 절 밖이 잘려 보이지 않는다)
+        h.near = near;
+      }
+    };
+    const ask = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    const show = v => { if (v !== on) { on = v; root.classList.toggle('fx-spot-lit', v); } if (v) ask(); };
+    const onPtr = e => {
+      if (e.pointerType !== 'mouse' || printing) { show(false); return; }
+      x = e.clientX; y = e.clientY;
+      const t = e.target;
+      show(!!(t && t.closest) && !t.closest('.hero, iframe'));
+    };
+    addEventListener('pointermove', onPtr, { passive: true });
+    addEventListener('pointerover', onPtr, { passive: true });       // 스크롤 · 장 넘김으로 아래가 바뀔 때(첫 화면에 들어오고 나감)
+    addEventListener('scroll', () => { if (on && hosts.length) ask(); }, { passive: true });   // 마우스는 그대로 · 절이 움직임
+    document.addEventListener('tm:mode', () => { if (on) ask(); });
+    document.addEventListener('mouseout', e => { const r = e.relatedTarget; if (!r || r.tagName === 'IFRAME') show(false); });
+    addEventListener('blur', () => show(false));
+    document.addEventListener('visibilitychange', () => { if (document.hidden) show(false); });
+    holds.push(() => show(false));
+    FX._spot = () => ({ on, hosts: hosts.map(h => (h.n.id || h.n.className.split(' ')[0]) + (h.near ? '*' : '')) });
+  }
+
   /* =========================================================== scramble — 꼬리표 해독 */
   const SCR = '.sec-h .tag, .growth-h .tag';
   const GLYPH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+/<>';
@@ -415,6 +476,7 @@ void main(){
     if (CONF.cursor) cursor();                               // 맞춤 화살표 — 그림이라 동작 줄이기에서도
     if (RM.matches) { mods.push('reduced'); return; }       // 움직임 효과는 여기까지 — 동작 줄이기면 멈춘 빛 · 정적 그라데이션만
     try { if (FINE.matches && (CONF.tilt || CONF.magnet)) pointerFx(); } catch (e) { console.warn('fx pointer', e); }
+    try { if (FINE.matches && CONF.spot) spot(); } catch (e) { console.warn('fx spot', e); }
     try { if (CONF.scramble) scramble(); } catch (e) { console.warn('fx scramble', e); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
