@@ -54,11 +54,13 @@
      depth_reached = 지난 깊이 구간 25 · 50 · 75 · 100) · 「떠날 때만 넣는 것」(exit_section)으로 나눈다 — 필터 「section = work」 = 주요 업무를 본 세션.
      옛 이름 last_section · max_depth(11-25 ~ 11-28)는 지나친 곳이 모두 쌓여 「나간 곳」으로 쓸 수 없었다 — tools/analytics/GTM_설정.md 11절 */
   var entry = clean((/^#([A-Za-z0-9_-]+)/.exec(location.hash || '') || [])[1]) || 'top';   // 처음 열린 주소의 # — 절 · 카드로 바로 들어온 링크
+  var tagged = {};                                                  // 이미 넣은 「태그=값」 · 도달 이벤트(한 번씩만)
   var ctx = function () { return { psj_page: page, psj_view: view(), psj_angle: angle, psj_share: share, psj_src: src }; };
   var setCtx = function () {
     var c = ctx(); push(Object.assign({ event: 'psj_ctx' }, c));
     Object.keys(c).forEach(function (k) { clarity('set', k.replace('psj_', ''), c[k]); });
     clarity('set', 'entry', entry);
+    tagged['view=' + c.psj_view] = 1;                               // 처음 보기 — 「장 → 스크롤」로 돌아올 때 scroll 이 두 번 쌓이지 않게
   };
   setCtx();
 
@@ -68,7 +70,7 @@
   var depth = function () { return maxN ? Math.round((maxIdx + 1) / maxN * 100) : 0; };
   // Clarity — 본 곳 · 깊이 구간 · 도달 이벤트(퍼널 단계)는 한 번씩만. 도달 이벤트는 포트폴리오(home)만:
   // 주요 성과(results) → 주요 업무(work) → 연락처(contact — 스크롤판 마지막 절 · 장 넘김 마지막 주제)
-  var tagged = {}, MILE = { results: 'reach_results', work: 'reach_work', contact: 'reach_contact' };
+  var MILE = { results: 'reach_results', work: 'reach_work', contact: 'reach_contact' };   // 장 넘김 contact 주제는 원칙 · 핵심 요약 · 연락처를 묶는다(원칙 장만 봐도 찍힘)
   var once = function (k, v) { if (tagged[k + '=' + v]) return; tagged[k + '=' + v] = 1; clarity('set', k, v); };
   function marksClarity(id) {
     var base = id.replace(/-\d+$/, '');                            // 장 넘김 work-3 → work (장 번호는 exit_section 과 GA4 에)

@@ -122,7 +122,7 @@ Clarity 쪽은 11절(2026-11-28 다시 짬 — 태그는 같은 이름으로 다
 
 옛 태그 `last_section` · `max_depth`(11-25 ~ 11-28 공개본)는 지나친 곳 · 깊이가 모두 쌓여 「나간 곳」 필터로 쓸 수 없었다 — 그 기간 녹화는 새 태그가 없다.
 
-**API 이벤트(`clarity("event", 이름)`) 16종**: `resume_view` `resume_open` `resume_download` `email_click` `email_copy` `phone_click` `demo_open` `demo_newtab` `en_open` `home_open` `outbound` `print` `view_deck` + 퍼널용 도달 이벤트 `reach_results` `reach_work` `reach_contact`(포트폴리오만 · 한 번씩 · 0.8초 머문 뒤). 11-28 에 뺀 것: `print_click`(Clarity 는 beforeprint 의 `print` 하나 — GA4 는 둘 다), `view_scroll`(되돌리기는 GA4 `psj_view_change` 에만).
+**API 이벤트(`clarity("event", 이름)`) 16종**: `resume_view` `resume_open` `resume_download` `email_click` `email_copy` `phone_click` `demo_open` `demo_newtab` `en_open` `home_open` `outbound` `print` `view_deck` + 퍼널용 도달 이벤트 `reach_results` `reach_work` `reach_contact`(포트폴리오만 · 한 번씩 · 0.8초 머문 뒤 — 장 넘김의 contact 주제는 원칙 · 핵심 요약 · 연락처를 묶어 원칙 장만 봐도 찍힌다. 스크롤판은 #contact 절에 닿아야). 11-28 에 뺀 것: `print_click`(Clarity 는 beforeprint 의 `print` 하나 — GA4 는 둘 다), `view_scroll`(되돌리기는 GA4 `psj_view_change` 에만).
 **녹화 우선(`clarity("upgrade", 종류)`)**: 핵심 행동(위 `action` 8종) 때. 문서상 하루 10만 세션을 넘어 녹화를 고를 때 이 세션을 남긴다 — 지금 방문 수에서는 차이 없음(보험).
 
 ### 11-2. Clarity 화면 설정 (2026-11-28 Claude 가 본인 Chrome 으로 — 설정 → …)
